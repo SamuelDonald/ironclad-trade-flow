@@ -32,30 +32,26 @@ import { useNavigate } from "react-router-dom";
 
 const Profile = () => {
   const [profile, setProfile] = useState({
-    firstName: "John",
-    lastName: "Doe",
-    email: "john.doe@example.com",
-    phone: "+1 (555) 123-4567",
-    address: "123 Trading St, Finance City, FC 12345",
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    address: "",
     avatar: "",
   });
 
   const [notifications, setNotifications] = useState({
-    emailAlerts: true,
-    pushNotifications: true,
+    emailAlerts: false,
+    pushNotifications: false,
     marketUpdates: false,
-    tradingAlerts: true,
+    tradingAlerts: false,
     newsletters: false,
   });
 
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  const paymentMethods = [
-    { type: "Bank Account", details: "****1234", verified: true },
-    { type: "PayPal", details: "john.doe@example.com", verified: true },
-    { type: "Credit Card", details: "****5678", verified: false },
-  ];
+  const paymentMethods: { type: string; details: string; verified: boolean }[] = [];
 
   const handleProfileUpdate = () => {
     toast({
@@ -84,7 +80,7 @@ const Profile = () => {
   };
 
   return (
-    <div className="container max-w-4xl mx-auto p-6 space-y-8">
+    <div className="container max-w-4xl mx-auto p-6 pb-20 space-y-8">
       {/* Header */}
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold text-indigo-700">Profile</h1>
@@ -114,8 +110,7 @@ const Profile = () => {
               <Avatar className="h-28 w-28 ring-4 ring-indigo-200">
                 <AvatarImage src={profile.avatar} />
                 <AvatarFallback className="text-lg bg-indigo-100 text-indigo-700">
-                  {profile.firstName[0]}
-                  {profile.lastName[0]}
+                  <User className="w-10 h-10" />
                 </AvatarFallback>
               </Avatar>
               <Button onClick={handleAvatarUpload} className="bg-indigo-600 hover:bg-indigo-700 text-white">
@@ -219,31 +214,39 @@ const Profile = () => {
               <CardDescription>Manage your payment options</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {paymentMethods.map((method, index) => (
-                <div
-                  key={index}
-                  className="flex items-center justify-between p-4 border rounded-xl bg-gray-50"
-                >
-                  <div>
-                    <p className="font-semibold">{method.type}</p>
-                    <p className="text-sm text-gray-500">{method.details}</p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span
-                      className={`text-xs px-2 py-1 rounded-full ${
-                        method.verified
-                          ? "bg-green-100 text-green-700"
-                          : "bg-yellow-100 text-yellow-700"
-                      }`}
-                    >
-                      {method.verified ? "Verified" : "Pending"}
-                    </span>
-                    <Button variant="outline" size="sm">
-                      Edit
-                    </Button>
-                  </div>
+              {paymentMethods.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  <CreditCard className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                  <p>No payment methods added yet</p>
+                  <p className="text-sm">Add a payment method to get started</p>
                 </div>
-              ))}
+              ) : (
+                paymentMethods.map((method, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center justify-between p-4 border rounded-xl bg-gray-50"
+                  >
+                    <div>
+                      <p className="font-semibold">{method.type}</p>
+                      <p className="text-sm text-gray-500">{method.details}</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span
+                        className={`text-xs px-2 py-1 rounded-full ${
+                          method.verified
+                            ? "bg-green-100 text-green-700"
+                            : "bg-yellow-100 text-yellow-700"
+                        }`}
+                      >
+                        {method.verified ? "Verified" : "Pending"}
+                      </span>
+                      <Button variant="outline" size="sm">
+                        Edit
+                      </Button>
+                    </div>
+                  </div>
+                ))
+              )}
               <Button
                 variant="outline"
                 className="w-full border-indigo-500 text-indigo-600"

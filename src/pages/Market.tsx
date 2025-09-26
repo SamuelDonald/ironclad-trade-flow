@@ -241,7 +241,7 @@ export default function MarketPage() {
   }
 
   return (
-    <div className="container max-w-7xl mx-auto p-6 space-y-6">
+    <div className="container max-w-7xl mx-auto p-6 pb-20 space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold text-indigo-700">Market</h1>
         <Button className="bg-gradient-to-r from-purple-500 to-indigo-500 text-white hover:opacity-90 shadow-md">

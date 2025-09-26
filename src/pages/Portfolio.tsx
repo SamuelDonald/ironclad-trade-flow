@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Wallet, TrendingUp, TrendingDown, Plus, Minus, Eye, Activity } from "lucide-react";
+import { Wallet, TrendingUp, TrendingDown, Plus, Minus, Eye, EyeOff, Activity } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 
 const Portfolio = () => {
   const navigate = useNavigate();
+  const [showDetails, setShowDetails] = useState(true);
   const [portfolio] = useState({
     cashBalance: 50000,
     investedAmount: 25000,
@@ -35,13 +36,18 @@ const Portfolio = () => {
   ]);
 
   return (
-    <div className="container max-w-7xl mx-auto p-6 space-y-8">
+    <div className="container max-w-7xl mx-auto p-6 pb-20 space-y-8">
       {/* Header */}
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold text-indigo-700">Portfolio</h1>
-        <Button variant="ghost" size="sm" className="text-indigo-600 hover:bg-indigo-50">
-          <Eye className="w-4 h-4 mr-2" />
-          View Details
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          className="text-indigo-600 hover:bg-indigo-50"
+          onClick={() => setShowDetails(!showDetails)}
+        >
+          {showDetails ? <EyeOff className="w-4 h-4 mr-2" /> : <Eye className="w-4 h-4 mr-2" />}
+          {showDetails ? "Hide Details" : "View Details"}
         </Button>
       </div>
 
@@ -56,7 +62,9 @@ const Portfolio = () => {
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             <div className="text-center">
-              <p className="text-3xl font-bold">${portfolio.totalValue.toLocaleString()}</p>
+              <p className={`text-3xl font-bold transition-all duration-300 ${showDetails ? 'opacity-100' : 'opacity-0'}`}>
+                {showDetails ? `$${portfolio.totalValue.toLocaleString()}` : '••••••'}
+              </p>
               <p className="text-sm text-muted-foreground">Total Value</p>
               <div className="flex items-center justify-center mt-2">
                 {portfolio.dailyChange >= 0 ? (
@@ -64,21 +72,27 @@ const Portfolio = () => {
                 ) : (
                   <TrendingDown className="w-4 h-4 text-red-500 mr-1" />
                 )}
-                <span className={portfolio.dailyChange >= 0 ? "text-green-500" : "text-red-500"}>
-                  ${Math.abs(portfolio.dailyChange).toLocaleString()} ({portfolio.dailyChangePercent}%)
+                <span className={`${portfolio.dailyChange >= 0 ? "text-green-500" : "text-red-500"} transition-all duration-300`}>
+                  {showDetails ? `$${Math.abs(portfolio.dailyChange).toLocaleString()} (${portfolio.dailyChangePercent}%)` : '••••••'}
                 </span>
               </div>
             </div>
             <div className="text-center">
-              <p className="text-xl font-semibold">${portfolio.cashBalance.toLocaleString()}</p>
+              <p className={`text-xl font-semibold transition-all duration-300`}>
+                {showDetails ? `$${portfolio.cashBalance.toLocaleString()}` : '••••••'}
+              </p>
               <p className="text-sm text-muted-foreground">Cash Balance</p>
             </div>
             <div className="text-center">
-              <p className="text-xl font-semibold">${portfolio.investedAmount.toLocaleString()}</p>
+              <p className={`text-xl font-semibold transition-all duration-300`}>
+                {showDetails ? `$${portfolio.investedAmount.toLocaleString()}` : '••••••'}
+              </p>
               <p className="text-sm text-muted-foreground">Invested Amount</p>
             </div>
             <div className="text-center">
-              <p className="text-xl font-semibold">${portfolio.freeMargin.toLocaleString()}</p>
+              <p className={`text-xl font-semibold transition-all duration-300`}>
+                {showDetails ? `$${portfolio.freeMargin.toLocaleString()}` : '••••••'}
+              </p>
               <p className="text-sm text-muted-foreground">Free Margin</p>
             </div>
           </div>

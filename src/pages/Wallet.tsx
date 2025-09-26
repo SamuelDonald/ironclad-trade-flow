@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Wallet, CreditCard, ArrowDownLeft, ArrowUpRight, Copy, QrCode } from "lucide-react";
+import { Wallet, CreditCard, ArrowDownLeft, ArrowUpRight, Copy, QrCode, Eye, EyeOff } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,10 +7,12 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 const WalletPage = () => {
   const [activeTab, setActiveTab] = useState("overview");
   const [showAddresses, setShowAddresses] = useState<{[key: string]: boolean}>({});
+  const [selectedQRCode, setSelectedQRCode] = useState<{crypto: string, imageUrl: string} | null>(null);
   const { toast } = useToast();
 
   // ✅ Updated balances to match Figma
@@ -20,11 +22,20 @@ const WalletPage = () => {
     freeMargin: 1200,
   };
 
-  // ✅ Only 3 cryptos shown in Figma
+  // ✅ Only 3 cryptos shown in Figma with QR codes
   const cryptoAddresses = {
-    BTC: "bc1qzqmxyf6uxmtgce6jn6weefre4h8h6udm9dzu6a",
-    SOL: "AXz6WH3MTERUNfmrTSFBCKganuPf1Jg4FJGMUk5Y5PKr",
-    "USDT-ERC20": "0xb8a0BaC9FdF3ef67BDA63638310255508Db3a12A",
+    BTC: {
+      address: "bc1qzqmxyf6uxmtgce6jn6weefre4h8h6udm9dzu6a",
+      qrCode: "https://jgedidtpqfashojqagbd.supabase.co/storage/v1/object/sign/QR%20codes/BTC.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hNjhjYTQwYS1hNGVmLTQ5YmQtOWM4Ny00ODBkZDk0MDhiNjUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJRUiBjb2Rlcy9CVEMuanBnIiwiaWF0IjoxNzU4ODg5OTU2LCJleHAiOjE3OTA0MjU5NTZ9.jo7XY_5VlWlanNf4hQv09KI1jEE3tMC0py6BBKxZWK0"
+    },
+    SOL: {
+      address: "AXz6WH3MTERUNfmrTSFBCKganuPf1Jg4FJGMUk5Y5PKr",
+      qrCode: "https://jgedidtpqfashojqagbd.supabase.co/storage/v1/object/sign/QR%20codes/SOL.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hNjhjYTQwYS1hNGVmLTQ5YmQtOWM4Ny00ODBkZDk0MDhiNjUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJRUiBjb2Rlcy9TT0wuanBnIiwiaWF0IjoxNzU4ODg5OTczLCJleHAiOjE3OTA0MjU5NzN9.c8qXJriUQy1fi8dZeAOLb1EuZYByct7xLadWu9oTQvo"
+    },
+    "USDT-ERC20": {
+      address: "0xb8a0BaC9FdF3ef67BDA63638310255508Db3a12A",
+      qrCode: "https://jgedidtpqfashojqagbd.supabase.co/storage/v1/object/sign/QR%20codes/USDT.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hNjhjYTQwYS1hNGVmLTQ5YmQtOWM4Ny00ODBkZDk0MDhiNjUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJRUiBjb2Rlcy9VU0RULmpwZyIsImlhdCI6MTc1ODg4OTk4NywiZXhwIjoxNzkwNDI1OTg3fQ.dAalhHJF1Cd8Y31TNX3yLXLgWLjOlJe4d_W2_S3oyM8"
+    },
   };
 
   const recentTransactions = [
@@ -40,8 +51,13 @@ const WalletPage = () => {
     });
   };
 
+  const openQRCode = (crypto: string, qrCode: string) => {
+    setSelectedQRCode({ crypto, imageUrl: qrCode });
+  };
+
   return (
-    <div className="container max-w-6xl mx-auto p-6 space-y-8">
+    <>
+    <div className="container max-w-6xl mx-auto p-6 pb-20 space-y-8">
       {/* ✅ Header */}
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold text-indigo-700">Wallet</h1>
@@ -103,16 +119,21 @@ const WalletPage = () => {
 
         {/* ✅ Deposits */}
         <TabsContent value="deposits" className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Bank */}
+          {/* Bank/PayPal */}
           <Card>
             <CardHeader>
-              <CardTitle>Bank / PayPal</CardTitle>
-              <CardDescription>Deposit via traditional methods</CardDescription>
+              <CardTitle>Card / PayPal</CardTitle>
+              <CardDescription>Secure payment via card or PayPal</CardDescription>
             </CardHeader>
             <CardContent>
               <Label>Amount</Label>
               <Input type="number" placeholder="0.00" className="mb-4" />
-              <Button className="w-full">Deposit</Button>
+              <Button 
+                className="w-full"
+                onClick={() => window.open("https://www.paypal.com/ncp/payment/8SSPEXZ764KSS", "_blank")}
+              >
+                Pay with PayPal
+              </Button>
             </CardContent>
           </Card>
 
@@ -123,24 +144,40 @@ const WalletPage = () => {
               <CardDescription>BTC, SOL, USDT</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {Object.entries(cryptoAddresses).map(([crypto, addr]) => (
-                <div key={crypto} className="rounded-xl border p-4 shadow-sm bg-white">
+              {Object.entries(cryptoAddresses).map(([crypto, data]) => (
+                <div 
+                  key={crypto} 
+                  className="rounded-xl border p-4 shadow-sm bg-white cursor-pointer hover:border-indigo-300 transition-colors"
+                  onClick={() => openQRCode(crypto, data.qrCode)}
+                >
                   <div className="flex items-center justify-between mb-2">
                     <h4 className="font-semibold">{crypto}</h4>
-                    <Button variant="ghost" size="sm" onClick={() => setShowAddresses(p => ({...p, [crypto]: !p[crypto]}))}>
-                      {showAddresses[crypto] ? "Hide" : "Show"}
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setShowAddresses(p => ({...p, [crypto]: !p[crypto]}));
+                      }}
+                    >
+                      {showAddresses[crypto] ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </Button>
                   </div>
                   {showAddresses[crypto] && (
-                    <div className="space-y-2">
-                      <Input value={addr} readOnly className="font-mono text-xs" />
+                    <div className="space-y-2" onClick={(e) => e.stopPropagation()}>
+                      <Input value={data.address} readOnly className="font-mono text-xs" />
                       <div className="flex gap-2">
-                        <Button size="sm" variant="outline" onClick={() => copyToClipboard(addr, crypto)}>
+                        <Button size="sm" variant="outline" onClick={() => copyToClipboard(data.address, crypto)}>
                           <Copy className="w-4 h-4" /> Copy
                         </Button>
-                        <Button size="sm" variant="outline"><QrCode className="w-4 h-4" /> QR</Button>
+                        <Button size="sm" variant="outline" onClick={() => openQRCode(crypto, data.qrCode)}>
+                          <QrCode className="w-4 h-4" /> QR Code
+                        </Button>
                       </div>
                     </div>
+                  )}
+                  {!showAddresses[crypto] && (
+                    <p className="text-sm text-muted-foreground">Tap to view QR code or show address</p>
                   )}
                 </div>
               ))}
@@ -166,6 +203,28 @@ const WalletPage = () => {
         </TabsContent>
       </Tabs>
     </div>
+
+    {/* QR Code Modal */}
+    <Dialog open={!!selectedQRCode} onOpenChange={() => setSelectedQRCode(null)}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle className="text-center">{selectedQRCode?.crypto} Deposit Address</DialogTitle>
+        </DialogHeader>
+        <div className="flex flex-col items-center space-y-4">
+          {selectedQRCode && (
+            <img 
+              src={selectedQRCode.imageUrl} 
+              alt={`${selectedQRCode.crypto} QR Code`}
+              className="w-64 h-64 object-contain border rounded-lg"
+            />
+          )}
+          <p className="text-sm text-muted-foreground text-center">
+            Scan this QR code to send {selectedQRCode?.crypto} to your wallet
+          </p>
+        </div>
+      </DialogContent>
+    </Dialog>
+    </>
   );
 };
 
