@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { DollarSign, Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -19,6 +19,7 @@ const Auth = () => {
     firstName: "",
     lastName: "",
   });
+
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -45,7 +46,7 @@ const Auth = () => {
         });
         navigate("/");
       }
-    } catch (error) {
+    } catch (err) {
       toast({
         title: "Error",
         description: "An unexpected error occurred",
@@ -58,7 +59,7 @@ const Auth = () => {
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (formData.password !== formData.confirmPassword) {
       toast({
         title: "Error",
@@ -92,10 +93,10 @@ const Auth = () => {
       } else {
         toast({
           title: "Success",
-          description: "Account created successfully! Please check your email for verification.",
+          description: "Account created successfully! Please check your email.",
         });
       }
-    } catch (error) {
+    } catch (err) {
       toast({
         title: "Error",
         description: "An unexpected error occurred",
@@ -107,31 +108,41 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-primary flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8 animate-fade-in">
-          <div className="flex items-center justify-center mb-4">
-            <div className="bg-white rounded-full p-3 shadow-lg-custom">
-              <DollarSign className="h-8 w-8 text-primary" />
-            </div>
-          </div>
-          <h1 className="text-3xl font-bold text-white mb-2">IronClad Trade Hub</h1>
-          <p className="text-white/80 text-sm px-4">
-            Trade smarter, faster, and securely with IronClad Trade Hub – your all-in-one gateway to stocks, forex, and crypto.
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-700 via-purple-900 to-black px-4">
+      <div className="w-full max-w-lg space-y-8">
+        {/* Branding */}
+        <div className="text-center animate-fade-in">
+          <h1 className="text-4xl font-extrabold tracking-tight text-white drop-shadow-md">
+            IronClad Trade Hub
+          </h1>
+          <p className="mt-2 text-white/70 text-sm max-w-sm mx-auto">
+            Your secure gateway to smarter, faster trading in stocks, forex, and crypto.
           </p>
         </div>
 
-        <Card className="shadow-lg-custom border-0 backdrop-blur-sm bg-white/95 animate-scale-in">
+        {/* Auth Card with Sliding Tabs */}
+        <Card className="w-full border-0 bg-white/95 shadow-2xl backdrop-blur-md rounded-2xl overflow-hidden animate-slide-up">
           <Tabs defaultValue="signin" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 mb-6">
-              <TabsTrigger value="signin" className="transition-smooth">Sign In</TabsTrigger>
-              <TabsTrigger value="signup" className="transition-smooth">Create Account</TabsTrigger>
+            <TabsList className="grid grid-cols-2 w-full bg-purple-100 p-1 rounded-xl">
+              <TabsTrigger
+                value="signin"
+                className="rounded-lg data-[state=active]:bg-purple-600 data-[state=active]:text-white transition-all"
+              >
+                Sign In
+              </TabsTrigger>
+              <TabsTrigger
+                value="signup"
+                className="rounded-lg data-[state=active]:bg-purple-600 data-[state=active]:text-white transition-all"
+              >
+                Create Account
+              </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="signin" className="space-y-0 m-0">
-              <CardHeader className="text-center pb-4">
-                <CardTitle>Welcome Back</CardTitle>
-                <CardDescription>Sign in to your account to continue trading</CardDescription>
+            {/* Sign In */}
+            <TabsContent value="signin" className="p-6 animate-slide-left">
+              <CardHeader className="text-center space-y-1">
+                <CardTitle className="text-2xl font-bold">Welcome Back</CardTitle>
+                <CardDescription>Sign in to continue trading</CardDescription>
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleSignIn} className="space-y-4">
@@ -144,9 +155,9 @@ const Auth = () => {
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                       required
-                      className="transition-smooth"
                     />
                   </div>
+
                   <div className="space-y-2">
                     <Label htmlFor="signin-password">Password</Label>
                     <div className="relative">
@@ -157,26 +168,23 @@ const Auth = () => {
                         value={formData.password}
                         onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                         required
-                        className="transition-smooth pr-10"
+                        className="pr-10"
                       />
                       <Button
                         type="button"
                         variant="ghost"
                         size="sm"
-                        className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                        className="absolute right-0 top-0 h-full px-3"
                         onClick={() => setShowPassword(!showPassword)}
                       >
-                        {showPassword ? (
-                          <EyeOff className="h-4 w-4 text-muted-foreground" />
-                        ) : (
-                          <Eye className="h-4 w-4 text-muted-foreground" />
-                        )}
+                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </Button>
                     </div>
                   </div>
-                  <Button 
-                    type="submit" 
-                    className="w-full transition-spring" 
+
+                  <Button
+                    type="submit"
+                    className="w-full bg-purple-600 hover:bg-purple-700 transition-all text-white font-medium"
                     disabled={isLoading}
                   >
                     {isLoading ? "Signing In..." : "Sign In"}
@@ -185,10 +193,11 @@ const Auth = () => {
               </CardContent>
             </TabsContent>
 
-            <TabsContent value="signup" className="space-y-0 m-0">
-              <CardHeader className="text-center pb-4">
-                <CardTitle>Create Account</CardTitle>
-                <CardDescription>Join thousands of traders worldwide</CardDescription>
+            {/* Sign Up */}
+            <TabsContent value="signup" className="p-6 animate-slide-right">
+              <CardHeader className="text-center space-y-1">
+                <CardTitle className="text-2xl font-bold">Create Account</CardTitle>
+                <CardDescription>Join traders worldwide today</CardDescription>
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleSignUp} className="space-y-4">
@@ -201,7 +210,6 @@ const Auth = () => {
                         value={formData.firstName}
                         onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
                         required
-                        className="transition-smooth"
                       />
                     </div>
                     <div className="space-y-2">
@@ -212,10 +220,10 @@ const Auth = () => {
                         value={formData.lastName}
                         onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
                         required
-                        className="transition-smooth"
                       />
                     </div>
                   </div>
+
                   <div className="space-y-2">
                     <Label htmlFor="signup-email">Email</Label>
                     <Input
@@ -225,9 +233,9 @@ const Auth = () => {
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                       required
-                      className="transition-smooth"
                     />
                   </div>
+
                   <div className="space-y-2">
                     <Label htmlFor="signup-password">Password</Label>
                     <div className="relative">
@@ -238,23 +246,20 @@ const Auth = () => {
                         value={formData.password}
                         onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                         required
-                        className="transition-smooth pr-10"
+                        className="pr-10"
                       />
                       <Button
                         type="button"
                         variant="ghost"
                         size="sm"
-                        className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                        className="absolute right-0 top-0 h-full px-3"
                         onClick={() => setShowPassword(!showPassword)}
                       >
-                        {showPassword ? (
-                          <EyeOff className="h-4 w-4 text-muted-foreground" />
-                        ) : (
-                          <Eye className="h-4 w-4 text-muted-foreground" />
-                        )}
+                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </Button>
                     </div>
                   </div>
+
                   <div className="space-y-2">
                     <Label htmlFor="confirm-password">Confirm Password</Label>
                     <Input
@@ -264,12 +269,12 @@ const Auth = () => {
                       value={formData.confirmPassword}
                       onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
                       required
-                      className="transition-smooth"
                     />
                   </div>
-                  <Button 
-                    type="submit" 
-                    className="w-full transition-spring" 
+
+                  <Button
+                    type="submit"
+                    className="w-full bg-purple-600 hover:bg-purple-700 transition-all text-white font-medium"
                     disabled={isLoading}
                   >
                     {isLoading ? "Creating Account..." : "Create Account"}
