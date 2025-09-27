@@ -367,10 +367,7 @@ const MarketPage = () => {
             {/* Chart Section - Now takes more space */}
             <div className="flex-1 lg:w-4/5 p-6 pt-0 overflow-auto">
               {selectedAsset && (
-                <div className="h-full overflow-auto" style={{ 
-                  height: window.innerWidth >= 1024 ? 'calc(80vh - 160px)' : window.innerWidth >= 768 ? 'calc(75vh - 150px)' : 'calc(70vh - 140px)',
-                  maxHeight: window.innerWidth >= 1024 ? '650px' : window.innerWidth >= 768 ? '500px' : '450px'
-                }}>
+                <div className="h-full min-h-[500px] overflow-auto">
                   <TradingViewWidget
                     symbol={selectedAsset.tradingViewSymbol}
                     width="100%"
