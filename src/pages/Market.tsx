@@ -5,10 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Star, TrendingUp, TrendingDown, Search, BarChart3, X } from "lucide-react";
+import { Star, TrendingUp, TrendingDown, Search, BarChart3, X, Plus } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { TradingViewWidget } from "@/components/TradingViewWidget";
 import { TradingViewMiniChart } from "@/components/TradingViewMiniChart";
+import { WatchlistModal } from "@/components/WatchlistModal";
 import { useWatchlist } from "@/hooks/useWatchlist";
 
 // Define the MarketAsset interface
@@ -26,6 +27,7 @@ const MarketPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("forex");
   const [selectedAsset, setSelectedAsset] = useState<MarketAsset | null>(null);
+  const [watchlistModalOpen, setWatchlistModalOpen] = useState(false);
   const { watchlist, addToWatchlist, removeFromWatchlist, isInWatchlist } = useWatchlist();
   
   // Market assets organized by category with TradingView symbols
@@ -226,14 +228,38 @@ const MarketPage = () => {
     return `$${marketCap.toLocaleString()}`;
   };
 
+  const handleBuyTrade = (asset: MarketAsset) => {
+    toast({
+      title: "Buy Order Placed",
+      description: `Buy order for ${asset.symbol} has been placed successfully.`,
+    });
+  };
+
+  const handleSellTrade = (asset: MarketAsset) => {
+    toast({
+      title: "Sell Order Placed", 
+      description: `Sell order for ${asset.symbol} has been placed successfully.`,
+    });
+  };
+
   return (
     <div className="container mx-auto px-4 py-8 pb-20">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-3xl font-bold text-indigo-700">Market</h1>
-        <Button className="bg-gradient-to-r from-purple-500 to-indigo-500 text-white hover:opacity-90">
-          <BarChart3 className="mr-2 h-4 w-4" />
-          View Charts
-        </Button>
+        <div className="flex gap-2">
+          <Button className="bg-gradient-to-r from-purple-500 to-indigo-500 text-white hover:opacity-90">
+            <BarChart3 className="mr-2 h-4 w-4" />
+            View Charts
+          </Button>
+          <Button 
+            onClick={() => setWatchlistModalOpen(true)}
+            variant="outline"
+            className="border-purple-200 text-purple-600 hover:bg-purple-50"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Manage Watchlist
+          </Button>
+        </div>
       </div>
 
       {/* Search Bar */}
@@ -313,21 +339,39 @@ const MarketPage = () => {
                       </CardContent>
                     </Card>
                   </DialogTrigger>
-                  <DialogContent className="max-w-4xl h-[80vh]">
+                  <DialogContent className="max-w-[95vw] sm:max-w-2xl md:max-w-4xl h-[80vh] max-h-[600px] overflow-y-auto">
                     <DialogHeader>
                       <DialogTitle className="text-2xl font-bold text-indigo-700">
                         {asset.symbol} - {asset.name}
                       </DialogTitle>
                       <p className="text-lg font-semibold text-green-600">
-                        Current Price: {asset.price}
+                        Current Price: {formatPrice(asset.price, asset.category)}
                       </p>
                     </DialogHeader>
-                    <div className="flex-1">
-                      <TradingViewWidget
-                        symbol={asset.tradingViewSymbol}
-                        height={500}
-                        theme="light"
-                      />
+                    <div className="space-y-4">
+                      <div className="w-full">
+                        <TradingViewWidget
+                          symbol={asset.tradingViewSymbol}
+                          width="100%"
+                          height={window.innerWidth < 640 ? 300 : window.innerWidth < 1024 ? 400 : 500}
+                          theme="light"
+                        />
+                      </div>
+                      
+                      <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
+                        <Button 
+                          onClick={() => handleBuyTrade(asset)}
+                          className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-8 py-2"
+                        >
+                          Buy {asset.symbol}
+                        </Button>
+                        <Button 
+                          onClick={() => handleSellTrade(asset)}
+                          className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white px-8 py-2"
+                        >
+                          Sell {asset.symbol}
+                        </Button>
+                      </div>
                     </div>
                   </DialogContent>
                 </Dialog>
@@ -400,21 +444,39 @@ const MarketPage = () => {
                       </CardContent>
                     </Card>
                   </DialogTrigger>
-                  <DialogContent className="max-w-4xl h-[80vh]">
+                  <DialogContent className="max-w-[95vw] sm:max-w-2xl md:max-w-4xl h-[80vh] max-h-[600px] overflow-y-auto">
                     <DialogHeader>
                       <DialogTitle className="text-2xl font-bold text-indigo-700">
                         {asset.symbol} - {asset.name}
                       </DialogTitle>
                       <p className="text-lg font-semibold text-green-600">
-                        Current Price: ${asset.price}
+                        Current Price: {formatPrice(asset.price, asset.category)}
                       </p>
                     </DialogHeader>
-                    <div className="flex-1">
-                      <TradingViewWidget
-                        symbol={asset.tradingViewSymbol}
-                        height={500}
-                        theme="light"
-                      />
+                    <div className="space-y-4">
+                      <div className="w-full">
+                        <TradingViewWidget
+                          symbol={asset.tradingViewSymbol}
+                          width="100%"
+                          height={window.innerWidth < 640 ? 300 : window.innerWidth < 1024 ? 400 : 500}
+                          theme="light"
+                        />
+                      </div>
+                      
+                      <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
+                        <Button 
+                          onClick={() => handleBuyTrade(asset)}
+                          className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-8 py-2"
+                        >
+                          Buy {asset.symbol}
+                        </Button>
+                        <Button 
+                          onClick={() => handleSellTrade(asset)}
+                          className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white px-8 py-2"
+                        >
+                          Sell {asset.symbol}
+                        </Button>
+                      </div>
                     </div>
                   </DialogContent>
                 </Dialog>
@@ -487,21 +549,39 @@ const MarketPage = () => {
                       </CardContent>
                     </Card>
                   </DialogTrigger>
-                  <DialogContent className="max-w-4xl h-[80vh]">
+                  <DialogContent className="max-w-[95vw] sm:max-w-2xl md:max-w-4xl h-[80vh] max-h-[600px] overflow-y-auto">
                     <DialogHeader>
                       <DialogTitle className="text-2xl font-bold text-indigo-700">
                         {asset.symbol} - {asset.name}
                       </DialogTitle>
                       <p className="text-lg font-semibold text-green-600">
-                        Current Price: ${asset.price}
+                        Current Price: {formatPrice(asset.price, asset.category)}
                       </p>
                     </DialogHeader>
-                    <div className="flex-1">
-                      <TradingViewWidget
-                        symbol={asset.tradingViewSymbol}
-                        height={500}
-                        theme="light"
-                      />
+                    <div className="space-y-4">
+                      <div className="w-full">
+                        <TradingViewWidget
+                          symbol={asset.tradingViewSymbol}
+                          width="100%"
+                          height={window.innerWidth < 640 ? 300 : window.innerWidth < 1024 ? 400 : 500}
+                          theme="light"
+                        />
+                      </div>
+                      
+                      <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
+                        <Button 
+                          onClick={() => handleBuyTrade(asset)}
+                          className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-8 py-2"
+                        >
+                          Buy {asset.symbol}
+                        </Button>
+                        <Button 
+                          onClick={() => handleSellTrade(asset)}
+                          className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white px-8 py-2"
+                        >
+                          Sell {asset.symbol}
+                        </Button>
+                      </div>
                     </div>
                   </DialogContent>
                 </Dialog>
@@ -570,6 +650,14 @@ const MarketPage = () => {
           )}
         </TabsContent>
       </Tabs>
+
+      <WatchlistModal
+        open={watchlistModalOpen}
+        onOpenChange={setWatchlistModalOpen}
+        forexAssets={forexAssets}
+        stockAssets={stockAssets}
+        cryptoAssets={cryptoAssets}
+      />
     </div>
   );
 };

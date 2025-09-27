@@ -65,8 +65,13 @@ export const TradingViewWidget: React.FC<TradingViewWidgetProps> = memo(({
   }, [symbol, width, height, interval, theme, style, locale, toolbar_bg, enable_publishing, allow_symbol_change]);
 
   return (
-    <div className="tradingview-widget-container">
-      <div ref={container} className="tradingview-widget" id={container_id} />
+    <div className="tradingview-widget-container w-full">
+      <div 
+        ref={container} 
+        className="tradingview-widget w-full overflow-hidden rounded-lg" 
+        id={container_id}
+        style={{ minHeight: height }}
+      />
     </div>
   );
 });
