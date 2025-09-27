@@ -151,6 +151,27 @@ export const useWatchlist = () => {
 
   useEffect(() => {
     fetchWatchlist();
+
+    // Set up real-time subscription for watchlist changes
+    const channel = supabase
+      .channel('watchlist-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'watchlist'
+        },
+        (payload) => {
+          console.log('Watchlist changed:', payload);
+          fetchWatchlist(); // Refetch watchlist on any change
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   return {

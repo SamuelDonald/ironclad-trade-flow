@@ -17,7 +17,7 @@ interface TradingViewWidgetProps {
 export const TradingViewWidget: React.FC<TradingViewWidgetProps> = memo(({
   symbol,
   width = "100%",
-  height = 400,
+  height = 500,
   interval = "D",
   theme = "light",
   style = "1",
@@ -68,7 +68,7 @@ export const TradingViewWidget: React.FC<TradingViewWidgetProps> = memo(({
     <div className="tradingview-widget-container w-full">
       <div 
         ref={container} 
-        className="tradingview-widget w-full overflow-hidden rounded-lg" 
+        className="tradingview-widget w-full overflow-auto rounded-lg" 
         id={container_id}
         style={{ minHeight: height }}
       />

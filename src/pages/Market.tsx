@@ -371,7 +371,7 @@ const MarketPage = () => {
                   <TradingViewWidget
                     symbol={selectedAsset.tradingViewSymbol}
                     width="100%"
-                    height={window.innerWidth >= 1024 ? 500 : 400}
+                    height={window.innerWidth >= 1024 ? 650 : window.innerWidth >= 768 ? 500 : 450}
                     interval="1D"
                     theme="light"
                     style="1"

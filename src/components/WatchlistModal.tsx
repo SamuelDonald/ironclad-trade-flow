@@ -138,13 +138,15 @@ export const WatchlistModal: React.FC<WatchlistModalProps> = ({
           {/* Custom Asset Section */}
           <div className="border rounded-lg p-4 bg-muted/30">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="font-medium text-sm">Add Custom Asset</h3>
+              <h3 className="font-medium text-sm">Add Asset</h3>
               <Button
-                variant="ghost"
+                variant={showCustomForm ? "secondary" : "outline"}
                 size="sm"
                 onClick={() => setShowCustomForm(!showCustomForm)}
+                className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-200"
               >
-                <Plus className="w-4 h-4" />
+                <Plus className="w-4 h-4 mr-1" />
+                {showCustomForm ? "Hide" : "Add Asset"}
               </Button>
             </div>
             
