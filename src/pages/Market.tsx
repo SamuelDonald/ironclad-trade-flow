@@ -353,7 +353,7 @@ const MarketPage = () => {
 
       {/* Asset Detail Dialog */}
       <Dialog open={!!selectedAsset} onOpenChange={() => setSelectedAsset(null)}>
-        <DialogContent className="max-w-[95vw] sm:max-w-6xl max-h-[90vh] p-0 overflow-hidden">
+        <DialogContent className="max-w-[95vw] sm:max-w-6xl max-h-[90vh] p-0 overflow-auto">
           <DialogHeader className="p-6 pb-4">
             <DialogTitle className="flex items-center gap-2">
               <span className="text-xl font-bold">{selectedAsset?.symbol}</span>
@@ -365,9 +365,12 @@ const MarketPage = () => {
           
           <div className="flex flex-col lg:flex-row h-full min-h-[600px]">
             {/* Chart Section - Now takes more space */}
-            <div className="flex-1 lg:w-4/5 p-6 pt-0">
+            <div className="flex-1 lg:w-4/5 p-6 pt-0 overflow-auto">
               {selectedAsset && (
-                <div className="h-full min-h-[500px]">
+                <div className="h-full overflow-auto" style={{ 
+                  height: window.innerWidth >= 1024 ? 'calc(80vh - 160px)' : window.innerWidth >= 768 ? 'calc(75vh - 150px)' : 'calc(70vh - 140px)',
+                  maxHeight: window.innerWidth >= 1024 ? '650px' : window.innerWidth >= 768 ? '500px' : '450px'
+                }}>
                   <TradingViewWidget
                     symbol={selectedAsset.tradingViewSymbol}
                     width="100%"
