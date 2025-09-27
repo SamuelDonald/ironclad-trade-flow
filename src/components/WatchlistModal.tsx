@@ -67,7 +67,7 @@ export const WatchlistModal: React.FC<WatchlistModalProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl h-[70vh] flex flex-col">
+      <DialogContent className="max-w-[95vw] sm:max-w-2xl md:max-w-4xl h-[80vh] max-h-[600px] flex flex-col">
         <DialogHeader>
           <DialogTitle>Manage Watchlist</DialogTitle>
         </DialogHeader>
@@ -82,15 +82,15 @@ export const WatchlistModal: React.FC<WatchlistModalProps> = ({
           />
         </div>
 
-        <Tabs value={selectedCategory} onValueChange={setSelectedCategory} className="flex-1 flex flex-col">
+        <Tabs value={selectedCategory} onValueChange={setSelectedCategory} className="flex-1 flex flex-col min-h-0">
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="Forex">Forex</TabsTrigger>
             <TabsTrigger value="Stocks">Stocks</TabsTrigger>
             <TabsTrigger value="Crypto">Crypto</TabsTrigger>
           </TabsList>
 
-          <TabsContent value={selectedCategory} className="flex-1 overflow-y-auto">
-            <div className="grid gap-3">
+          <TabsContent value={selectedCategory} className="flex-1 overflow-y-auto min-h-0">
+            <div className="grid gap-3 pb-4">
               {filteredAssets.map((asset) => (
                 <Card key={asset.symbol} className="hover:shadow-md transition-shadow">
                   <CardContent className="p-4">

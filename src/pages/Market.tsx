@@ -5,12 +5,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Star, TrendingUp, TrendingDown, Search, BarChart3, X, Plus } from "lucide-react";
+import { Star, TrendingUp, TrendingDown, Search, Plus } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { TradingViewWidget } from "@/components/TradingViewWidget";
-import { TradingViewMiniChart } from "@/components/TradingViewMiniChart";
 import { WatchlistModal } from "@/components/WatchlistModal";
 import { useWatchlist } from "@/hooks/useWatchlist";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 
 // Define the MarketAsset interface
 interface MarketAsset {
@@ -28,6 +29,9 @@ const MarketPage = () => {
   const [selectedCategory, setSelectedCategory] = useState("forex");
   const [selectedAsset, setSelectedAsset] = useState<MarketAsset | null>(null);
   const [watchlistModalOpen, setWatchlistModalOpen] = useState(false);
+  const [lotSize, setLotSize] = useState("1.0");
+  const [stopLoss, setStopLoss] = useState("");
+  const [takeProfit, setTakeProfit] = useState("");
   const { watchlist, addToWatchlist, removeFromWatchlist, isInWatchlist } = useWatchlist();
   
   // Market assets organized by category with TradingView symbols
@@ -179,8 +183,6 @@ const MarketPage = () => {
         return stockAssets;
       case "crypto":
         return cryptoAssets;
-      case "watchlist":
-        return [];
       default:
         return forexAssets;
     }
@@ -208,13 +210,13 @@ const MarketPage = () => {
   };
 
   // Price formatting helper
-  const formatPrice = (price: number, category: string) => {
-    if (category === "crypto") {
-      return `$${price.toLocaleString()}`;
-    } else if (category === "forex") {
-      return price.toFixed(4);
+  const formatPrice = (asset: MarketAsset) => {
+    if (asset.category === "crypto") {
+      return `$${asset.price.toLocaleString()}`;
+    } else if (asset.category === "forex") {
+      return asset.price.toFixed(4);
     }
-    return `$${price.toFixed(2)}`;
+    return `$${asset.price.toFixed(2)}`;
   };
 
   // Market cap formatting helper
@@ -231,26 +233,24 @@ const MarketPage = () => {
   const handleBuyTrade = (asset: MarketAsset) => {
     toast({
       title: "Buy Order Placed",
-      description: `Buy order for ${asset.symbol} has been placed successfully.`,
+      description: `Buying ${asset.symbol} - Lot: ${lotSize}, SL: ${stopLoss || 'None'}, TP: ${takeProfit || 'None'}`,
     });
   };
 
   const handleSellTrade = (asset: MarketAsset) => {
     toast({
       title: "Sell Order Placed", 
-      description: `Sell order for ${asset.symbol} has been placed successfully.`,
+      description: `Selling ${asset.symbol} - Lot: ${lotSize}, SL: ${stopLoss || 'None'}, TP: ${takeProfit || 'None'}`,
     });
   };
+
+  const lotSizeOptions = ["0.01", "0.1", "0.5", "1.0", "2.0", "5.0"];
 
   return (
     <div className="container mx-auto px-4 py-8 pb-20">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-3xl font-bold text-indigo-700">Market</h1>
         <div className="flex gap-2">
-          <Button className="bg-gradient-to-r from-purple-500 to-indigo-500 text-white hover:opacity-90">
-            <BarChart3 className="mr-2 h-4 w-4" />
-            View Charts
-          </Button>
           <Button 
             onClick={() => setWatchlistModalOpen(true)}
             variant="outline"
@@ -275,11 +275,10 @@ const MarketPage = () => {
       </div>
 
       <Tabs value={selectedCategory} onValueChange={setSelectedCategory} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="forex">Forex</TabsTrigger>
           <TabsTrigger value="stocks">Stocks</TabsTrigger>
           <TabsTrigger value="crypto">Crypto</TabsTrigger>
-          <TabsTrigger value="watchlist">Watchlist</TabsTrigger>
         </TabsList>
 
         {/* Forex Tab */}
@@ -291,90 +290,57 @@ const MarketPage = () => {
           ) : (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {filteredAssets.map((asset) => (
-                <Dialog key={asset.symbol}>
-                  <DialogTrigger asChild>
-                    <Card className="hover:shadow-md transition-shadow cursor-pointer">
-                      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <div>
-                          <CardTitle className="text-lg font-bold text-indigo-700">
-                            {asset.symbol}
-                          </CardTitle>
-                          <p className="text-sm text-muted-foreground">{asset.name}</p>
-                        </div>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            toggleWatchlist(asset);
-                          }}
-                          className="text-yellow-500 hover:text-yellow-600"
-                        >
-                          <Star className={`h-4 w-4 ${isInWatchlist(asset.symbol) ? 'fill-current' : ''}`} />
-                        </Button>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="flex items-center justify-between">
-                          <div className="flex flex-col">
-                            <p className="text-2xl font-bold">
-                              {asset.price}
-                            </p>
-                            <div className="flex items-center space-x-1">
-                              {asset.change >= 0 ? (
-                                <TrendingUp className="h-4 w-4 text-green-500" />
-                              ) : (
-                                <TrendingDown className="h-4 w-4 text-red-500" />
-                              )}
-                              <span className={`text-sm font-medium ${
-                                asset.change >= 0 ? 'text-green-500' : 'text-red-500'
-                              }`}>
-                                {asset.change >= 0 ? '+' : ''}{asset.change}
-                              </span>
-                            </div>
-                          </div>
-                          <Badge variant="secondary" className="bg-green-100 text-green-700">
-                            {asset.category}
-                          </Badge>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-[95vw] sm:max-w-2xl md:max-w-4xl h-[80vh] max-h-[600px] overflow-y-auto">
-                    <DialogHeader>
-                      <DialogTitle className="text-2xl font-bold text-indigo-700">
-                        {asset.symbol} - {asset.name}
-                      </DialogTitle>
-                      <p className="text-lg font-semibold text-green-600">
-                        Current Price: {formatPrice(asset.price, asset.category)}
-                      </p>
-                    </DialogHeader>
-                    <div className="space-y-4">
-                      <div className="w-full">
-                        <TradingViewWidget
-                          symbol={asset.tradingViewSymbol}
-                          width="100%"
-                          height={window.innerWidth < 640 ? 300 : window.innerWidth < 1024 ? 400 : 500}
-                          theme="light"
-                        />
-                      </div>
-                      
-                      <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
-                        <Button 
-                          onClick={() => handleBuyTrade(asset)}
-                          className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-8 py-2"
-                        >
-                          Buy {asset.symbol}
-                        </Button>
-                        <Button 
-                          onClick={() => handleSellTrade(asset)}
-                          className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white px-8 py-2"
-                        >
-                          Sell {asset.symbol}
-                        </Button>
-                      </div>
+                <Card key={asset.symbol} className="hover:shadow-md transition-shadow">
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <div 
+                      className="cursor-pointer flex-1"
+                      onClick={() => setSelectedAsset(asset)}
+                    >
+                      <CardTitle className="text-lg font-bold text-indigo-700">
+                        {asset.symbol}
+                      </CardTitle>
+                      <p className="text-sm text-muted-foreground">{asset.name}</p>
                     </div>
-                  </DialogContent>
-                </Dialog>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleWatchlist(asset);
+                      }}
+                      className="text-yellow-500 hover:text-yellow-600"
+                    >
+                      <Star className={`h-4 w-4 ${isInWatchlist(asset.symbol) ? 'fill-current' : ''}`} />
+                    </Button>
+                  </CardHeader>
+                  <CardContent 
+                    className="cursor-pointer"
+                    onClick={() => setSelectedAsset(asset)}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex flex-col">
+                        <p className="text-2xl font-bold">
+                          {asset.price}
+                        </p>
+                        <div className="flex items-center space-x-1">
+                          {asset.change >= 0 ? (
+                            <TrendingUp className="h-4 w-4 text-green-500" />
+                          ) : (
+                            <TrendingDown className="h-4 w-4 text-red-500" />
+                          )}
+                          <span className={`text-sm font-medium ${
+                            asset.change >= 0 ? 'text-green-500' : 'text-red-500'
+                          }`}>
+                            {asset.change >= 0 ? '+' : ''}{asset.change}
+                          </span>
+                        </div>
+                      </div>
+                      <Badge variant="secondary" className="bg-green-100 text-green-700">
+                        {asset.category}
+                      </Badge>
+                    </div>
+                  </CardContent>
+                </Card>
               ))}
             </div>
           )}
@@ -389,97 +355,64 @@ const MarketPage = () => {
           ) : (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {filteredAssets.map((asset) => (
-                <Dialog key={asset.symbol}>
-                  <DialogTrigger asChild>
-                    <Card className="hover:shadow-md transition-shadow cursor-pointer">
-                      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <div>
-                          <CardTitle className="text-lg font-bold text-indigo-700">
-                            {asset.symbol}
-                          </CardTitle>
-                          <p className="text-sm text-muted-foreground">{asset.name}</p>
+                <Card key={asset.symbol} className="hover:shadow-md transition-shadow">
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <div 
+                      className="cursor-pointer flex-1"
+                      onClick={() => setSelectedAsset(asset)}
+                    >
+                      <CardTitle className="text-lg font-bold text-indigo-700">
+                        {asset.symbol}
+                      </CardTitle>
+                      <p className="text-sm text-muted-foreground">{asset.name}</p>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleWatchlist(asset);
+                      }}
+                      className="text-yellow-500 hover:text-yellow-600"
+                    >
+                      <Star className={`h-4 w-4 ${isInWatchlist(asset.symbol) ? 'fill-current' : ''}`} />
+                    </Button>
+                  </CardHeader>
+                  <CardContent 
+                    className="cursor-pointer"
+                    onClick={() => setSelectedAsset(asset)}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex flex-col">
+                        <p className="text-2xl font-bold">
+                          ${asset.price}
+                        </p>
+                        <div className="flex items-center space-x-1">
+                          {asset.change >= 0 ? (
+                            <TrendingUp className="h-4 w-4 text-green-500" />
+                          ) : (
+                            <TrendingDown className="h-4 w-4 text-red-500" />
+                          )}
+                          <span className={`text-sm font-medium ${
+                            asset.change >= 0 ? 'text-green-500' : 'text-red-500'
+                          }`}>
+                            {asset.change >= 0 ? '+' : ''}${asset.change}
+                          </span>
                         </div>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            toggleWatchlist(asset);
-                          }}
-                          className="text-yellow-500 hover:text-yellow-600"
-                        >
-                          <Star className={`h-4 w-4 ${isInWatchlist(asset.symbol) ? 'fill-current' : ''}`} />
-                        </Button>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="flex items-center justify-between">
-                          <div className="flex flex-col">
-                            <p className="text-2xl font-bold">
-                              ${asset.price}
-                            </p>
-                            <div className="flex items-center space-x-1">
-                              {asset.change >= 0 ? (
-                                <TrendingUp className="h-4 w-4 text-green-500" />
-                              ) : (
-                                <TrendingDown className="h-4 w-4 text-red-500" />
-                              )}
-                              <span className={`text-sm font-medium ${
-                                asset.change >= 0 ? 'text-green-500' : 'text-red-500'
-                              }`}>
-                                {asset.change >= 0 ? '+' : ''}${asset.change}
-                              </span>
-                            </div>
-                          </div>
-                          <div className="flex flex-col items-end space-y-2">
-                            <Badge variant="secondary" className="bg-blue-100 text-blue-700">
-                              {asset.category}
-                            </Badge>
-                            {asset.volume && (
-                              <p className="text-xs text-muted-foreground">
-                                Vol: {formatMarketCap(asset.volume)}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-[95vw] sm:max-w-2xl md:max-w-4xl h-[80vh] max-h-[600px] overflow-y-auto">
-                    <DialogHeader>
-                      <DialogTitle className="text-2xl font-bold text-indigo-700">
-                        {asset.symbol} - {asset.name}
-                      </DialogTitle>
-                      <p className="text-lg font-semibold text-green-600">
-                        Current Price: {formatPrice(asset.price, asset.category)}
-                      </p>
-                    </DialogHeader>
-                    <div className="space-y-4">
-                      <div className="w-full">
-                        <TradingViewWidget
-                          symbol={asset.tradingViewSymbol}
-                          width="100%"
-                          height={window.innerWidth < 640 ? 300 : window.innerWidth < 1024 ? 400 : 500}
-                          theme="light"
-                        />
                       </div>
-                      
-                      <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
-                        <Button 
-                          onClick={() => handleBuyTrade(asset)}
-                          className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-8 py-2"
-                        >
-                          Buy {asset.symbol}
-                        </Button>
-                        <Button 
-                          onClick={() => handleSellTrade(asset)}
-                          className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white px-8 py-2"
-                        >
-                          Sell {asset.symbol}
-                        </Button>
+                      <div className="flex flex-col items-end space-y-2">
+                        <Badge variant="secondary" className="bg-blue-100 text-blue-700">
+                          {asset.category}
+                        </Badge>
+                        {asset.volume && (
+                          <p className="text-xs text-muted-foreground">
+                            Vol: {formatMarketCap(asset.volume)}
+                          </p>
+                        )}
                       </div>
                     </div>
-                  </DialogContent>
-                </Dialog>
+                  </CardContent>
+                </Card>
               ))}
             </div>
           )}
@@ -494,163 +427,201 @@ const MarketPage = () => {
           ) : (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {filteredAssets.map((asset) => (
-                <Dialog key={asset.symbol}>
-                  <DialogTrigger asChild>
-                    <Card className="hover:shadow-md transition-shadow cursor-pointer">
-                      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <div>
-                          <CardTitle className="text-lg font-bold text-indigo-700">
-                            {asset.symbol}
-                          </CardTitle>
-                          <p className="text-sm text-muted-foreground">{asset.name}</p>
-                        </div>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            toggleWatchlist(asset);
-                          }}
-                          className="text-yellow-500 hover:text-yellow-600"
-                        >
-                          <Star className={`h-4 w-4 ${isInWatchlist(asset.symbol) ? 'fill-current' : ''}`} />
-                        </Button>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="flex items-center justify-between">
-                          <div className="flex flex-col">
-                            <p className="text-2xl font-bold">
-                              ${asset.price}
-                            </p>
-                            <div className="flex items-center space-x-1">
-                              {asset.change >= 0 ? (
-                                <TrendingUp className="h-4 w-4 text-green-500" />
-                              ) : (
-                                <TrendingDown className="h-4 w-4 text-red-500" />
-                              )}
-                              <span className={`text-sm font-medium ${
-                                asset.change >= 0 ? 'text-green-500' : 'text-red-500'
-                              }`}>
-                                {asset.change >= 0 ? '+' : ''}${asset.change}
-                              </span>
-                            </div>
-                          </div>
-                          <div className="flex flex-col items-end space-y-2">
-                            <Badge variant="secondary" className="bg-orange-100 text-orange-700">
-                              {asset.category}
-                            </Badge>
-                            {asset.volume && (
-                              <p className="text-xs text-muted-foreground">
-                                Vol: {formatMarketCap(asset.volume)}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-[95vw] sm:max-w-2xl md:max-w-4xl h-[80vh] max-h-[600px] overflow-y-auto">
-                    <DialogHeader>
-                      <DialogTitle className="text-2xl font-bold text-indigo-700">
-                        {asset.symbol} - {asset.name}
-                      </DialogTitle>
-                      <p className="text-lg font-semibold text-green-600">
-                        Current Price: {formatPrice(asset.price, asset.category)}
-                      </p>
-                    </DialogHeader>
-                    <div className="space-y-4">
-                      <div className="w-full">
-                        <TradingViewWidget
-                          symbol={asset.tradingViewSymbol}
-                          width="100%"
-                          height={window.innerWidth < 640 ? 300 : window.innerWidth < 1024 ? 400 : 500}
-                          theme="light"
-                        />
-                      </div>
-                      
-                      <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
-                        <Button 
-                          onClick={() => handleBuyTrade(asset)}
-                          className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-8 py-2"
-                        >
-                          Buy {asset.symbol}
-                        </Button>
-                        <Button 
-                          onClick={() => handleSellTrade(asset)}
-                          className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white px-8 py-2"
-                        >
-                          Sell {asset.symbol}
-                        </Button>
-                      </div>
+                <Card key={asset.symbol} className="hover:shadow-md transition-shadow">
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <div 
+                      className="cursor-pointer flex-1"
+                      onClick={() => setSelectedAsset(asset)}
+                    >
+                      <CardTitle className="text-lg font-bold text-indigo-700">
+                        {asset.symbol}
+                      </CardTitle>
+                      <p className="text-sm text-muted-foreground">{asset.name}</p>
                     </div>
-                  </DialogContent>
-                </Dialog>
-              ))}
-            </div>
-          )}
-        </TabsContent>
-
-        {/* Watchlist Tab */}
-        <TabsContent value="watchlist" className="space-y-4">
-          {watchlist.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              <Star className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-              <h3 className="text-lg font-semibold mb-2">Your watchlist is empty</h3>
-              <p>Add assets from other tabs to keep track of them here.</p>
-            </div>
-          ) : (
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {watchlist.map((item) => {
-                // Find the matching asset from our static data to get TradingView symbol
-                const allAssets = [...forexAssets, ...stockAssets, ...cryptoAssets];
-                const matchingAsset = allAssets.find(asset => asset.symbol === item.symbol);
-                
-                return (
-                  <Card key={item.id} className="hover:shadow-md transition-shadow">
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                      <div>
-                        <CardTitle className="text-lg font-bold text-indigo-700">
-                          {item.symbol}
-                        </CardTitle>
-                        <p className="text-sm text-muted-foreground">{item.name}</p>
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => removeFromWatchlist(item.id, item.symbol)}
-                        className="text-red-500 hover:text-red-600"
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-3">
-                        <div className="flex items-center justify-between">
-                          <Badge variant="secondary" className="bg-purple-100 text-purple-700">
-                            {item.category}
-                          </Badge>
-                          <p className="text-xs text-muted-foreground">
-                            Added {new Date(item.added_at).toLocaleDateString()}
-                          </p>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleWatchlist(asset);
+                      }}
+                      className="text-yellow-500 hover:text-yellow-600"
+                    >
+                      <Star className={`h-4 w-4 ${isInWatchlist(asset.symbol) ? 'fill-current' : ''}`} />
+                    </Button>
+                  </CardHeader>
+                  <CardContent 
+                    className="cursor-pointer"
+                    onClick={() => setSelectedAsset(asset)}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex flex-col">
+                        <p className="text-2xl font-bold">
+                          ${asset.price.toLocaleString()}
+                        </p>
+                        <div className="flex items-center space-x-1">
+                          {asset.change >= 0 ? (
+                            <TrendingUp className="h-4 w-4 text-green-500" />
+                          ) : (
+                            <TrendingDown className="h-4 w-4 text-red-500" />
+                          )}
+                          <span className={`text-sm font-medium ${
+                            asset.change >= 0 ? 'text-green-500' : 'text-red-500'
+                          }`}>
+                            {asset.change >= 0 ? '+' : ''}${asset.change}
+                          </span>
                         </div>
-                        {matchingAsset && (
-                          <div className="h-16">
-                            <TradingViewMiniChart
-                              symbol={matchingAsset.tradingViewSymbol}
-                              height={60}
-                            />
-                          </div>
+                      </div>
+                      <div className="flex flex-col items-end space-y-2">
+                        <Badge variant="secondary" className="bg-purple-100 text-purple-700">
+                          {asset.category}
+                        </Badge>
+                        {asset.volume && (
+                          <p className="text-xs text-muted-foreground">
+                            Vol: {formatMarketCap(asset.volume)}
+                          </p>
                         )}
                       </div>
-                    </CardContent>
-                  </Card>
-                );
-              })}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
             </div>
           )}
         </TabsContent>
       </Tabs>
 
+      {/* Chart Dialog */}
+      <Dialog open={!!selectedAsset} onOpenChange={(open) => !open && setSelectedAsset(null)}>
+        {selectedAsset && (
+          <DialogContent className="max-w-[95vw] md:max-w-7xl h-[85vh] max-h-[800px] p-0">
+            <DialogHeader className="p-6 pb-0">
+              <DialogTitle className="text-xl font-bold">
+                {selectedAsset.symbol} - {selectedAsset.name}
+              </DialogTitle>
+            </DialogHeader>
+            
+            <div className="flex-1 p-6 pt-4 overflow-hidden">
+              <div className="flex flex-col lg:flex-row gap-4 h-full">
+                {/* Chart Container */}
+                <div className="flex-1 lg:w-3/5 bg-white rounded-lg overflow-hidden">
+                  <TradingViewWidget
+                    symbol={selectedAsset.tradingViewSymbol}
+                    width="100%"
+                    height="100%"
+                    interval="D"
+                    theme="light"
+                    style="1"
+                    locale="en"
+                    toolbar_bg="#f1f3f6"
+                    enable_publishing={false}
+                    allow_symbol_change={true}
+                    container_id="tradingview_chart"
+                  />
+                </div>
+                
+                {/* Trading Panel */}
+                <div className="lg:w-2/5 bg-gray-50 p-4 rounded-lg border space-y-4">
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-800 mb-4">Trade Panel</h3>
+                    
+                    {/* Trade Inputs */}
+                    <div className="space-y-4">
+                      <div>
+                        <Label htmlFor="lotSize" className="text-sm font-medium text-gray-700">
+                          Lot Size
+                        </Label>
+                        <Select value={lotSize} onValueChange={setLotSize}>
+                          <SelectTrigger className="mt-1">
+                            <SelectValue placeholder="Select lot size" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {lotSizeOptions.map((option) => (
+                              <SelectItem key={option} value={option}>
+                                {option}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                          <Label htmlFor="stopLoss" className="text-sm font-medium text-gray-700">
+                            Stop Loss
+                          </Label>
+                          <Input
+                            id="stopLoss"
+                            type="number"
+                            step="0.0001"
+                            placeholder="0.0000"
+                            value={stopLoss}
+                            onChange={(e) => setStopLoss(e.target.value)}
+                            className="mt-1"
+                          />
+                        </div>
+                        
+                        <div>
+                          <Label htmlFor="takeProfit" className="text-sm font-medium text-gray-700">
+                            Take Profit
+                          </Label>
+                          <Input
+                            id="takeProfit"
+                            type="number"
+                            step="0.0001"
+                            placeholder="0.0000"
+                            value={takeProfit}
+                            onChange={(e) => setTakeProfit(e.target.value)}
+                            className="mt-1"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Trade Buttons */}
+                    <div className="flex flex-col gap-2 mt-6">
+                      <Button
+                        onClick={() => handleBuyTrade(selectedAsset)}
+                        className="bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700"
+                      >
+                        Buy {selectedAsset.symbol}
+                      </Button>
+                      <Button
+                        onClick={() => handleSellTrade(selectedAsset)}
+                        className="bg-gradient-to-r from-red-500 to-red-600 text-white hover:from-red-600 hover:to-red-700"
+                      >
+                        Sell {selectedAsset.symbol}
+                      </Button>
+                    </div>
+                    
+                    {/* Asset Details */}
+                    <div className="mt-6 pt-4 border-t border-gray-200">
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Current Price:</span>
+                          <span className="font-medium">{formatPrice(selectedAsset)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Change:</span>
+                          <span className={`font-medium ${selectedAsset.change >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                            {selectedAsset.change >= 0 ? '+' : ''}{selectedAsset.change}{selectedAsset.category === "forex" ? "" : "%"}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Category:</span>
+                          <span className="font-medium capitalize">{selectedAsset.category}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </DialogContent>
+        )}
+      </Dialog>
+
+      {/* Watchlist Modal */}
       <WatchlistModal
         open={watchlistModalOpen}
         onOpenChange={setWatchlistModalOpen}
