@@ -494,21 +494,21 @@ const MarketPage = () => {
       {/* Chart Dialog */}
       <Dialog open={!!selectedAsset} onOpenChange={(open) => !open && setSelectedAsset(null)}>
         {selectedAsset && (
-          <DialogContent className="max-w-[95vw] md:max-w-7xl h-[85vh] max-h-[800px] p-0">
-            <DialogHeader className="p-6 pb-0">
+          <DialogContent className="max-w-[98vw] lg:max-w-[95vw] xl:max-w-[90vw] h-[70vh] md:h-[75vh] lg:h-[85vh] max-h-[90vh] p-0">
+            <DialogHeader className="p-4 pb-0">
               <DialogTitle className="text-xl font-bold">
                 {selectedAsset.symbol} - {selectedAsset.name}
               </DialogTitle>
             </DialogHeader>
             
-            <div className="flex-1 p-6 pt-4 overflow-hidden">
+            <div className="flex-1 p-4 overflow-y-auto">
               <div className="flex flex-col lg:flex-row gap-4 h-full">
                 {/* Chart Container */}
-                <div className="flex-1 lg:w-3/5 bg-white rounded-lg overflow-hidden">
+                <div className="flex-1 lg:w-4/5 bg-white rounded-lg overflow-hidden h-[300px] md:h-[400px] lg:h-[550px]">
                   <TradingViewWidget
                     symbol={selectedAsset.tradingViewSymbol}
                     width="100%"
-                    height="100%"
+                    height={typeof window !== 'undefined' ? (window.innerWidth >= 1024 ? 550 : window.innerWidth >= 768 ? 400 : 300) : 550}
                     interval="D"
                     theme="light"
                     style="1"
@@ -521,98 +521,76 @@ const MarketPage = () => {
                 </div>
                 
                 {/* Trading Panel */}
-                <div className="lg:w-2/5 bg-gray-50 p-4 rounded-lg border space-y-4">
-                  <div>
-                    <h3 className="text-lg font-semibold text-gray-800 mb-4">Trade Panel</h3>
-                    
-                    {/* Trade Inputs */}
-                    <div className="space-y-4">
-                      <div>
-                        <Label htmlFor="lotSize" className="text-sm font-medium text-gray-700">
-                          Lot Size
-                        </Label>
-                        <Select value={lotSize} onValueChange={setLotSize}>
-                          <SelectTrigger className="mt-1">
-                            <SelectValue placeholder="Select lot size" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {lotSizeOptions.map((option) => (
-                              <SelectItem key={option} value={option}>
-                                {option}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div>
-                          <Label htmlFor="stopLoss" className="text-sm font-medium text-gray-700">
-                            Stop Loss
-                          </Label>
-                          <Input
-                            id="stopLoss"
-                            type="number"
-                            step="0.0001"
-                            placeholder="0.0000"
-                            value={stopLoss}
-                            onChange={(e) => setStopLoss(e.target.value)}
-                            className="mt-1"
-                          />
-                        </div>
-                        
-                        <div>
-                          <Label htmlFor="takeProfit" className="text-sm font-medium text-gray-700">
-                            Take Profit
-                          </Label>
-                          <Input
-                            id="takeProfit"
-                            type="number"
-                            step="0.0001"
-                            placeholder="0.0000"
-                            value={takeProfit}
-                            onChange={(e) => setTakeProfit(e.target.value)}
-                            className="mt-1"
-                          />
-                        </div>
-                      </div>
+                <div className="lg:w-1/5 bg-gray-50 p-3 rounded-lg border space-y-3 overflow-y-auto">
+                  <h3 className="text-sm font-semibold text-gray-800">Trade Panel</h3>
+                  
+                  {/* Trade Inputs */}
+                  <div className="space-y-3">
+                    <div>
+                      <Label htmlFor="lotSize" className="text-xs font-medium text-gray-700">
+                        Lot Size
+                      </Label>
+                      <Select value={lotSize} onValueChange={setLotSize}>
+                        <SelectTrigger className="h-8 text-sm">
+                          <SelectValue placeholder="Select" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {lotSizeOptions.map((option) => (
+                            <SelectItem key={option} value={option}>
+                              {option}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
                     
-                    {/* Trade Buttons */}
-                    <div className="flex flex-col gap-2 mt-6">
-                      <Button
-                        onClick={() => handleBuyTrade(selectedAsset)}
-                        className="bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700"
-                      >
-                        Buy {selectedAsset.symbol}
-                      </Button>
-                      <Button
-                        onClick={() => handleSellTrade(selectedAsset)}
-                        className="bg-gradient-to-r from-red-500 to-red-600 text-white hover:from-red-600 hover:to-red-700"
-                      >
-                        Sell {selectedAsset.symbol}
-                      </Button>
+                    <div>
+                      <Label htmlFor="stopLoss" className="text-xs font-medium text-gray-700">
+                        Stop Loss
+                      </Label>
+                      <Input
+                        id="stopLoss"
+                        type="number"
+                        step="0.0001"
+                        placeholder="0.0000"
+                        value={stopLoss}
+                        onChange={(e) => setStopLoss(e.target.value)}
+                        className="h-8 text-sm"
+                      />
                     </div>
                     
-                    {/* Asset Details */}
-                    <div className="mt-6 pt-4 border-t border-gray-200">
-                      <div className="space-y-2 text-sm">
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">Current Price:</span>
-                          <span className="font-medium">{formatPrice(selectedAsset)}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">Change:</span>
-                          <span className={`font-medium ${selectedAsset.change >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                            {selectedAsset.change >= 0 ? '+' : ''}{selectedAsset.change}{selectedAsset.category === "forex" ? "" : "%"}
-                          </span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">Category:</span>
-                          <span className="font-medium capitalize">{selectedAsset.category}</span>
-                        </div>
-                      </div>
+                    <div>
+                      <Label htmlFor="takeProfit" className="text-xs font-medium text-gray-700">
+                        Take Profit
+                      </Label>
+                      <Input
+                        id="takeProfit"
+                        type="number"
+                        step="0.0001"
+                        placeholder="0.0000"
+                        value={takeProfit}
+                        onChange={(e) => setTakeProfit(e.target.value)}
+                        className="h-8 text-sm"
+                      />
                     </div>
+                  </div>
+                  
+                  {/* Trade Buttons */}
+                  <div className="flex flex-col gap-2">
+                    <Button
+                      onClick={() => handleBuyTrade(selectedAsset)}
+                      className="bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700 h-8 text-xs"
+                      size="sm"
+                    >
+                      Buy
+                    </Button>
+                    <Button
+                      onClick={() => handleSellTrade(selectedAsset)}
+                      className="bg-gradient-to-r from-red-500 to-red-600 text-white hover:from-red-600 hover:to-red-700 h-8 text-xs"
+                      size="sm"
+                    >
+                      Sell
+                    </Button>
                   </div>
                 </div>
               </div>
