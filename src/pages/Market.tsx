@@ -1,397 +1,577 @@
-"use client"
+import React, { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Star, TrendingUp, TrendingDown, Search, BarChart3, X } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
+import { TradingViewWidget } from "@/components/TradingViewWidget";
+import { TradingViewMiniChart } from "@/components/TradingViewMiniChart";
+import { useWatchlist } from "@/hooks/useWatchlist";
 
-import { useState } from "react"
-import {
-  Search,
-  TrendingUp,
-  TrendingDown,
-  Star,
-  BarChart3,
-} from "lucide-react"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { useToast } from "@/hooks/use-toast"
-
+// Define the MarketAsset interface
 interface MarketAsset {
-  symbol: string
-  name: string
-  price: number
-  change: number
-  changePercent: number
-  volume: number
-  marketCap?: number
-  category: "stocks" | "forex" | "crypto"
-  isWatched: boolean
+  symbol: string;
+  name: string;
+  price: number;
+  change: number;
+  volume?: number;
+  category: string;
+  tradingViewSymbol: string;
 }
 
-export default function MarketPage() {
-  const [searchTerm, setSearchTerm] = useState("")
-  const [selectedCategory, setSelectedCategory] = useState<
-    "all" | "stocks" | "forex" | "crypto"
-  >("all")
-  const [assets, setAssets] = useState<MarketAsset[]>([
-    // Stocks
+const MarketPage = () => {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("forex");
+  const [selectedAsset, setSelectedAsset] = useState<MarketAsset | null>(null);
+  const { watchlist, addToWatchlist, removeFromWatchlist, isInWatchlist } = useWatchlist();
+  
+  // Market assets organized by category with TradingView symbols
+  const forexAssets: MarketAsset[] = [
+    {
+      symbol: "EUR/USD",
+      name: "Euro/US Dollar",
+      price: 1.0847,
+      change: 0.0023,
+      category: "forex",
+      tradingViewSymbol: "FX:EURUSD",
+    },
+    {
+      symbol: "GBP/USD", 
+      name: "British Pound/US Dollar",
+      price: 1.2756,
+      change: -0.0045,
+      category: "forex",
+      tradingViewSymbol: "FX:GBPUSD",
+    },
+    {
+      symbol: "USD/JPY",
+      name: "US Dollar/Japanese Yen", 
+      price: 149.85,
+      change: 0.34,
+      category: "forex",
+      tradingViewSymbol: "FX:USDJPY",
+    },
+    {
+      symbol: "AUD/USD",
+      name: "Australian Dollar/US Dollar",
+      price: 0.6678,
+      change: -0.0012,
+      category: "forex", 
+      tradingViewSymbol: "FX:AUDUSD",
+    },
+    {
+      symbol: "USD/CHF",
+      name: "US Dollar/Swiss Franc",
+      price: 0.8934,
+      change: 0.0089,
+      category: "forex",
+      tradingViewSymbol: "FX:USDCHF",
+    },
+  ];
+
+  const stockAssets: MarketAsset[] = [
     {
       symbol: "AAPL",
       name: "Apple Inc.",
-      price: 182.52,
-      change: 2.45,
-      changePercent: 1.36,
-      volume: 45280000,
-      marketCap: 2890000000000,
+      price: 185.64,
+      change: 2.34,
+      volume: 45623000,
       category: "stocks",
-      isWatched: true,
+      tradingViewSymbol: "NASDAQ:AAPL",
     },
     {
       symbol: "MSFT",
       name: "Microsoft Corporation",
-      price: 423.75,
-      change: 5.12,
-      changePercent: 1.22,
-      volume: 28150000,
-      marketCap: 3150000000000,
+      price: 378.85,
+      change: 4.12,
+      volume: 23456000,
       category: "stocks",
-      isWatched: false,
+      tradingViewSymbol: "NASDAQ:MSFT",
+    },
+    {
+      symbol: "TSLA",
+      name: "Tesla, Inc.",
+      price: 238.45,
+      change: -1.23,
+      volume: 98234000,
+      category: "stocks",
+      tradingViewSymbol: "NASDAQ:TSLA",
+    },
+    {
+      symbol: "AMZN",
+      name: "Amazon.com Inc.",
+      price: 142.87,
+      change: 1.65,
+      volume: 34567000,
+      category: "stocks",
+      tradingViewSymbol: "NASDAQ:AMZN",
     },
     {
       symbol: "GOOGL",
       name: "Alphabet Inc.",
-      price: 141.8,
-      change: -1.23,
-      changePercent: -0.86,
-      volume: 32450000,
-      marketCap: 1780000000000,
+      price: 139.37,
+      change: 0.87,
+      volume: 23456000,
       category: "stocks",
-      isWatched: false,
+      tradingViewSymbol: "NASDAQ:GOOGL",
     },
-    {
-      symbol: "TSLA",
-      name: "Tesla Inc.",
-      price: 248.87,
-      change: -5.23,
-      changePercent: -2.06,
-      volume: 95670000,
-      marketCap: 792000000000,
-      category: "stocks",
-      isWatched: true,
-    },
-    {
-      symbol: "NVDA",
-      name: "NVIDIA Corporation",
-      price: 872.5,
-      change: 15.3,
-      changePercent: 1.78,
-      volume: 41230000,
-      marketCap: 2150000000000,
-      category: "stocks",
-      isWatched: false,
-    },
+  ];
 
-    // Forex
+  const cryptoAssets: MarketAsset[] = [
     {
-      symbol: "EURUSD",
-      name: "Euro / US Dollar",
-      price: 1.0892,
-      change: 0.0025,
-      changePercent: 0.23,
-      volume: 0,
-      category: "forex",
-      isWatched: false,
-    },
-    {
-      symbol: "GBPUSD",
-      name: "British Pound / US Dollar",
-      price: 1.2734,
-      change: -0.0045,
-      changePercent: -0.35,
-      volume: 0,
-      category: "forex",
-      isWatched: true,
-    },
-    {
-      symbol: "USDJPY",
-      name: "US Dollar / Japanese Yen",
-      price: 149.65,
-      change: 0.85,
-      changePercent: 0.57,
-      volume: 0,
-      category: "forex",
-      isWatched: false,
-    },
-    {
-      symbol: "AUDUSD",
-      name: "Australian Dollar / US Dollar",
-      price: 0.6589,
-      change: -0.0012,
-      changePercent: -0.18,
-      volume: 0,
-      category: "forex",
-      isWatched: false,
-    },
-
-    // Crypto
-    {
-      symbol: "BTC",
+      symbol: "BTC/USDT",
       name: "Bitcoin",
-      price: 43250.5,
-      change: 1250.3,
-      changePercent: 2.98,
-      volume: 28450000000,
-      marketCap: 847000000000,
+      price: 63245.78,
+      change: 1245.32,
+      volume: 2345600000,
       category: "crypto",
-      isWatched: true,
+      tradingViewSymbol: "BINANCE:BTCUSDT",
     },
     {
-      symbol: "ETH",
+      symbol: "ETH/USDT",
       name: "Ethereum",
-      price: 2584.75,
-      change: -65.25,
-      changePercent: -2.46,
-      volume: 12340000000,
-      marketCap: 310000000000,
+      price: 3456.89,
+      change: -123.45,
+      volume: 1234500000,
       category: "crypto",
-      isWatched: false,
+      tradingViewSymbol: "BINANCE:ETHUSDT",
     },
     {
-      symbol: "BNB",
-      name: "Binance Coin",
-      price: 315.8,
-      change: 8.45,
-      changePercent: 2.75,
-      volume: 1890000000,
-      marketCap: 47200000000,
-      category: "crypto",
-      isWatched: false,
-    },
-    {
-      symbol: "SOL",
+      symbol: "SOL/USDT",
       name: "Solana",
-      price: 98.42,
-      change: 4.12,
-      changePercent: 4.37,
-      volume: 2340000000,
-      marketCap: 42800000000,
+      price: 145.67,
+      change: 8.23,
+      volume: 567800000,
       category: "crypto",
-      isWatched: false,
+      tradingViewSymbol: "BINANCE:SOLUSDT",
     },
-  ])
+    {
+      symbol: "BNB/USDT",
+      name: "Binance Coin",
+      price: 315.42,
+      change: -5.67,
+      volume: 234500000,
+      category: "crypto",
+      tradingViewSymbol: "BINANCE:BNBUSDT",
+    },
+    {
+      symbol: "XRP/USDT", 
+      name: "Ripple",
+      price: 0.5234,
+      change: 0.0123,
+      volume: 890123000,
+      category: "crypto",
+      tradingViewSymbol: "BINANCE:XRPUSDT",
+    },
+  ];
 
-  const { toast } = useToast()
+  // Get current assets based on selected category
+  const getCurrentAssets = () => {
+    switch (selectedCategory) {
+      case "forex":
+        return forexAssets;
+      case "stocks":
+        return stockAssets;
+      case "crypto":
+        return cryptoAssets;
+      case "watchlist":
+        return [];
+      default:
+        return forexAssets;
+    }
+  };
 
-  const filteredAssets = assets.filter((asset) => {
-    const matchesSearch =
+  // Filter assets based on search term
+  const filteredAssets = getCurrentAssets().filter((asset) => {
+    const matchesSearch = 
       asset.symbol.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      asset.name.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesCategory =
-      selectedCategory === "all" || asset.category === selectedCategory
-    return matchesSearch && matchesCategory
-  })
+      asset.name.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    return matchesSearch;
+  });
 
-  const toggleWatchlist = (symbol: string) => {
-    setAssets((prev) =>
-      prev.map((asset) =>
-        asset.symbol === symbol
-          ? { ...asset, isWatched: !asset.isWatched }
-          : asset
-      )
-    )
+  // Toggle watchlist for an asset
+  const toggleWatchlist = async (asset: MarketAsset) => {
+    if (isInWatchlist(asset.symbol)) {
+      const watchlistItem = watchlist.find(item => item.symbol === asset.symbol);
+      if (watchlistItem) {
+        await removeFromWatchlist(watchlistItem.id, asset.symbol);
+      }
+    } else {
+      await addToWatchlist(asset.symbol, asset.name, asset.category);
+    }
+  };
 
-    const asset = assets.find((a) => a.symbol === symbol)
-    toast({
-      title: asset?.isWatched
-        ? "Removed from Watchlist"
-        : "Added to Watchlist",
-      description: `${symbol} has been ${
-        asset?.isWatched ? "removed from" : "added to"
-      } your watchlist`,
-    })
-  }
-
+  // Price formatting helper
   const formatPrice = (price: number, category: string) => {
-    if (category === "crypto" && price > 1000) {
-      return `$${price.toLocaleString(undefined, {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      })}`
+    if (category === "crypto") {
+      return `$${price.toLocaleString()}`;
     } else if (category === "forex") {
-      return price.toFixed(4)
+      return price.toFixed(4);
     }
-    return `$${price.toFixed(2)}`
-  }
+    return `$${price.toFixed(2)}`;
+  };
 
+  // Market cap formatting helper
   const formatMarketCap = (marketCap?: number) => {
-    if (!marketCap) return "N/A"
-    if (marketCap >= 1_000_000_000_000) {
-      return `$${(marketCap / 1_000_000_000_000).toFixed(1)}T`
-    } else if (marketCap >= 1_000_000_000) {
-      return `$${(marketCap / 1_000_000_000).toFixed(1)}B`
+    if (!marketCap) return "N/A";
+    if (marketCap >= 1_000_000_000) {
+      return `$${(marketCap / 1_000_000_000).toFixed(1)}B`;
     } else if (marketCap >= 1_000_000) {
-      return `$${(marketCap / 1_000_000).toFixed(1)}M`
+      return `$${(marketCap / 1_000_000).toFixed(1)}M`;
     }
-    return `$${marketCap.toLocaleString()}`
-  }
+    return `$${marketCap.toLocaleString()}`;
+  };
 
   return (
-    <div className="container max-w-7xl mx-auto p-6 pb-20 space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="container mx-auto px-4 py-8 pb-20">
+      <div className="flex items-center justify-between mb-6">
         <h1 className="text-3xl font-bold text-indigo-700">Market</h1>
-        <Button className="bg-gradient-to-r from-purple-500 to-indigo-500 text-white hover:opacity-90 shadow-md">
-          <BarChart3 className="w-4 h-4 mr-2" />
+        <Button className="bg-gradient-to-r from-purple-500 to-indigo-500 text-white hover:opacity-90">
+          <BarChart3 className="mr-2 h-4 w-4" />
           View Charts
         </Button>
       </div>
 
-      {/* Search & Filters */}
-      <Card className="shadow-md rounded-xl">
-        <CardContent className="pt-6">
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
-              <Input
-                placeholder="Search assets..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-            <Tabs
-              value={selectedCategory}
-              onValueChange={(value) =>
-                setSelectedCategory(value as any)
-              }
-            >
-              <TabsList className="bg-white rounded-xl shadow-sm">
-                <TabsTrigger value="all">All</TabsTrigger>
-                <TabsTrigger value="stocks">Stocks</TabsTrigger>
-                <TabsTrigger value="forex">Forex</TabsTrigger>
-                <TabsTrigger value="crypto">Crypto</TabsTrigger>
-              </TabsList>
-            </Tabs>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Market Assets */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {filteredAssets.map((asset) => (
-          <Card
-            key={asset.symbol}
-            className="shadow-md hover:shadow-xl transition-all duration-300 rounded-xl cursor-pointer group"
-            onClick={() =>
-              toast({
-                title: "Asset Details",
-                description: `Opening detailed chart for ${asset.symbol}`,
-              })
-            }
-          >
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="text-lg text-indigo-700">
-                    {asset.symbol}
-                  </CardTitle>
-                  <CardDescription className="text-sm">
-                    {asset.name}
-                  </CardDescription>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Badge
-                    variant="outline"
-                    className="text-xs border-indigo-300 text-indigo-600"
-                  >
-                    {asset.category.toUpperCase()}
-                  </Badge>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      toggleWatchlist(asset.symbol)
-                    }}
-                    className="p-1 h-8 w-8"
-                  >
-                    <Star
-                      className={`w-4 h-4 ${
-                        asset.isWatched
-                          ? "fill-purple-500 text-purple-500"
-                          : "text-muted-foreground"
-                      }`}
-                    />
-                  </Button>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-2xl font-bold">
-                    {formatPrice(asset.price, asset.category)}
-                  </span>
-                  <div
-                    className={`flex items-center ${
-                      asset.change >= 0
-                        ? "text-green-600"
-                        : "text-red-600"
-                    }`}
-                  >
-                    {asset.change >= 0 ? (
-                      <TrendingUp className="w-4 h-4 mr-1" />
-                    ) : (
-                      <TrendingDown className="w-4 h-4 mr-1" />
-                    )}
-                    <div className="text-right">
-                      <div className="font-semibold">
-                        {asset.change >= 0 ? "+" : ""}
-                        {asset.change.toFixed(2)}
-                      </div>
-                      <div className="text-sm">
-                        ({asset.changePercent >= 0 ? "+" : ""}
-                        {asset.changePercent}%)
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {asset.category !== "forex" && (
-                  <div className="text-sm text-muted-foreground space-y-1">
-                    {asset.volume > 0 && (
-                      <div className="flex justify-between">
-                        <span>Volume:</span>
-                        <span>{asset.volume.toLocaleString()}</span>
-                      </div>
-                    )}
-                    {asset.marketCap && (
-                      <div className="flex justify-between">
-                        <span>Market Cap:</span>
-                        <span>{formatMarketCap(asset.marketCap)}</span>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+      {/* Search Bar */}
+      <div className="relative mb-6">
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+        <Input
+          type="text"
+          placeholder="Search assets..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="pl-10 rounded-xl shadow-md"
+        />
       </div>
 
-      {filteredAssets.length === 0 && (
-        <Card className="shadow-md rounded-xl">
-          <CardContent className="text-center py-12">
-            <p className="text-muted-foreground">
-              No assets found matching your search criteria.
-            </p>
-          </CardContent>
-        </Card>
-      )}
+      <Tabs value={selectedCategory} onValueChange={setSelectedCategory} className="space-y-6">
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="forex">Forex</TabsTrigger>
+          <TabsTrigger value="stocks">Stocks</TabsTrigger>
+          <TabsTrigger value="crypto">Crypto</TabsTrigger>
+          <TabsTrigger value="watchlist">Watchlist</TabsTrigger>
+        </TabsList>
+
+        {/* Forex Tab */}
+        <TabsContent value="forex" className="space-y-4">
+          {filteredAssets.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              No forex pairs found matching your search criteria.
+            </div>
+          ) : (
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {filteredAssets.map((asset) => (
+                <Dialog key={asset.symbol}>
+                  <DialogTrigger asChild>
+                    <Card className="hover:shadow-md transition-shadow cursor-pointer">
+                      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <div>
+                          <CardTitle className="text-lg font-bold text-indigo-700">
+                            {asset.symbol}
+                          </CardTitle>
+                          <p className="text-sm text-muted-foreground">{asset.name}</p>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleWatchlist(asset);
+                          }}
+                          className="text-yellow-500 hover:text-yellow-600"
+                        >
+                          <Star className={`h-4 w-4 ${isInWatchlist(asset.symbol) ? 'fill-current' : ''}`} />
+                        </Button>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="flex items-center justify-between">
+                          <div className="flex flex-col">
+                            <p className="text-2xl font-bold">
+                              {asset.price}
+                            </p>
+                            <div className="flex items-center space-x-1">
+                              {asset.change >= 0 ? (
+                                <TrendingUp className="h-4 w-4 text-green-500" />
+                              ) : (
+                                <TrendingDown className="h-4 w-4 text-red-500" />
+                              )}
+                              <span className={`text-sm font-medium ${
+                                asset.change >= 0 ? 'text-green-500' : 'text-red-500'
+                              }`}>
+                                {asset.change >= 0 ? '+' : ''}{asset.change}
+                              </span>
+                            </div>
+                          </div>
+                          <Badge variant="secondary" className="bg-green-100 text-green-700">
+                            {asset.category}
+                          </Badge>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-4xl h-[80vh]">
+                    <DialogHeader>
+                      <DialogTitle className="text-2xl font-bold text-indigo-700">
+                        {asset.symbol} - {asset.name}
+                      </DialogTitle>
+                      <p className="text-lg font-semibold text-green-600">
+                        Current Price: {asset.price}
+                      </p>
+                    </DialogHeader>
+                    <div className="flex-1">
+                      <TradingViewWidget
+                        symbol={asset.tradingViewSymbol}
+                        height={500}
+                        theme="light"
+                      />
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              ))}
+            </div>
+          )}
+        </TabsContent>
+
+        {/* Stocks Tab */}
+        <TabsContent value="stocks" className="space-y-4">
+          {filteredAssets.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              No stocks found matching your search criteria.
+            </div>
+          ) : (
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {filteredAssets.map((asset) => (
+                <Dialog key={asset.symbol}>
+                  <DialogTrigger asChild>
+                    <Card className="hover:shadow-md transition-shadow cursor-pointer">
+                      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <div>
+                          <CardTitle className="text-lg font-bold text-indigo-700">
+                            {asset.symbol}
+                          </CardTitle>
+                          <p className="text-sm text-muted-foreground">{asset.name}</p>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleWatchlist(asset);
+                          }}
+                          className="text-yellow-500 hover:text-yellow-600"
+                        >
+                          <Star className={`h-4 w-4 ${isInWatchlist(asset.symbol) ? 'fill-current' : ''}`} />
+                        </Button>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="flex items-center justify-between">
+                          <div className="flex flex-col">
+                            <p className="text-2xl font-bold">
+                              ${asset.price}
+                            </p>
+                            <div className="flex items-center space-x-1">
+                              {asset.change >= 0 ? (
+                                <TrendingUp className="h-4 w-4 text-green-500" />
+                              ) : (
+                                <TrendingDown className="h-4 w-4 text-red-500" />
+                              )}
+                              <span className={`text-sm font-medium ${
+                                asset.change >= 0 ? 'text-green-500' : 'text-red-500'
+                              }`}>
+                                {asset.change >= 0 ? '+' : ''}${asset.change}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="flex flex-col items-end space-y-2">
+                            <Badge variant="secondary" className="bg-blue-100 text-blue-700">
+                              {asset.category}
+                            </Badge>
+                            {asset.volume && (
+                              <p className="text-xs text-muted-foreground">
+                                Vol: {formatMarketCap(asset.volume)}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-4xl h-[80vh]">
+                    <DialogHeader>
+                      <DialogTitle className="text-2xl font-bold text-indigo-700">
+                        {asset.symbol} - {asset.name}
+                      </DialogTitle>
+                      <p className="text-lg font-semibold text-green-600">
+                        Current Price: ${asset.price}
+                      </p>
+                    </DialogHeader>
+                    <div className="flex-1">
+                      <TradingViewWidget
+                        symbol={asset.tradingViewSymbol}
+                        height={500}
+                        theme="light"
+                      />
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              ))}
+            </div>
+          )}
+        </TabsContent>
+
+        {/* Crypto Tab */}
+        <TabsContent value="crypto" className="space-y-4">
+          {filteredAssets.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              No cryptocurrencies found matching your search criteria.
+            </div>
+          ) : (
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {filteredAssets.map((asset) => (
+                <Dialog key={asset.symbol}>
+                  <DialogTrigger asChild>
+                    <Card className="hover:shadow-md transition-shadow cursor-pointer">
+                      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <div>
+                          <CardTitle className="text-lg font-bold text-indigo-700">
+                            {asset.symbol}
+                          </CardTitle>
+                          <p className="text-sm text-muted-foreground">{asset.name}</p>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleWatchlist(asset);
+                          }}
+                          className="text-yellow-500 hover:text-yellow-600"
+                        >
+                          <Star className={`h-4 w-4 ${isInWatchlist(asset.symbol) ? 'fill-current' : ''}`} />
+                        </Button>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="flex items-center justify-between">
+                          <div className="flex flex-col">
+                            <p className="text-2xl font-bold">
+                              ${asset.price}
+                            </p>
+                            <div className="flex items-center space-x-1">
+                              {asset.change >= 0 ? (
+                                <TrendingUp className="h-4 w-4 text-green-500" />
+                              ) : (
+                                <TrendingDown className="h-4 w-4 text-red-500" />
+                              )}
+                              <span className={`text-sm font-medium ${
+                                asset.change >= 0 ? 'text-green-500' : 'text-red-500'
+                              }`}>
+                                {asset.change >= 0 ? '+' : ''}${asset.change}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="flex flex-col items-end space-y-2">
+                            <Badge variant="secondary" className="bg-orange-100 text-orange-700">
+                              {asset.category}
+                            </Badge>
+                            {asset.volume && (
+                              <p className="text-xs text-muted-foreground">
+                                Vol: {formatMarketCap(asset.volume)}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-4xl h-[80vh]">
+                    <DialogHeader>
+                      <DialogTitle className="text-2xl font-bold text-indigo-700">
+                        {asset.symbol} - {asset.name}
+                      </DialogTitle>
+                      <p className="text-lg font-semibold text-green-600">
+                        Current Price: ${asset.price}
+                      </p>
+                    </DialogHeader>
+                    <div className="flex-1">
+                      <TradingViewWidget
+                        symbol={asset.tradingViewSymbol}
+                        height={500}
+                        theme="light"
+                      />
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              ))}
+            </div>
+          )}
+        </TabsContent>
+
+        {/* Watchlist Tab */}
+        <TabsContent value="watchlist" className="space-y-4">
+          {watchlist.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              <Star className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+              <h3 className="text-lg font-semibold mb-2">Your watchlist is empty</h3>
+              <p>Add assets from other tabs to keep track of them here.</p>
+            </div>
+          ) : (
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {watchlist.map((item) => {
+                // Find the matching asset from our static data to get TradingView symbol
+                const allAssets = [...forexAssets, ...stockAssets, ...cryptoAssets];
+                const matchingAsset = allAssets.find(asset => asset.symbol === item.symbol);
+                
+                return (
+                  <Card key={item.id} className="hover:shadow-md transition-shadow">
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <div>
+                        <CardTitle className="text-lg font-bold text-indigo-700">
+                          {item.symbol}
+                        </CardTitle>
+                        <p className="text-sm text-muted-foreground">{item.name}</p>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => removeFromWatchlist(item.id, item.symbol)}
+                        className="text-red-500 hover:text-red-600"
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <Badge variant="secondary" className="bg-purple-100 text-purple-700">
+                            {item.category}
+                          </Badge>
+                          <p className="text-xs text-muted-foreground">
+                            Added {new Date(item.added_at).toLocaleDateString()}
+                          </p>
+                        </div>
+                        {matchingAsset && (
+                          <div className="h-16">
+                            <TradingViewMiniChart
+                              symbol={matchingAsset.tradingViewSymbol}
+                              height={60}
+                            />
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          )}
+        </TabsContent>
+      </Tabs>
     </div>
-  )
-}
+  );
+};
+
+export default MarketPage;

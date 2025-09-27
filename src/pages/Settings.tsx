@@ -1,11 +1,13 @@
 "use client"
 
 import { useState } from "react"
+import { useNavigate } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Switch } from "@/components/ui/switch"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { toast } from "@/components/ui/use-toast"
+import { supabase } from "@/integrations/supabase/client"
 import {
   Moon,
   Bell,
@@ -18,9 +20,11 @@ import {
   UserCog,
   FileText,
   Info,
+  LogOut,
 } from "lucide-react"
 
 export default function SettingsPage() {
+  const navigate = useNavigate()
   const [darkMode, setDarkMode] = useState(false)
   const [notifications, setNotifications] = useState(true)
   const [twoFactorAuth, setTwoFactorAuth] = useState(false)
@@ -30,6 +34,34 @@ export default function SettingsPage() {
       title: "Settings Saved",
       description: "Your preferences have been updated successfully.",
     })
+  }
+
+  const handleLogout = async () => {
+    try {
+      const { error } = await supabase.auth.signOut()
+      if (error) {
+        toast({
+          title: "Error",
+          description: "Failed to sign out. Please try again.",
+          variant: "destructive",
+        })
+        return
+      }
+
+      toast({
+        title: "Logged out",
+        description: "You have been logged out successfully.",
+      })
+
+      navigate("/auth")
+    } catch (error) {
+      console.error("Logout error:", error)
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred during logout.",
+        variant: "destructive",
+      })
+    }
   }
 
   const adminStats = {
@@ -46,7 +78,7 @@ export default function SettingsPage() {
       <h1 className="text-3xl font-bold text-indigo-700 mb-6">Settings</h1>
 
       <Tabs defaultValue="general" className="space-y-6">
-        <TabsList className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-2 bg-white p-2 rounded-xl shadow-sm">
+        <TabsList className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2 bg-white p-2 rounded-xl shadow-sm overflow-x-auto">
           <TabsTrigger value="general">General</TabsTrigger>
           <TabsTrigger value="security">Security</TabsTrigger>
           <TabsTrigger value="notifications">Notifications</TabsTrigger>
@@ -245,6 +277,18 @@ export default function SettingsPage() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Logout Button */}
+      <div className="mt-6 flex justify-center">
+        <Button
+          onClick={handleLogout}
+          variant="destructive"
+          className="w-full max-w-md"
+        >
+          <LogOut className="mr-2 h-4 w-4" />
+          Logout
+        </Button>
+      </div>
     </div>
   )
 }
