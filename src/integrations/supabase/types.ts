@@ -45,26 +45,41 @@ export type Database = {
         Row: {
           added_at: string | null
           category: string
+          change_value: number | null
           id: string
+          is_custom: boolean | null
           name: string
+          price: number | null
           symbol: string
+          trading_view_symbol: string | null
           user_id: string | null
+          volume: number | null
         }
         Insert: {
           added_at?: string | null
           category: string
+          change_value?: number | null
           id?: string
+          is_custom?: boolean | null
           name: string
+          price?: number | null
           symbol: string
+          trading_view_symbol?: string | null
           user_id?: string | null
+          volume?: number | null
         }
         Update: {
           added_at?: string | null
           category?: string
+          change_value?: number | null
           id?: string
+          is_custom?: boolean | null
           name?: string
+          price?: number | null
           symbol?: string
+          trading_view_symbol?: string | null
           user_id?: string | null
+          volume?: number | null
         }
         Relationships: []
       }

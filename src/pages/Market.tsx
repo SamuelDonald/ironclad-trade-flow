@@ -10,19 +10,9 @@ import { toast } from "@/hooks/use-toast";
 import { TradingViewWidget } from "@/components/TradingViewWidget";
 import { WatchlistModal } from "@/components/WatchlistModal";
 import { useWatchlist } from "@/hooks/useWatchlist";
+import { useCombinedAssets, type MarketAsset } from "@/hooks/useCombinedAssets";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-
-// Define the MarketAsset interface
-interface MarketAsset {
-  symbol: string;
-  name: string;
-  price: number;
-  change: number;
-  volume?: number;
-  category: string;
-  tradingViewSymbol: string;
-}
 
 const MarketPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -33,146 +23,7 @@ const MarketPage = () => {
   const [stopLoss, setStopLoss] = useState("");
   const [takeProfit, setTakeProfit] = useState("");
   const { watchlist, addToWatchlist, removeFromWatchlist, isInWatchlist } = useWatchlist();
-  
-  // Market assets organized by category with TradingView symbols
-  const forexAssets: MarketAsset[] = [
-    {
-      symbol: "EUR/USD",
-      name: "Euro/US Dollar",
-      price: 1.0847,
-      change: 0.0023,
-      category: "forex",
-      tradingViewSymbol: "FX:EURUSD",
-    },
-    {
-      symbol: "GBP/USD", 
-      name: "British Pound/US Dollar",
-      price: 1.2756,
-      change: -0.0045,
-      category: "forex",
-      tradingViewSymbol: "FX:GBPUSD",
-    },
-    {
-      symbol: "USD/JPY",
-      name: "US Dollar/Japanese Yen", 
-      price: 149.85,
-      change: 0.34,
-      category: "forex",
-      tradingViewSymbol: "FX:USDJPY",
-    },
-    {
-      symbol: "AUD/USD",
-      name: "Australian Dollar/US Dollar",
-      price: 0.6678,
-      change: -0.0012,
-      category: "forex", 
-      tradingViewSymbol: "FX:AUDUSD",
-    },
-    {
-      symbol: "USD/CHF",
-      name: "US Dollar/Swiss Franc",
-      price: 0.8934,
-      change: 0.0089,
-      category: "forex",
-      tradingViewSymbol: "FX:USDCHF",
-    },
-  ];
-
-  const stockAssets: MarketAsset[] = [
-    {
-      symbol: "AAPL",
-      name: "Apple Inc.",
-      price: 185.64,
-      change: 2.34,
-      volume: 45623000,
-      category: "stocks",
-      tradingViewSymbol: "NASDAQ:AAPL",
-    },
-    {
-      symbol: "MSFT",
-      name: "Microsoft Corporation",
-      price: 378.85,
-      change: 4.12,
-      volume: 23456000,
-      category: "stocks",
-      tradingViewSymbol: "NASDAQ:MSFT",
-    },
-    {
-      symbol: "TSLA",
-      name: "Tesla, Inc.",
-      price: 238.45,
-      change: -1.23,
-      volume: 98234000,
-      category: "stocks",
-      tradingViewSymbol: "NASDAQ:TSLA",
-    },
-    {
-      symbol: "AMZN",
-      name: "Amazon.com Inc.",
-      price: 142.87,
-      change: 1.65,
-      volume: 34567000,
-      category: "stocks",
-      tradingViewSymbol: "NASDAQ:AMZN",
-    },
-    {
-      symbol: "GOOGL",
-      name: "Alphabet Inc.",
-      price: 139.37,
-      change: 0.87,
-      volume: 23456000,
-      category: "stocks",
-      tradingViewSymbol: "NASDAQ:GOOGL",
-    },
-  ];
-
-  const cryptoAssets: MarketAsset[] = [
-    {
-      symbol: "BTC/USDT",
-      name: "Bitcoin",
-      price: 63245.78,
-      change: 1245.32,
-      volume: 2345600000,
-      category: "crypto",
-      tradingViewSymbol: "BINANCE:BTCUSDT",
-    },
-    {
-      symbol: "ETH/USDT",
-      name: "Ethereum",
-      price: 3456.89,
-      change: -123.45,
-      volume: 1234500000,
-      category: "crypto",
-      tradingViewSymbol: "BINANCE:ETHUSDT",
-    },
-    {
-      symbol: "SOL/USDT",
-      name: "Solana",
-      price: 145.67,
-      change: 8.23,
-      volume: 567800000,
-      category: "crypto",
-      tradingViewSymbol: "BINANCE:SOLUSDT",
-    },
-    {
-      symbol: "BNB/USDT",
-      name: "Binance Coin",
-      price: 315.42,
-      change: -5.67,
-      volume: 234500000,
-      category: "crypto",
-      tradingViewSymbol: "BINANCE:BNBUSDT",
-    },
-    {
-      symbol: "XRP/USDT", 
-      name: "Ripple",
-      price: 0.5234,
-      change: 0.0123,
-      volume: 890123000,
-      category: "crypto",
-      tradingViewSymbol: "BINANCE:XRPUSDT",
-    },
-  ];
+  const { forexAssets, stockAssets, cryptoAssets } = useCombinedAssets();
 
   // Get current assets based on selected category
   const getCurrentAssets = () => {
@@ -205,15 +56,24 @@ const MarketPage = () => {
         await removeFromWatchlist(watchlistItem.id, asset.symbol);
       }
     } else {
-      await addToWatchlist(asset.symbol, asset.name, asset.category);
+      await addToWatchlist(
+        asset.symbol, 
+        asset.name, 
+        asset.category,
+        asset.tradingViewSymbol,
+        asset.price,
+        asset.change,
+        asset.volume,
+        asset.isCustom || false
+      );
     }
   };
 
   // Price formatting helper
   const formatPrice = (asset: MarketAsset) => {
-    if (asset.category === "crypto") {
+    if (asset.category === "Crypto") {
       return `$${asset.price.toLocaleString()}`;
-    } else if (asset.category === "forex") {
+    } else if (asset.category === "Forex") {
       return asset.price.toFixed(4);
     }
     return `$${asset.price.toFixed(2)}`;
@@ -491,102 +351,110 @@ const MarketPage = () => {
         </TabsContent>
       </Tabs>
 
-      {/* Chart Dialog */}
-      <Dialog open={!!selectedAsset} onOpenChange={(open) => !open && setSelectedAsset(null)}>
-        {selectedAsset && (
-          <DialogContent className="max-w-[98vw] lg:max-w-[95vw] xl:max-w-[90vw] h-[70vh] md:h-[75vh] lg:h-[85vh] max-h-[90vh] p-0">
-            <DialogHeader className="p-4 pb-0">
-              <DialogTitle className="text-xl font-bold">
-                {selectedAsset.symbol} - {selectedAsset.name}
-              </DialogTitle>
-            </DialogHeader>
-            
-            <div className="flex-1 p-4 overflow-y-auto">
-              <div className="flex flex-col lg:flex-row gap-4 h-full">
-                {/* Chart Container */}
-                <div className="flex-1 lg:w-4/5 bg-white rounded-lg overflow-hidden h-[300px] md:h-[400px] lg:h-[550px]">
+      {/* Asset Detail Dialog */}
+      <Dialog open={!!selectedAsset} onOpenChange={() => setSelectedAsset(null)}>
+        <DialogContent className="max-w-[95vw] sm:max-w-6xl max-h-[90vh] p-0 overflow-hidden">
+          <DialogHeader className="p-6 pb-4">
+            <DialogTitle className="flex items-center gap-2">
+              <span className="text-xl font-bold">{selectedAsset?.symbol}</span>
+              <Badge variant="secondary" className="text-xs">
+                {selectedAsset?.category}
+              </Badge>
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="flex flex-col lg:flex-row h-full min-h-[600px]">
+            {/* Chart Section - Now takes more space */}
+            <div className="flex-1 lg:w-4/5 p-6 pt-0">
+              {selectedAsset && (
+                <div className="h-full min-h-[500px]">
                   <TradingViewWidget
                     symbol={selectedAsset.tradingViewSymbol}
                     width="100%"
-                    height={typeof window !== 'undefined' ? (window.innerWidth >= 1024 ? 550 : window.innerWidth >= 768 ? 400 : 300) : 550}
-                    interval="D"
+                    height={window.innerWidth >= 1024 ? 500 : 400}
+                    interval="1D"
                     theme="light"
                     style="1"
                     locale="en"
-                    toolbar_bg="#f1f3f6"
+                    toolbar_bg="#f1f2f6"
                     enable_publishing={false}
                     allow_symbol_change={true}
-                    container_id="tradingview_chart"
+                    container_id={`tradingview_${selectedAsset.symbol}`}
                   />
                 </div>
-                
-                {/* Trading Panel */}
-                <div className="lg:w-1/5 bg-gray-50 p-3 rounded-lg border space-y-3 overflow-y-auto">
-                  <h3 className="text-sm font-semibold text-gray-800">Trade Panel</h3>
-                  
-                  {/* Trade Inputs */}
-                  <div className="space-y-3">
-                    <div>
-                      <Label htmlFor="lotSize" className="text-xs font-medium text-gray-700">
-                        Lot Size
-                      </Label>
-                      <Select value={lotSize} onValueChange={setLotSize}>
-                        <SelectTrigger className="h-8 text-sm">
-                          <SelectValue placeholder="Select" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {lotSizeOptions.map((option) => (
-                            <SelectItem key={option} value={option}>
-                              {option}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    
-                    <div>
-                      <Label htmlFor="stopLoss" className="text-xs font-medium text-gray-700">
-                        Stop Loss
-                      </Label>
-                      <Input
-                        id="stopLoss"
-                        type="number"
-                        step="0.0001"
-                        placeholder="0.0000"
-                        value={stopLoss}
-                        onChange={(e) => setStopLoss(e.target.value)}
-                        className="h-8 text-sm"
-                      />
-                    </div>
-                    
-                    <div>
-                      <Label htmlFor="takeProfit" className="text-xs font-medium text-gray-700">
-                        Take Profit
-                      </Label>
-                      <Input
-                        id="takeProfit"
-                        type="number"
-                        step="0.0001"
-                        placeholder="0.0000"
-                        value={takeProfit}
-                        onChange={(e) => setTakeProfit(e.target.value)}
-                        className="h-8 text-sm"
-                      />
-                    </div>
+              )}
+            </div>
+            
+            {/* Trading Panel - Now smaller */}
+            <div className="lg:w-1/5 border-t lg:border-t-0 lg:border-l bg-muted/30 p-6 overflow-y-auto">
+              <div className="space-y-4">
+                <div className="text-center">
+                  <h3 className="font-semibold text-lg">{selectedAsset?.name}</h3>
+                  <p className="text-2xl font-bold text-primary">
+                    {selectedAsset && formatPrice(selectedAsset)}
+                  </p>
+                  <p className={`text-sm ${selectedAsset?.change && selectedAsset.change >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    {selectedAsset?.change && selectedAsset.change >= 0 ? '+' : ''}{selectedAsset?.change}
+                    {selectedAsset?.changePercent && ` (${selectedAsset.changePercent}%)`}
+                  </p>
+                </div>
+
+                <div className="space-y-3">
+                  <div>
+                    <Label htmlFor="lot-size" className="text-sm font-medium">
+                      Lot Size
+                    </Label>
+                    <Select value={lotSize} onValueChange={setLotSize}>
+                      <SelectTrigger className="w-full">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {lotSizeOptions.map((size) => (
+                          <SelectItem key={size} value={size}>
+                            {size}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
-                  
-                  {/* Trade Buttons */}
-                  <div className="flex flex-col gap-2">
-                    <Button
-                      onClick={() => handleBuyTrade(selectedAsset)}
-                      className="bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700 h-8 text-xs"
+
+                  <div>
+                    <Label htmlFor="stop-loss" className="text-sm font-medium">
+                      Stop Loss
+                    </Label>
+                    <Input
+                      id="stop-loss"
+                      placeholder="Optional"
+                      value={stopLoss}
+                      onChange={(e) => setStopLoss(e.target.value)}
+                      className="w-full"
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="take-profit" className="text-sm font-medium">
+                      Take Profit
+                    </Label>
+                    <Input
+                      id="take-profit"
+                      placeholder="Optional"
+                      value={takeProfit}
+                      onChange={(e) => setTakeProfit(e.target.value)}
+                      className="w-full"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2 pt-2">
+                    <Button 
+                      onClick={() => selectedAsset && handleBuyTrade(selectedAsset)}
+                      className="bg-green-600 hover:bg-green-700 text-white"
                       size="sm"
                     >
                       Buy
                     </Button>
-                    <Button
-                      onClick={() => handleSellTrade(selectedAsset)}
-                      className="bg-gradient-to-r from-red-500 to-red-600 text-white hover:from-red-600 hover:to-red-700 h-8 text-xs"
+                    <Button 
+                      onClick={() => selectedAsset && handleSellTrade(selectedAsset)}
+                      variant="destructive"
                       size="sm"
                     >
                       Sell
@@ -595,8 +463,8 @@ const MarketPage = () => {
                 </div>
               </div>
             </div>
-          </DialogContent>
-        )}
+          </div>
+        </DialogContent>
       </Dialog>
 
       {/* Watchlist Modal */}

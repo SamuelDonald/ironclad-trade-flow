@@ -8,6 +8,11 @@ export interface WatchlistItem {
   name: string;
   category: string;
   added_at: string;
+  trading_view_symbol?: string;
+  price?: number;
+  change_value?: number;
+  volume?: number;
+  is_custom?: boolean;
 }
 
 export const useWatchlist = () => {
@@ -44,7 +49,16 @@ export const useWatchlist = () => {
     }
   };
 
-  const addToWatchlist = async (symbol: string, name: string, category: string) => {
+  const addToWatchlist = async (
+    symbol: string, 
+    name: string, 
+    category: string,
+    tradingViewSymbol?: string,
+    price?: number,
+    changeValue?: number,
+    volume?: number,
+    isCustom: boolean = false
+  ) => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
@@ -63,6 +77,11 @@ export const useWatchlist = () => {
           symbol,
           name,
           category,
+          trading_view_symbol: tradingViewSymbol,
+          price,
+          change_value: changeValue,
+          volume,
+          is_custom: isCustom,
         });
 
       if (error) {

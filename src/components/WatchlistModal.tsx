@@ -4,8 +4,9 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
-import { Search, Star, StarOff } from 'lucide-react';
+import { Search, Star, StarOff, Plus, Check, X } from 'lucide-react';
 import { useWatchlist } from '@/hooks/useWatchlist';
+import { validateAssetSymbol, generateAssetFromSymbol } from '@/services/assetValidation';
 
 interface MarketAsset {
   symbol: string;
@@ -34,6 +35,10 @@ export const WatchlistModal: React.FC<WatchlistModalProps> = ({
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Forex');
+  const [customSymbol, setCustomSymbol] = useState("");
+  const [customName, setCustomName] = useState("");
+  const [validationResult, setValidationResult] = useState<{ isValid: boolean; error?: string; tradingViewSymbol?: string }>({ isValid: false });
+  const [showCustomForm, setShowCustomForm] = useState(false);
   const { addToWatchlist, removeFromWatchlist, isInWatchlist, watchlist } = useWatchlist();
 
   const getCurrentAssets = () => {
@@ -61,7 +66,64 @@ export const WatchlistModal: React.FC<WatchlistModalProps> = ({
         await removeFromWatchlist(watchlistItem.id, asset.symbol);
       }
     } else {
-      await addToWatchlist(asset.symbol, asset.name, asset.category);
+      await addToWatchlist(
+        asset.symbol, 
+        asset.name, 
+        asset.category,
+        asset.tradingViewSymbol,
+        asset.price,
+        asset.change,
+        asset.volume,
+        false // predefined assets are not custom
+      );
+    }
+  };
+
+  const validateCustomSymbol = (symbol: string) => {
+    if (!symbol.trim()) {
+      setValidationResult({ isValid: false });
+      return;
+    }
+
+    const result = validateAssetSymbol(symbol, selectedCategory as 'Forex' | 'Stocks' | 'Crypto');
+    setValidationResult(result);
+    
+    if (result.isValid && result.suggestedName && !customName.trim()) {
+      setCustomName(result.suggestedName);
+    }
+  };
+
+  const handleCustomSymbolChange = (value: string) => {
+    setCustomSymbol(value);
+    validateCustomSymbol(value);
+  };
+
+  const addCustomAsset = async () => {
+    if (!validationResult.isValid || !validationResult.tradingViewSymbol) {
+      return;
+    }
+
+    const customAsset = generateAssetFromSymbol(customSymbol, selectedCategory as 'Forex' | 'Stocks' | 'Crypto', customName);
+    if (!customAsset) {
+      return;
+    }
+
+    const success = await addToWatchlist(
+      customAsset.symbol,
+      customAsset.name,
+      customAsset.category,
+      customAsset.tradingViewSymbol,
+      customAsset.price,
+      customAsset.change,
+      customAsset.volume,
+      true // this is a custom asset
+    );
+
+    if (success) {
+      setCustomSymbol("");
+      setCustomName("");
+      setValidationResult({ isValid: false });
+      setShowCustomForm(false);
     }
   };
 
@@ -72,14 +134,79 @@ export const WatchlistModal: React.FC<WatchlistModalProps> = ({
           <DialogTitle>Manage Watchlist</DialogTitle>
         </DialogHeader>
         
-        <div className="relative mb-4">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-          <Input
-            placeholder="Search assets..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
-          />
+        <div className="space-y-4">
+          {/* Custom Asset Section */}
+          <div className="border rounded-lg p-4 bg-muted/30">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="font-medium text-sm">Add Custom Asset</h3>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowCustomForm(!showCustomForm)}
+              >
+                <Plus className="w-4 h-4" />
+              </Button>
+            </div>
+            
+            {showCustomForm && (
+              <div className="space-y-3">
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="text-xs text-muted-foreground">Symbol</label>
+                    <Input
+                      placeholder="e.g., AAPL, BTCUSD"
+                      value={customSymbol}
+                      onChange={(e) => handleCustomSymbolChange(e.target.value)}
+                      className={validationResult.isValid ? "border-green-500" : customSymbol && !validationResult.isValid ? "border-red-500" : ""}
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs text-muted-foreground">Name</label>
+                    <Input
+                      placeholder="Asset name"
+                      value={customName}
+                      onChange={(e) => setCustomName(e.target.value)}
+                    />
+                  </div>
+                </div>
+                
+                {customSymbol && (
+                  <div className="text-xs">
+                    {validationResult.isValid ? (
+                      <div className="flex items-center gap-1 text-green-600">
+                        <Check className="w-3 h-3" />
+                        TradingView: {validationResult.tradingViewSymbol}
+                      </div>
+                    ) : validationResult.error ? (
+                      <div className="flex items-center gap-1 text-red-600">
+                        <X className="w-3 h-3" />
+                        {validationResult.error}
+                      </div>
+                    ) : null}
+                  </div>
+                )}
+                
+                <Button
+                  onClick={addCustomAsset}
+                  disabled={!validationResult.isValid || !customName.trim()}
+                  size="sm"
+                  className="w-full"
+                >
+                  Add to Watchlist
+                </Button>
+              </div>
+            )}
+          </div>
+
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+            <Input
+              placeholder="Search assets..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10"
+            />
+          </div>
         </div>
 
         <Tabs value={selectedCategory} onValueChange={setSelectedCategory} className="flex-1 flex flex-col min-h-0">
