@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { Wallet, CreditCard, ArrowDownLeft, ArrowUpRight, Copy, QrCode, Eye, EyeOff } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,19 +8,31 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { usePortfolio } from "@/hooks/usePortfolio";
+import { useTransactions } from "@/hooks/useTransactions";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 
 const WalletPage = () => {
   const [activeTab, setActiveTab] = useState("overview");
   const [showAddresses, setShowAddresses] = useState<{[key: string]: boolean}>({});
   const [selectedQRCode, setSelectedQRCode] = useState<{crypto: string, imageUrl: string} | null>(null);
+  const [user, setUser] = useState<any>(null);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
-  // ✅ Updated balances to match Figma
-  const walletOverview = {
-    cashBalance: 3000,
-    investedAmount: 5000,
-    freeMargin: 1200,
-  };
+  // Real data hooks
+  const { portfolio, loading: portfolioLoading } = usePortfolio();
+  const { transactions, loading: transactionsLoading } = useTransactions();
+
+  // Check authentication status
+  React.useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+    };
+    checkAuth();
+  }, []);
 
   // ✅ Only 3 cryptos shown in Figma with QR codes
   const cryptoAddresses = {
@@ -37,11 +49,6 @@ const WalletPage = () => {
       qrCode: "https://jgedidtpqfashojqagbd.supabase.co/storage/v1/object/sign/QR%20codes/USDT.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hNjhjYTQwYS1hNGVmLTQ5YmQtOWM4Ny00ODBkZDk0MDhiNjUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJRUiBjb2Rlcy9VU0RULmpwZyIsImlhdCI6MTc1ODg4OTk4NywiZXhwIjoxNzkwNDI1OTg3fQ.dAalhHJF1Cd8Y31TNX3yLXLgWLjOlJe4d_W2_S3oyM8"
     },
   };
-
-  const recentTransactions = [
-    { type: "deposit", method: "Bank Transfer", amount: 5000, status: "completed", date: "2024-01-15", id: "TXN001" },
-    { type: "withdrawal", method: "PayPal", amount: 1500, status: "pending", date: "2024-01-14", id: "TXN002" },
-  ];
 
   const copyToClipboard = (text: string, label: string) => {
     navigator.clipboard.writeText(text);
@@ -61,27 +68,43 @@ const WalletPage = () => {
       {/* ✅ Header */}
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold text-indigo-700">Wallet</h1>
-        <Button variant="outline" size="sm" className="rounded-full px-4">
+        <Button variant="outline" size="sm" className="rounded-full px-4" onClick={() => navigate('/history')}>
           <Wallet className="w-4 h-4 mr-2" />
           History
         </Button>
       </div>
 
       {/* ✅ Overview Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="bg-gradient-to-tr from-purple-500 to-indigo-600 text-white shadow-lg rounded-2xl">
-          <CardHeader><CardTitle>Cash Balance</CardTitle></CardHeader>
-          <CardContent><p className="text-2xl font-bold">${walletOverview.cashBalance.toLocaleString()}</p></CardContent>
-        </Card>
-        <Card className="bg-gradient-to-tr from-indigo-500 to-purple-600 text-white shadow-lg rounded-2xl">
-          <CardHeader><CardTitle>Invested</CardTitle></CardHeader>
-          <CardContent><p className="text-2xl font-bold">${walletOverview.investedAmount.toLocaleString()}</p></CardContent>
-        </Card>
-        <Card className="bg-gradient-to-tr from-purple-400 to-indigo-500 text-white shadow-lg rounded-2xl">
-          <CardHeader><CardTitle>Free Margin</CardTitle></CardHeader>
-          <CardContent><p className="text-2xl font-bold">${walletOverview.freeMargin.toLocaleString()}</p></CardContent>
-        </Card>
-      </div>
+      {!user ? (
+        <div className="text-center py-12">
+          <p className="text-muted-foreground mb-4">Sign in to view your wallet balance</p>
+          <Button onClick={() => navigate('/auth')}>Sign In</Button>
+        </div>
+      ) : portfolioLoading ? (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {[1, 2, 3].map((i) => (
+            <Card key={i} className="bg-gradient-to-tr from-purple-500 to-indigo-600 text-white shadow-lg rounded-2xl">
+              <CardHeader><CardTitle>Loading...</CardTitle></CardHeader>
+              <CardContent><div className="h-8 w-24 bg-white/20 animate-pulse rounded"></div></CardContent>
+            </Card>
+          ))}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <Card className="bg-gradient-to-tr from-purple-500 to-indigo-600 text-white shadow-lg rounded-2xl">
+            <CardHeader><CardTitle>Cash Balance</CardTitle></CardHeader>
+            <CardContent><p className="text-2xl font-bold">${portfolio.cashBalance.toLocaleString()}</p></CardContent>
+          </Card>
+          <Card className="bg-gradient-to-tr from-indigo-500 to-purple-600 text-white shadow-lg rounded-2xl">
+            <CardHeader><CardTitle>Invested</CardTitle></CardHeader>
+            <CardContent><p className="text-2xl font-bold">${portfolio.investedAmount.toLocaleString()}</p></CardContent>
+          </Card>
+          <Card className="bg-gradient-to-tr from-purple-400 to-indigo-500 text-white shadow-lg rounded-2xl">
+            <CardHeader><CardTitle>Free Margin</CardTitle></CardHeader>
+            <CardContent><p className="text-2xl font-bold">${portfolio.freeMargin.toLocaleString()}</p></CardContent>
+          </Card>
+        </div>
+      )}
 
       {/* ✅ Tabs (modern Figma-style) */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -99,20 +122,46 @@ const WalletPage = () => {
               <CardDescription>Your latest activity</CardDescription>
             </CardHeader>
             <CardContent className="divide-y">
-              {recentTransactions.map((t) => (
-                <div key={t.id} className="flex items-center justify-between py-3">
-                  <div>
-                    <p className="font-semibold capitalize">{t.type}</p>
-                    <p className="text-sm text-muted-foreground">{t.method}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className={`font-bold ${t.type === "deposit" ? "text-green-600" : "text-red-600"}`}>
-                      {t.type === "deposit" ? "+" : "-"}${t.amount}
-                    </p>
-                    <Badge>{t.status}</Badge>
-                  </div>
+              {!user ? (
+                <div className="text-center py-6">
+                  <p className="text-muted-foreground">Sign in to view your transactions</p>
                 </div>
-              ))}
+              ) : transactionsLoading ? (
+                <div className="space-y-3">
+                  {[1, 2, 3].map((i) => (
+                    <div key={i} className="flex items-center justify-between py-3">
+                      <div className="space-y-2">
+                        <div className="h-4 w-20 bg-muted animate-pulse rounded"></div>
+                        <div className="h-3 w-32 bg-muted animate-pulse rounded"></div>
+                      </div>
+                      <div className="text-right space-y-2">
+                        <div className="h-4 w-16 bg-muted animate-pulse rounded"></div>
+                        <div className="h-5 w-20 bg-muted animate-pulse rounded"></div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : transactions.length === 0 ? (
+                <div className="text-center py-6">
+                  <p className="text-muted-foreground">No transactions yet</p>
+                  <p className="text-sm text-muted-foreground mt-1">Your transaction history will appear here</p>
+                </div>
+              ) : (
+                transactions.slice(0, 5).map((t) => (
+                  <div key={t.id} className="flex items-center justify-between py-3">
+                    <div>
+                      <p className="font-semibold capitalize">{t.type}</p>
+                      <p className="text-sm text-muted-foreground">{t.method}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className={`font-bold ${t.type === "deposit" ? "text-green-600" : "text-red-600"}`}>
+                        {t.type === "deposit" ? "+" : "-"}${t.amount.toLocaleString()}
+                      </p>
+                      <Badge>{t.status}</Badge>
+                    </div>
+                  </div>
+                ))
+              )}
             </CardContent>
           </Card>
         </TabsContent>

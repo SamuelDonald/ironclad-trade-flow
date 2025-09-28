@@ -1,39 +1,34 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { Wallet, TrendingUp, TrendingDown, Plus, Minus, Eye, EyeOff, Activity } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
+import { usePortfolio } from "@/hooks/usePortfolio";
+import { useHoldings } from "@/hooks/useHoldings";
+import { useTrades } from "@/hooks/useTrades";
+import { useWatchlist } from "@/hooks/useWatchlist";
+import { supabase } from "@/integrations/supabase/client";
 
 const Portfolio = () => {
   const navigate = useNavigate();
   const [showDetails, setShowDetails] = useState(true);
-  const [portfolio] = useState({
-    cashBalance: 50000,
-    investedAmount: 25000,
-    freeMargin: 75000,
-    totalValue: 75000,
-    dailyChange: 1250,
-    dailyChangePercent: 1.69
-  });
+  const [user, setUser] = useState<any>(null);
 
-  const [watchlist] = useState([
-    { symbol: "AAPL", name: "Apple Inc.", price: 182.52, change: 2.45, changePercent: 1.36 },
-    { symbol: "TSLA", name: "Tesla Inc.", price: 248.87, change: -5.23, changePercent: -2.06 },
-    { symbol: "BTC", name: "Bitcoin", price: 43250, change: 1250, changePercent: 2.98 },
-  ]);
+  // Real data hooks
+  const { portfolio, loading: portfolioLoading } = usePortfolio();
+  const { holdings, loading: holdingsLoading } = useHoldings();
+  const { trades, loading: tradesLoading } = useTrades();
+  const { watchlist, loading: watchlistLoading } = useWatchlist();
 
-  const [recentActivity] = useState([
-    { type: "trade", action: "BUY", symbol: "AAPL", amount: 100, price: 182.52, timestamp: "2024-01-15 14:30" },
-    { type: "deposit", amount: 5000, timestamp: "2024-01-15 10:15" },
-    { type: "trade", action: "SELL", symbol: "TSLA", amount: 50, price: 254.10, timestamp: "2024-01-14 16:45" },
-  ]);
-
-  const [holdings] = useState([
-    { symbol: "AAPL", name: "Apple Inc.", shares: 100, avgPrice: 180.25, currentPrice: 182.52, value: 18252 },
-    { symbol: "MSFT", name: "Microsoft", shares: 50, avgPrice: 420.50, currentPrice: 423.75, value: 21187 },
-    { symbol: "BTC", name: "Bitcoin", shares: 0.25, avgPrice: 42000, currentPrice: 43250, value: 10812 },
-  ]);
+  // Check authentication status
+  React.useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+    };
+    checkAuth();
+  }, []);
 
   return (
     <div className="container max-w-7xl mx-auto p-6 pb-20 space-y-8">
@@ -60,42 +55,59 @@ const Portfolio = () => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            <div className="text-center">
-              <p className={`text-3xl font-bold transition-all duration-300 ${showDetails ? 'opacity-100' : 'opacity-0'}`}>
-                {showDetails ? `$${portfolio.totalValue.toLocaleString()}` : '••••••'}
-              </p>
-              <p className="text-sm text-muted-foreground">Total Value</p>
-              <div className="flex items-center justify-center mt-2">
-                {portfolio.dailyChange >= 0 ? (
-                  <TrendingUp className="w-4 h-4 text-green-500 mr-1" />
-                ) : (
-                  <TrendingDown className="w-4 h-4 text-red-500 mr-1" />
-                )}
-                <span className={`${portfolio.dailyChange >= 0 ? "text-green-500" : "text-red-500"} transition-all duration-300`}>
-                  {showDetails ? `$${Math.abs(portfolio.dailyChange).toLocaleString()} (${portfolio.dailyChangePercent}%)` : '••••••'}
-                </span>
+          {!user ? (
+            <div className="text-center py-8">
+              <p className="text-muted-foreground mb-4">Sign in to view your portfolio</p>
+              <Button onClick={() => navigate('/auth')}>Sign In</Button>
+            </div>
+          ) : portfolioLoading ? (
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="text-center">
+                  <div className="h-8 w-24 bg-muted animate-pulse rounded mx-auto mb-2"></div>
+                  <div className="h-4 w-20 bg-muted animate-pulse rounded mx-auto mb-2"></div>
+                  <div className="h-6 w-16 bg-muted animate-pulse rounded mx-auto"></div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+              <div className="text-center">
+                <p className={`text-3xl font-bold transition-all duration-300 ${showDetails ? 'opacity-100' : 'opacity-0'}`}>
+                  {showDetails ? `$${portfolio.totalValue.toLocaleString()}` : '••••••'}
+                </p>
+                <p className="text-sm text-muted-foreground">Total Value</p>
+                <div className="flex items-center justify-center mt-2">
+                  {portfolio.dailyChange >= 0 ? (
+                    <TrendingUp className="w-4 h-4 text-green-500 mr-1" />
+                  ) : (
+                    <TrendingDown className="w-4 h-4 text-red-500 mr-1" />
+                  )}
+                  <span className={`${portfolio.dailyChange >= 0 ? "text-green-500" : "text-red-500"} transition-all duration-300`}>
+                    {showDetails ? `$${Math.abs(portfolio.dailyChange).toLocaleString()} (${portfolio.dailyChangePercent}%)` : '••••••'}
+                  </span>
+                </div>
+              </div>
+              <div className="text-center">
+                <p className={`text-xl font-semibold transition-all duration-300`}>
+                  {showDetails ? `$${portfolio.cashBalance.toLocaleString()}` : '••••••'}
+                </p>
+                <p className="text-sm text-muted-foreground">Cash Balance</p>
+              </div>
+              <div className="text-center">
+                <p className={`text-xl font-semibold transition-all duration-300`}>
+                  {showDetails ? `$${portfolio.investedAmount.toLocaleString()}` : '••••••'}
+                </p>
+                <p className="text-sm text-muted-foreground">Invested Amount</p>
+              </div>
+              <div className="text-center">
+                <p className={`text-xl font-semibold transition-all duration-300`}>
+                  {showDetails ? `$${portfolio.freeMargin.toLocaleString()}` : '••••••'}
+                </p>
+                <p className="text-sm text-muted-foreground">Free Margin</p>
               </div>
             </div>
-            <div className="text-center">
-              <p className={`text-xl font-semibold transition-all duration-300`}>
-                {showDetails ? `$${portfolio.cashBalance.toLocaleString()}` : '••••••'}
-              </p>
-              <p className="text-sm text-muted-foreground">Cash Balance</p>
-            </div>
-            <div className="text-center">
-              <p className={`text-xl font-semibold transition-all duration-300`}>
-                {showDetails ? `$${portfolio.investedAmount.toLocaleString()}` : '••••••'}
-              </p>
-              <p className="text-sm text-muted-foreground">Invested Amount</p>
-            </div>
-            <div className="text-center">
-              <p className={`text-xl font-semibold transition-all duration-300`}>
-                {showDetails ? `$${portfolio.freeMargin.toLocaleString()}` : '••••••'}
-              </p>
-              <p className="text-sm text-muted-foreground">Free Margin</p>
-            </div>
-          </div>
+          )}
 
           <div className="flex gap-4 mt-8">
             <Button 
@@ -126,33 +138,66 @@ const Portfolio = () => {
             <CardDescription>Track your assets</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
-              {watchlist.map((asset) => (
-                <div
-                  key={asset.symbol}
-                  className="flex items-center justify-between p-4 rounded-lg border hover:bg-indigo-50 transition cursor-pointer"
+            {!user ? (
+              <div className="text-center py-6">
+                <p className="text-muted-foreground">Sign in to view your watchlist</p>
+              </div>
+            ) : watchlistLoading ? (
+              <div className="space-y-3">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="flex items-center justify-between p-4 rounded-lg border">
+                    <div className="space-y-2">
+                      <div className="h-4 w-16 bg-muted animate-pulse rounded"></div>
+                      <div className="h-3 w-24 bg-muted animate-pulse rounded"></div>
+                    </div>
+                    <div className="text-right space-y-2">
+                      <div className="h-4 w-20 bg-muted animate-pulse rounded"></div>
+                      <div className="h-3 w-12 bg-muted animate-pulse rounded"></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : watchlist.length === 0 ? (
+              <div className="text-center py-6">
+                <p className="text-muted-foreground mb-2">No assets in watchlist</p>
+                <Button
+                  variant="ghost"
+                  className="text-indigo-600 hover:bg-indigo-50"
+                  onClick={() => navigate("/market")}
                 >
-                  <div>
-                    <p className="font-semibold">{asset.symbol}</p>
-                    <p className="text-sm text-muted-foreground">{asset.name}</p>
+                  Add Assets to Watchlist
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {watchlist.map((asset) => (
+                  <div
+                    key={asset.id}
+                    className="flex items-center justify-between p-4 rounded-lg border hover:bg-indigo-50 transition cursor-pointer"
+                    onClick={() => navigate(`/market?symbol=${asset.symbol}`)}
+                  >
+                    <div>
+                      <p className="font-semibold">{asset.symbol}</p>
+                      <p className="text-sm text-muted-foreground">{asset.name}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-semibold">${asset.price?.toLocaleString() || 'N/A'}</p>
+                      <p className={`text-sm flex items-center justify-end ${(asset.change_value || 0) >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                        {(asset.change_value || 0) >= 0 ? <TrendingUp className="w-3 h-3 mr-1" /> : <TrendingDown className="w-3 h-3 mr-1" />}
+                        {asset.change_value ? `${(asset.change_value > 0 ? '+' : '')}${asset.change_value}` : 'N/A'}
+                      </p>
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <p className="font-semibold">${asset.price.toLocaleString()}</p>
-                    <p className={`text-sm flex items-center justify-end ${asset.change >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                      {asset.change >= 0 ? <TrendingUp className="w-3 h-3 mr-1" /> : <TrendingDown className="w-3 h-3 mr-1" />}
-                      {asset.changePercent}%
-                    </p>
-                  </div>
-                </div>
-              ))}
-              <Button
-                variant="ghost"
-                className="w-full text-indigo-600 hover:bg-indigo-50"
-                onClick={() => navigate("/market")}
-              >
-                Add More Assets
-              </Button>
-            </div>
+                ))}
+                <Button
+                  variant="ghost"
+                  className="w-full text-indigo-600 hover:bg-indigo-50"
+                  onClick={() => navigate("/market")}
+                >
+                  Add More Assets
+                </Button>
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -166,40 +211,55 @@ const Portfolio = () => {
             <CardDescription>Trades & transactions</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
-              {recentActivity.map((activity, index) => (
-                <div
-                  key={index}
-                  className="flex items-center justify-between p-4 rounded-lg bg-gray-50"
-                >
-                  <div className="flex items-center gap-3">
-                    {activity.type === "trade" ? (
-                      <Badge variant={activity.action === "BUY" ? "default" : "secondary"}>
-                        {activity.action}
-                      </Badge>
-                    ) : (
-                      <Badge variant="outline">DEPOSIT</Badge>
-                    )}
-                    <div>
-                      {activity.type === "trade" ? (
-                        <>
-                          <p className="font-semibold">{activity.symbol}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {activity.amount} @ ${activity.price}
-                          </p>
-                        </>
-                      ) : (
-                        <>
-                          <p className="font-semibold">Deposit</p>
-                          <p className="text-sm text-muted-foreground">${activity.amount?.toLocaleString()}</p>
-                        </>
-                      )}
+            {!user ? (
+              <div className="text-center py-6">
+                <p className="text-muted-foreground">Sign in to view your activity</p>
+              </div>
+            ) : tradesLoading ? (
+              <div className="space-y-3">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="flex items-center justify-between p-4 rounded-lg bg-gray-50">
+                    <div className="flex items-center gap-3">
+                      <div className="h-6 w-12 bg-muted animate-pulse rounded"></div>
+                      <div className="space-y-2">
+                        <div className="h-4 w-16 bg-muted animate-pulse rounded"></div>
+                        <div className="h-3 w-24 bg-muted animate-pulse rounded"></div>
+                      </div>
                     </div>
+                    <div className="h-3 w-20 bg-muted animate-pulse rounded"></div>
                   </div>
-                  <p className="text-sm text-muted-foreground">{activity.timestamp}</p>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            ) : trades.length === 0 ? (
+              <div className="text-center py-6">
+                <p className="text-muted-foreground">No recent activity</p>
+                <p className="text-sm text-muted-foreground mt-1">Your trades will appear here</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {trades.slice(0, 5).map((activity) => (
+                  <div
+                    key={activity.id}
+                    className="flex items-center justify-between p-4 rounded-lg bg-gray-50"
+                  >
+                    <div className="flex items-center gap-3">
+                      <Badge variant={activity.type === "buy" ? "default" : "secondary"}>
+                        {activity.type.toUpperCase()}
+                      </Badge>
+                      <div>
+                        <p className="font-semibold">{activity.symbol}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {activity.shares} @ ${activity.price}
+                        </p>
+                      </div>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      {new Date(activity.created_at).toLocaleDateString()}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
@@ -211,47 +271,88 @@ const Portfolio = () => {
           <CardDescription>Your positions</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b text-left text-gray-500">
-                  <th className="py-3">Asset</th>
-                  <th className="text-right py-3">Shares</th>
-                  <th className="text-right py-3">Avg Price</th>
-                  <th className="text-right py-3">Current Price</th>
-                  <th className="text-right py-3">Value</th>
-                  <th className="text-right py-3">P&L</th>
-                </tr>
-              </thead>
-              <tbody>
-                {holdings.map((holding) => {
-                  const pnl = (holding.currentPrice - holding.avgPrice) * holding.shares;
-                  const pnlPercent = ((holding.currentPrice - holding.avgPrice) / holding.avgPrice) * 100;
-                  return (
-                    <tr key={holding.symbol} className="border-b hover:bg-indigo-50 transition">
+          {!user ? (
+            <div className="text-center py-6">
+              <p className="text-muted-foreground">Sign in to view your holdings</p>
+            </div>
+          ) : holdingsLoading ? (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b text-left text-gray-500">
+                    <th className="py-3">Asset</th>
+                    <th className="text-right py-3">Shares</th>
+                    <th className="text-right py-3">Avg Price</th>
+                    <th className="text-right py-3">Current Price</th>
+                    <th className="text-right py-3">Value</th>
+                    <th className="text-right py-3">P&L</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[1, 2, 3].map((i) => (
+                    <tr key={i} className="border-b">
                       <td className="py-4">
-                        <p className="font-semibold">{holding.symbol}</p>
-                        <p className="text-xs text-muted-foreground">{holding.name}</p>
+                        <div className="h-4 w-16 bg-muted animate-pulse rounded mb-1"></div>
+                        <div className="h-3 w-24 bg-muted animate-pulse rounded"></div>
                       </td>
-                      <td className="text-right py-4">{holding.shares}</td>
-                      <td className="text-right py-4">${holding.avgPrice.toFixed(2)}</td>
-                      <td className="text-right py-4">${holding.currentPrice.toFixed(2)}</td>
-                      <td className="text-right py-4">${holding.value.toLocaleString()}</td>
-                      <td className={`text-right py-4 ${pnl >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                        <div className="flex items-center justify-end">
-                          {pnl >= 0 ? <TrendingUp className="w-4 h-4 mr-1" /> : <TrendingDown className="w-4 h-4 mr-1" />}
-                          <div>
-                            <p>${Math.abs(pnl).toFixed(2)}</p>
-                            <p className="text-xs">({pnlPercent.toFixed(2)}%)</p>
-                          </div>
-                        </div>
-                      </td>
+                      <td className="text-right py-4"><div className="h-4 w-12 bg-muted animate-pulse rounded ml-auto"></div></td>
+                      <td className="text-right py-4"><div className="h-4 w-16 bg-muted animate-pulse rounded ml-auto"></div></td>
+                      <td className="text-right py-4"><div className="h-4 w-16 bg-muted animate-pulse rounded ml-auto"></div></td>
+                      <td className="text-right py-4"><div className="h-4 w-20 bg-muted animate-pulse rounded ml-auto"></div></td>
+                      <td className="text-right py-4"><div className="h-8 w-16 bg-muted animate-pulse rounded ml-auto"></div></td>
                     </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : holdings.length === 0 ? (
+            <div className="text-center py-6">
+              <p className="text-muted-foreground">No holdings yet</p>
+              <p className="text-sm text-muted-foreground mt-1">Your positions will appear here after trading</p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b text-left text-gray-500">
+                    <th className="py-3">Asset</th>
+                    <th className="text-right py-3">Shares</th>
+                    <th className="text-right py-3">Avg Price</th>
+                    <th className="text-right py-3">Current Price</th>
+                    <th className="text-right py-3">Value</th>
+                    <th className="text-right py-3">P&L</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {holdings.map((holding) => {
+                    const pnl = holding.profit_loss;
+                    const pnlPercent = holding.profit_loss_percent;
+                    return (
+                      <tr key={holding.id} className="border-b hover:bg-indigo-50 transition">
+                        <td className="py-4">
+                          <p className="font-semibold">{holding.symbol}</p>
+                          <p className="text-xs text-muted-foreground">{holding.name}</p>
+                        </td>
+                        <td className="text-right py-4">{holding.shares}</td>
+                        <td className="text-right py-4">${holding.average_price.toFixed(2)}</td>
+                        <td className="text-right py-4">${holding.current_price.toFixed(2)}</td>
+                        <td className="text-right py-4">${holding.total_value.toLocaleString()}</td>
+                        <td className={`text-right py-4 ${pnl >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                          <div className="flex items-center justify-end">
+                            {pnl >= 0 ? <TrendingUp className="w-4 h-4 mr-1" /> : <TrendingDown className="w-4 h-4 mr-1" />}
+                            <div>
+                              <p>${Math.abs(pnl).toFixed(2)}</p>
+                              <p className="text-xs">({pnlPercent.toFixed(2)}%)</p>
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

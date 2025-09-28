@@ -14,6 +14,93 @@ export type Database = {
   }
   public: {
     Tables: {
+      holdings: {
+        Row: {
+          average_price: number
+          category: string
+          created_at: string
+          current_price: number | null
+          id: string
+          name: string
+          profit_loss: number | null
+          profit_loss_percent: number | null
+          shares: number
+          symbol: string
+          total_value: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          average_price: number
+          category: string
+          created_at?: string
+          current_price?: number | null
+          id?: string
+          name: string
+          profit_loss?: number | null
+          profit_loss_percent?: number | null
+          shares: number
+          symbol: string
+          total_value?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          average_price?: number
+          category?: string
+          created_at?: string
+          current_price?: number | null
+          id?: string
+          name?: string
+          profit_loss?: number | null
+          profit_loss_percent?: number | null
+          shares?: number
+          symbol?: string
+          total_value?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      portfolio_balances: {
+        Row: {
+          cash_balance: number | null
+          created_at: string
+          daily_change: number | null
+          daily_change_percent: number | null
+          free_margin: number | null
+          id: string
+          invested_amount: number | null
+          total_value: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          cash_balance?: number | null
+          created_at?: string
+          daily_change?: number | null
+          daily_change_percent?: number | null
+          free_margin?: number | null
+          id?: string
+          invested_amount?: number | null
+          total_value?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          cash_balance?: number | null
+          created_at?: string
+          daily_change?: number | null
+          daily_change_percent?: number | null
+          free_margin?: number | null
+          id?: string
+          invested_amount?: number | null
+          total_value?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -38,6 +125,84 @@ export type Database = {
           full_name?: string | null
           id?: string
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      trades: {
+        Row: {
+          category: string
+          created_at: string
+          id: string
+          name: string
+          price: number
+          shares: number
+          status: string
+          symbol: string
+          total_amount: number
+          type: string
+          user_id: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          id?: string
+          name: string
+          price: number
+          shares: number
+          status?: string
+          symbol: string
+          total_amount: number
+          type: string
+          user_id: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          id?: string
+          name?: string
+          price?: number
+          shares?: number
+          status?: string
+          symbol?: string
+          total_amount?: number
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      transactions: {
+        Row: {
+          amount: number
+          created_at: string
+          crypto_type: string | null
+          id: string
+          method: string
+          status: string
+          transaction_hash: string | null
+          type: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          crypto_type?: string | null
+          id?: string
+          method: string
+          status?: string
+          transaction_hash?: string | null
+          type: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          crypto_type?: string | null
+          id?: string
+          method?: string
+          status?: string
+          transaction_hash?: string | null
+          type?: string
+          user_id?: string
         }
         Relationships: []
       }

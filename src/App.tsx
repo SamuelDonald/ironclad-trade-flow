@@ -11,6 +11,7 @@ import Auth from "./pages/Auth";
 import Portfolio from "./pages/Portfolio";
 import Market from "./pages/Market";
 import WalletPage from "./pages/Wallet";
+import History from "./pages/History";
 import Profile from "./pages/Profile";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
@@ -66,6 +67,7 @@ const App = () => {
                   <Route path="/" element={<Portfolio />} />
                   <Route path="/market" element={<Market />} />
                   <Route path="/wallet" element={<WalletPage />} />
+                  <Route path="/history" element={<History />} />
                   <Route path="/profile" element={<Profile />} />
                   <Route path="/settings" element={<Settings />} />
                   <Route path="*" element={<NotFound />} />
