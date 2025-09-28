@@ -229,6 +229,74 @@ export type Database = {
         }
         Relationships: []
       }
+      support_conversations: {
+        Row: {
+          created_at: string | null
+          id: string
+          meta: Json | null
+          status: string | null
+          subject: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          meta?: Json | null
+          status?: string | null
+          subject?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          meta?: Json | null
+          status?: string | null
+          subject?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      support_messages: {
+        Row: {
+          attachments: Json | null
+          body: string
+          conversation_id: string
+          created_at: string | null
+          id: string
+          sender: string
+          sender_id: string | null
+        }
+        Insert: {
+          attachments?: Json | null
+          body: string
+          conversation_id: string
+          created_at?: string | null
+          id?: string
+          sender: string
+          sender_id?: string | null
+        }
+        Update: {
+          attachments?: Json | null
+          body?: string
+          conversation_id?: string
+          created_at?: string | null
+          id?: string
+          sender?: string
+          sender_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "support_messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "support_conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       trades: {
         Row: {
           category: string

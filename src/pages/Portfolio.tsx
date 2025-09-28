@@ -9,6 +9,7 @@ import { useHoldings } from "@/hooks/useHoldings";
 import { useTrades } from "@/hooks/useTrades";
 import { useWatchlist } from "@/hooks/useWatchlist";
 import { supabase } from "@/integrations/supabase/client";
+import { AdminButton } from "@/components/AdminButton";
 
 const Portfolio = () => {
   const navigate = useNavigate();
@@ -35,15 +36,18 @@ const Portfolio = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold text-indigo-700">Portfolio</h1>
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          className="text-indigo-600 hover:bg-indigo-50"
-          onClick={() => setShowDetails(!showDetails)}
-        >
-          {showDetails ? <EyeOff className="w-4 h-4 mr-2" /> : <Eye className="w-4 h-4 mr-2" />}
-          {showDetails ? "Hide Details" : "View Details"}
-        </Button>
+        <div className="flex items-center gap-2">
+          <AdminButton />
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="text-indigo-600 hover:bg-indigo-50"
+            onClick={() => setShowDetails(!showDetails)}
+          >
+            {showDetails ? <EyeOff className="w-4 h-4 mr-2" /> : <Eye className="w-4 h-4 mr-2" />}
+            {showDetails ? "Hide Details" : "View Details"}
+          </Button>
+        </div>
       </div>
 
       {/* Account Balance */}

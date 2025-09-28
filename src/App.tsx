@@ -15,6 +15,8 @@ import WalletPage from "./pages/Wallet";
 import History from "./pages/History";
 import Profile from "./pages/Profile";
 import Settings from "./pages/Settings";
+import { AdminPage } from "./pages/AdminPage";
+import { CustomerCare } from "./pages/CustomerCare";
 import NotFound from "./pages/NotFound";
 import BottomNavigation from "./components/BottomNavigation";
 
@@ -72,6 +74,8 @@ const App = () => {
                     <Route path="/history" element={<History />} />
                     <Route path="/profile" element={<Profile />} />
                     <Route path="/settings" element={<Settings />} />
+                    <Route path="/admin" element={<AdminPage />} />
+                    <Route path="/customer-care" element={<CustomerCare />} />
                     <Route path="*" element={<NotFound />} />
                   </>
                 )}

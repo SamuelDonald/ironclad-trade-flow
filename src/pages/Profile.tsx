@@ -29,6 +29,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
+import { MessageCircle } from "lucide-react";
 
 const Profile = () => {
   const [profile, setProfile] = useState({
@@ -84,9 +85,14 @@ const Profile = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold text-indigo-700">Profile</h1>
-        <Button variant="outline" size="sm" className="border-indigo-500 text-indigo-600">
-          <Shield className="w-4 h-4 mr-2" />
-          Security Settings
+        <Button 
+          variant="outline" 
+          size="sm" 
+          className="border-indigo-500 text-indigo-600"
+          onClick={() => navigate('/customer-care')}
+        >
+          <MessageCircle className="w-4 h-4 mr-2" />
+          Customer Care
         </Button>
       </div>
 

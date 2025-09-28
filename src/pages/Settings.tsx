@@ -68,12 +68,11 @@ export default function SettingsPage() {
       <h1 className="text-3xl font-bold text-indigo-700 mb-6">Settings</h1>
 
       <Tabs defaultValue="general" className="space-y-6">
-        <TabsList className={`grid ${isAdmin ? 'grid-cols-3 sm:grid-cols-4 md:grid-cols-6' : 'grid-cols-3 sm:grid-cols-4 md:grid-cols-5'} gap-2 bg-white p-2 rounded-xl shadow-sm overflow-x-auto`}>
+        <TabsList className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2 bg-white p-2 rounded-xl shadow-sm overflow-x-auto">
           <TabsTrigger value="general">General</TabsTrigger>
           <TabsTrigger value="security">Security</TabsTrigger>
           <TabsTrigger value="notifications">Notifications</TabsTrigger>
           <TabsTrigger value="preferences">Preferences</TabsTrigger>
-          {isAdmin && <TabsTrigger value="admin">Admin</TabsTrigger>}
           <TabsTrigger value="about">About</TabsTrigger>
         </TabsList>
 
@@ -184,19 +183,6 @@ export default function SettingsPage() {
           </Card>
         </TabsContent>
 
-        {/* Admin */}
-        {isAdmin && (
-          <TabsContent value="admin">
-            <Card className="shadow-md rounded-xl">
-              <CardHeader>
-                <CardTitle className="text-lg font-semibold text-indigo-700">Admin Dashboard</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <AdminDashboard />
-              </CardContent>
-            </Card>
-          </TabsContent>
-        )}
 
         {/* About */}
         <TabsContent value="about">
