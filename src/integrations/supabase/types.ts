@@ -47,6 +47,13 @@ export type Database = {
             foreignKeyName: "admin_audits_admin_user_id_fkey"
             columns: ["admin_user_id"]
             isOneToOne: false
+            referencedRelation: "admin_user_safe"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "admin_audits_admin_user_id_fkey"
+            columns: ["admin_user_id"]
+            isOneToOne: false
             referencedRelation: "admin_users"
             referencedColumns: ["id"]
           },
@@ -419,10 +426,42 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      admin_user_safe: {
+        Row: {
+          created_at: string | null
+          id: string | null
+          masked_email: string | null
+          meta: Json | null
+          role: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string | null
+          masked_email?: never
+          meta?: Json | null
+          role?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string | null
+          masked_email?: never
+          meta?: Json | null
+          role?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
-      [_ in never]: never
+      is_admin_user: {
+        Args: { _email: string }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never
