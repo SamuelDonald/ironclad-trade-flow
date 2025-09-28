@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
+import { useAdmin } from "@/contexts/AdminContext"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Switch } from "@/components/ui/switch"
@@ -13,18 +14,15 @@ import {
   Bell,
   Shield,
   Globe,
-  Users,
-  DollarSign,
-  TrendingUp,
-  AlertCircle,
   UserCog,
-  FileText,
   Info,
   LogOut,
 } from "lucide-react"
+import { AdminDashboard } from "@/components/AdminDashboard"
 
 export default function SettingsPage() {
   const navigate = useNavigate()
+  const { isAdmin, loading: adminLoading } = useAdmin()
   const [darkMode, setDarkMode] = useState(false)
   const [notifications, setNotifications] = useState(true)
   const [twoFactorAuth, setTwoFactorAuth] = useState(false)
@@ -64,26 +62,18 @@ export default function SettingsPage() {
     }
   }
 
-  const adminStats = {
-    totalUsers: 12345,
-    activeTraders: 789,
-    totalDeposits: 5000000,
-    totalWithdrawals: 3000000,
-    pendingTransactions: 120,
-    activeTrades: 456,
-  }
 
   return (
     <div className="container mx-auto px-4 py-8 pb-20">
       <h1 className="text-3xl font-bold text-indigo-700 mb-6">Settings</h1>
 
       <Tabs defaultValue="general" className="space-y-6">
-        <TabsList className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2 bg-white p-2 rounded-xl shadow-sm overflow-x-auto">
+        <TabsList className={`grid ${isAdmin ? 'grid-cols-3 sm:grid-cols-4 md:grid-cols-6' : 'grid-cols-3 sm:grid-cols-4 md:grid-cols-5'} gap-2 bg-white p-2 rounded-xl shadow-sm overflow-x-auto`}>
           <TabsTrigger value="general">General</TabsTrigger>
           <TabsTrigger value="security">Security</TabsTrigger>
           <TabsTrigger value="notifications">Notifications</TabsTrigger>
           <TabsTrigger value="preferences">Preferences</TabsTrigger>
-          <TabsTrigger value="admin">Admin</TabsTrigger>
+          {isAdmin && <TabsTrigger value="admin">Admin</TabsTrigger>}
           <TabsTrigger value="about">About</TabsTrigger>
         </TabsList>
 
@@ -195,60 +185,18 @@ export default function SettingsPage() {
         </TabsContent>
 
         {/* Admin */}
-        <TabsContent value="admin">
-          <Card className="shadow-md rounded-xl">
-            <CardHeader>
-              <CardTitle className="text-lg font-semibold text-indigo-700">Admin Dashboard</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
-                {[
-                  { label: "Total Users", value: adminStats.totalUsers.toLocaleString(), color: "text-indigo-600" },
-                  { label: "Active Traders", value: adminStats.activeTraders.toLocaleString(), color: "text-purple-600" },
-                  {
-                    label: "Total Deposits",
-                    value: `$${(adminStats.totalDeposits / 1_000_000).toFixed(1)}M`,
-                    color: "text-green-600",
-                  },
-                  {
-                    label: "Total Withdrawals",
-                    value: `$${(adminStats.totalWithdrawals / 1_000_000).toFixed(1)}M`,
-                    color: "text-red-600",
-                  },
-                  { label: "Pending", value: adminStats.pendingTransactions, color: "text-yellow-600" },
-                  { label: "Active Trades", value: adminStats.activeTrades.toLocaleString(), color: "text-indigo-600" },
-                ].map((stat, idx) => (
-                  <div
-                    key={idx}
-                    className="p-4 rounded-xl border-2 border-indigo-200 bg-white shadow-sm text-center"
-                  >
-                    <p className={`text-2xl font-bold ${stat.color}`}>{stat.value}</p>
-                    <p className="text-xs text-muted-foreground">{stat.label}</p>
-                  </div>
-                ))}
-              </div>
-
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                <Button className="h-20 flex-col gap-2 bg-gradient-to-r from-purple-500 to-indigo-500 text-white shadow-md hover:opacity-90">
-                  <Users className="w-6 h-6" />
-                  <span>Manage Users</span>
-                </Button>
-                <Button className="h-20 flex-col gap-2 bg-gradient-to-r from-purple-500 to-indigo-500 text-white shadow-md hover:opacity-90">
-                  <DollarSign className="w-6 h-6" />
-                  <span>Transactions</span>
-                </Button>
-                <Button className="h-20 flex-col gap-2 bg-gradient-to-r from-purple-500 to-indigo-500 text-white shadow-md hover:opacity-90">
-                  <TrendingUp className="w-6 h-6" />
-                  <span>Trading Activity</span>
-                </Button>
-                <Button className="h-20 flex-col gap-2 bg-gradient-to-r from-purple-500 to-indigo-500 text-white shadow-md hover:opacity-90">
-                  <AlertCircle className="w-6 h-6" />
-                  <span>Reports</span>
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
+        {isAdmin && (
+          <TabsContent value="admin">
+            <Card className="shadow-md rounded-xl">
+              <CardHeader>
+                <CardTitle className="text-lg font-semibold text-indigo-700">Admin Dashboard</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <AdminDashboard />
+              </CardContent>
+            </Card>
+          </TabsContent>
+        )}
 
         {/* About */}
         <TabsContent value="about">

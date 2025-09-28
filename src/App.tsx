@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { User, Session } from "@supabase/supabase-js";
+import { AdminProvider } from "@/contexts/AdminContext";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Portfolio from "./pages/Portfolio";
@@ -55,28 +56,30 @@ const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <div className="min-h-screen bg-background">
-            <Routes>
-              {!user ? (
-                <Route path="*" element={<Auth />} />
-              ) : (
-                <>
-                  <Route path="/" element={<Portfolio />} />
-                  <Route path="/market" element={<Market />} />
-                  <Route path="/wallet" element={<WalletPage />} />
-                  <Route path="/history" element={<History />} />
-                  <Route path="/profile" element={<Profile />} />
-                  <Route path="/settings" element={<Settings />} />
-                  <Route path="*" element={<NotFound />} />
-                </>
-              )}
-            </Routes>
-            {user && <BottomNavigation />}
-          </div>
-        </BrowserRouter>
+        <AdminProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <div className="min-h-screen bg-background">
+              <Routes>
+                {!user ? (
+                  <Route path="*" element={<Auth />} />
+                ) : (
+                  <>
+                    <Route path="/" element={<Portfolio />} />
+                    <Route path="/market" element={<Market />} />
+                    <Route path="/wallet" element={<WalletPage />} />
+                    <Route path="/history" element={<History />} />
+                    <Route path="/profile" element={<Profile />} />
+                    <Route path="/settings" element={<Settings />} />
+                    <Route path="*" element={<NotFound />} />
+                  </>
+                )}
+              </Routes>
+              {user && <BottomNavigation />}
+            </div>
+          </BrowserRouter>
+        </AdminProvider>
       </TooltipProvider>
     </QueryClientProvider>
   );

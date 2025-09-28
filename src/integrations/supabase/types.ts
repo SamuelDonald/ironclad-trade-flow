@@ -14,6 +14,74 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_audits: {
+        Row: {
+          action: string
+          admin_user_id: string | null
+          created_at: string | null
+          id: string
+          meta: Json | null
+          target_id: string | null
+          target_table: string | null
+        }
+        Insert: {
+          action: string
+          admin_user_id?: string | null
+          created_at?: string | null
+          id?: string
+          meta?: Json | null
+          target_id?: string | null
+          target_table?: string | null
+        }
+        Update: {
+          action?: string
+          admin_user_id?: string | null
+          created_at?: string | null
+          id?: string
+          meta?: Json | null
+          target_id?: string | null
+          target_table?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admin_audits_admin_user_id_fkey"
+            columns: ["admin_user_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      admin_users: {
+        Row: {
+          created_at: string | null
+          email: string
+          id: string
+          meta: Json | null
+          role: string
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          id?: string
+          meta?: Json | null
+          role?: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          id?: string
+          meta?: Json | null
+          role?: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       holdings: {
         Row: {
           average_price: number
@@ -59,6 +127,39 @@ export type Database = {
           total_value?: number | null
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      market_assets: {
+        Row: {
+          active: boolean | null
+          category: string
+          created_at: string | null
+          id: string
+          meta: Json | null
+          name: string
+          symbol: string
+          updated_at: string | null
+        }
+        Insert: {
+          active?: boolean | null
+          category: string
+          created_at?: string | null
+          id?: string
+          meta?: Json | null
+          name: string
+          symbol: string
+          updated_at?: string | null
+        }
+        Update: {
+          active?: boolean | null
+          category?: string
+          created_at?: string | null
+          id?: string
+          meta?: Json | null
+          name?: string
+          symbol?: string
+          updated_at?: string | null
         }
         Relationships: []
       }
