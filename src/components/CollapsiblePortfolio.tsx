@@ -1,7 +1,7 @@
-import { useState } from "react";
 import { ChevronDown, ChevronUp, TrendingUp, TrendingDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { usePersistedState } from "@/hooks/usePersistedState";
 
 interface PortfolioData {
   totalValue: number;
@@ -18,7 +18,7 @@ interface CollapsiblePortfolioProps {
 }
 
 export function CollapsiblePortfolio({ portfolio, showDetails }: CollapsiblePortfolioProps) {
-  const [isExpanded, setIsExpanded] = useState(true);
+  const [isExpanded, setIsExpanded] = usePersistedState('portfolio-expanded', true);
 
   return (
     <div className="space-y-4">
@@ -48,17 +48,12 @@ export function CollapsiblePortfolio({ portfolio, showDetails }: CollapsiblePort
           size="sm"
           onClick={() => setIsExpanded(!isExpanded)}
           className="text-muted-foreground hover:text-foreground"
+          aria-label={isExpanded ? "Collapse portfolio details" : "Expand portfolio details"}
         >
           {isExpanded ? (
-            <>
-              <ChevronUp className="w-4 h-4 mr-2" />
-              Collapse
-            </>
+            <ChevronUp className="w-4 h-4" />
           ) : (
-            <>
-              <ChevronDown className="w-4 h-4 mr-2" />
-              Expand
-            </>
+            <ChevronDown className="w-4 h-4" />
           )}
         </Button>
       </div>

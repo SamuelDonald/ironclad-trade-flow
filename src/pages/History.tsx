@@ -29,9 +29,13 @@ const History = () => {
       <div className="container max-w-6xl mx-auto p-6 pb-20 space-y-8">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <Button variant="ghost" size="sm" onClick={() => navigate(-1)}>
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => navigate(-1)}
+              aria-label="Go back"
+            >
+              <ArrowLeft className="w-4 h-4" />
             </Button>
             <h1 className="text-3xl font-bold text-indigo-700">History</h1>
           </div>
@@ -49,20 +53,30 @@ const History = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="sm" onClick={() => navigate(-1)}>
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={() => navigate(-1)}
+            aria-label="Go back"
+          >
+            <ArrowLeft className="w-4 h-4" />
           </Button>
           <h1 className="text-3xl font-bold text-indigo-700">History</h1>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm">
-            <Filter className="w-4 h-4 mr-2" />
-            Filter
+          <Button 
+            variant="outline" 
+            size="sm"
+            aria-label="Filter results"
+          >
+            <Filter className="w-4 h-4" />
           </Button>
-          <Button variant="outline" size="sm">
-            <Download className="w-4 h-4 mr-2" />
-            Export
+          <Button 
+            variant="outline" 
+            size="sm"
+            aria-label="Export data"
+          >
+            <Download className="w-4 h-4" />
           </Button>
         </div>
       </div>

@@ -13,10 +13,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { AdminButton } from "@/components/AdminButton";
 import { CollapsiblePortfolio } from "@/components/CollapsiblePortfolio";
 import { PortfolioSkeleton, WatchlistSkeleton } from "@/components/SkeletonLoader";
+import { usePersistedState } from "@/hooks/usePersistedState";
 
 const Portfolio = () => {
   const navigate = useNavigate();
-  const [showDetails, setShowDetails] = useState(true);
+  const [showDetails, setShowDetails] = usePersistedState('portfolio-show-details', true);
   const [user, setUser] = useState<any>(null);
 
   // Real data hooks
@@ -50,9 +51,9 @@ const Portfolio = () => {
             size="sm" 
             className="text-indigo-600 hover:bg-indigo-50"
             onClick={() => setShowDetails(!showDetails)}
+            aria-label={showDetails ? "Hide portfolio details" : "Show portfolio details"}
           >
-            {showDetails ? <EyeOff className="w-4 h-4 mr-2" /> : <Eye className="w-4 h-4 mr-2" />}
-            {showDetails ? "Hide Details" : "View Details"}
+            {showDetails ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
           </Button>
         </div>
       </div>
