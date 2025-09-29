@@ -1,1 +1,7 @@
 project_id = "jgedidtpqfashojqagbd"
+
+[functions.market-price-snapshots]
+verify_jwt = false
+
+[functions.market-price-validation]
+verify_jwt = false

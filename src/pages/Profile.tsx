@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import {
   User,
   Mail,
@@ -30,17 +30,13 @@ import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { MessageCircle } from "lucide-react";
+import { useProfile } from "@/hooks/useProfile";
+import { usePaymentMethods } from "@/hooks/usePaymentMethods";
+import { MobileFAB } from "@/components/MobileFAB";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const Profile = () => {
-  const [profile, setProfile] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
-    phone: "",
-    address: "",
-    avatar: "",
-  });
-
+  const [activeTab, setActiveTab] = useState("personal");
   const [notifications, setNotifications] = useState({
     emailAlerts: false,
     pushNotifications: false,
@@ -51,21 +47,68 @@ const Profile = () => {
 
   const { toast } = useToast();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
+  
+  // Use real profile and payment method hooks
+  const { profile, loading: profileLoading, updateProfile, uploadAvatar } = useProfile();
+  const { paymentMethods, loading: paymentLoading } = usePaymentMethods();
 
-  const paymentMethods: { type: string; details: string; verified: boolean }[] = [];
+  // Form state for profile editing
+  const [formData, setFormData] = useState({
+    full_name: "",
+    email: "",
+    phone: "",
+    address: "",
+  });
 
-  const handleProfileUpdate = () => {
-    toast({
-      title: "Profile Updated",
-      description: "Your profile information has been saved successfully.",
-    });
+  // Update form data when profile loads
+  React.useEffect(() => {
+    if (profile) {
+      setFormData({
+        full_name: profile.full_name || "",
+        email: profile.email || "",
+        phone: profile.phone || "",
+        address: profile.address || "",
+      });
+    }
+  }, [profile]);
+
+  const handleProfileUpdate = async () => {
+    try {
+      await updateProfile(formData);
+    } catch (error) {
+      console.error('Failed to update profile:', error);
+    }
   };
 
-  const handleAvatarUpload = () => {
-    toast({
-      title: "Avatar Upload",
-      description: "Avatar upload functionality would be implemented here.",
-    });
+  const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type and size
+    if (!file.type.match(/^image\/(jpeg|jpg|png|gif)$/)) {
+      toast({
+        title: "Invalid file type",
+        description: "Please select a JPEG, PNG, or GIF image.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) { // 5MB limit
+      toast({
+        title: "File too large",
+        description: "Please select an image smaller than 5MB.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      await uploadAvatar(file);
+    } catch (error) {
+      console.error('Failed to upload avatar:', error);
+    }
   };
 
   const handleNotificationToggle = (setting: string) => {
@@ -79,6 +122,14 @@ const Profile = () => {
       description: "Your notification preferences have been saved.",
     });
   };
+
+  // Mobile FAB options
+  const tabOptions = [
+    { label: "Personal Info", value: "personal", onClick: () => setActiveTab("personal") },
+    { label: "Payment Methods", value: "payment", onClick: () => setActiveTab("payment") },
+    { label: "Notifications", value: "notifications", onClick: () => setActiveTab("notifications") },
+    { label: "Security", value: "security", onClick: () => setActiveTab("security") }
+  ];
 
   return (
     <div className="container max-w-4xl mx-auto p-6 pb-20 space-y-8">
@@ -96,9 +147,12 @@ const Profile = () => {
         </Button>
       </div>
 
+      {/* Mobile FAB for tab navigation */}
+      <MobileFAB options={tabOptions} activeValue={activeTab} />
+
       {/* Tabs */}
-      <Tabs defaultValue="personal" className="space-y-8">
-        <TabsList className="w-full flex justify-between bg-transparent border-b border-gray-200">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
+        <TabsList className={`w-full flex justify-between bg-transparent border-b border-gray-200 ${isMobile ? 'hidden' : ''}`}>
           <TabsTrigger value="personal" className="text-indigo-600">Personal Info</TabsTrigger>
           <TabsTrigger value="payment" className="text-indigo-600">Payment Methods</TabsTrigger>
           <TabsTrigger value="notifications" className="text-indigo-600">Notifications</TabsTrigger>
@@ -114,16 +168,29 @@ const Profile = () => {
             </CardHeader>
             <CardContent className="flex flex-col items-center gap-6">
               <Avatar className="h-28 w-28 ring-4 ring-indigo-200">
-                <AvatarImage src={profile.avatar} />
+                <AvatarImage src={profile?.avatar_url || ""} />
                 <AvatarFallback className="text-lg bg-indigo-100 text-indigo-700">
                   <User className="w-10 h-10" />
                 </AvatarFallback>
               </Avatar>
-              <Button onClick={handleAvatarUpload} className="bg-indigo-600 hover:bg-indigo-700 text-white">
-                <Camera className="w-4 h-4 mr-2" />
-                Upload New Picture
-              </Button>
-              <p className="text-sm text-gray-500">JPG, PNG or GIF. Max size 5MB.</p>
+              <div className="flex flex-col items-center gap-2">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleAvatarUpload}
+                  className="hidden"
+                  id="avatar-upload"
+                />
+                <Button 
+                  onClick={() => document.getElementById('avatar-upload')?.click()}
+                  className="bg-indigo-600 hover:bg-indigo-700 text-white"
+                  disabled={profileLoading}
+                >
+                  <Camera className="w-4 h-4 mr-2" />
+                  Upload New Picture
+                </Button>
+                <p className="text-sm text-gray-500">JPG, PNG or GIF. Max size 5MB.</p>
+              </div>
             </CardContent>
           </Card>
 
@@ -133,27 +200,16 @@ const Profile = () => {
               <CardDescription>Update your details and contact info</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <Label htmlFor="firstName">First Name</Label>
-                  <Input
-                    id="firstName"
-                    value={profile.firstName}
-                    onChange={(e) =>
-                      setProfile({ ...profile, firstName: e.target.value })
-                    }
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="lastName">Last Name</Label>
-                  <Input
-                    id="lastName"
-                    value={profile.lastName}
-                    onChange={(e) =>
-                      setProfile({ ...profile, lastName: e.target.value })
-                    }
-                  />
-                </div>
+              <div>
+                <Label htmlFor="full_name">Full Name</Label>
+                <Input
+                  id="full_name"
+                  value={formData.full_name}
+                  onChange={(e) =>
+                    setFormData({ ...formData, full_name: e.target.value })
+                  }
+                  disabled={profileLoading}
+                />
               </div>
 
               <div>
@@ -163,11 +219,12 @@ const Profile = () => {
                   <Input
                     id="email"
                     type="email"
-                    value={profile.email}
+                    value={formData.email}
                     onChange={(e) =>
-                      setProfile({ ...profile, email: e.target.value })
+                      setFormData({ ...formData, email: e.target.value })
                     }
                     className="pl-10"
+                    disabled={profileLoading}
                   />
                 </div>
               </div>
@@ -178,11 +235,12 @@ const Profile = () => {
                   <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                   <Input
                     id="phone"
-                    value={profile.phone}
+                    value={formData.phone}
                     onChange={(e) =>
-                      setProfile({ ...profile, phone: e.target.value })
+                      setFormData({ ...formData, phone: e.target.value })
                     }
                     className="pl-10"
+                    disabled={profileLoading}
                   />
                 </div>
               </div>
@@ -193,11 +251,12 @@ const Profile = () => {
                   <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                   <Input
                     id="address"
-                    value={profile.address}
+                    value={formData.address}
                     onChange={(e) =>
-                      setProfile({ ...profile, address: e.target.value })
+                      setFormData({ ...formData, address: e.target.value })
                     }
                     className="pl-10"
+                    disabled={profileLoading}
                   />
                 </div>
               </div>
@@ -205,8 +264,9 @@ const Profile = () => {
               <Button
                 onClick={handleProfileUpdate}
                 className="w-full md:w-auto bg-indigo-600 hover:bg-indigo-700 text-white"
+                disabled={profileLoading}
               >
-                Save Changes
+                {profileLoading ? "Saving..." : "Save Changes"}
               </Button>
             </CardContent>
           </Card>
@@ -220,32 +280,34 @@ const Profile = () => {
               <CardDescription>Manage your payment options</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {paymentMethods.length === 0 ? (
+              {paymentLoading ? (
+                <div className="space-y-3">
+                  {[1, 2, 3].map((i) => (
+                    <div key={i} className="h-16 bg-muted animate-pulse rounded-xl"></div>
+                  ))}
+                </div>
+              ) : paymentMethods.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
                   <CreditCard className="w-12 h-12 mx-auto mb-4 opacity-50" />
                   <p>No payment methods added yet</p>
                   <p className="text-sm">Add a payment method to get started</p>
                 </div>
               ) : (
-                paymentMethods.map((method, index) => (
+                paymentMethods.map((method) => (
                   <div
-                    key={index}
+                    key={method.id}
                     className="flex items-center justify-between p-4 border rounded-xl bg-gray-50"
                   >
                     <div>
-                      <p className="font-semibold">{method.type}</p>
-                      <p className="text-sm text-gray-500">{method.details}</p>
+                      <p className="font-semibold">**** **** **** {method.last4}</p>
+                      <p className="text-sm text-gray-500">{method.brand} • Expires {method.exp_month}/{method.exp_year}</p>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span
-                        className={`text-xs px-2 py-1 rounded-full ${
-                          method.verified
-                            ? "bg-green-100 text-green-700"
-                            : "bg-yellow-100 text-yellow-700"
-                        }`}
-                      >
-                        {method.verified ? "Verified" : "Pending"}
-                      </span>
+                      {method.is_default && (
+                        <span className="text-xs px-2 py-1 rounded-full bg-blue-100 text-blue-700">
+                          Default
+                        </span>
+                      )}
                       <Button variant="outline" size="sm">
                         Edit
                       </Button>

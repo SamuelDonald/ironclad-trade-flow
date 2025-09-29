@@ -163,6 +163,72 @@ export type Database = {
         }
         Relationships: []
       }
+      market_prices: {
+        Row: {
+          change_percent: number | null
+          change_value: number | null
+          price: number | null
+          symbol: string
+          updated_at: string | null
+          volume: number | null
+        }
+        Insert: {
+          change_percent?: number | null
+          change_value?: number | null
+          price?: number | null
+          symbol: string
+          updated_at?: string | null
+          volume?: number | null
+        }
+        Update: {
+          change_percent?: number | null
+          change_value?: number | null
+          price?: number | null
+          symbol?: string
+          updated_at?: string | null
+          volume?: number | null
+        }
+        Relationships: []
+      }
+      payment_methods: {
+        Row: {
+          brand: string | null
+          created_at: string | null
+          exp_month: number | null
+          exp_year: number | null
+          id: string
+          is_default: boolean | null
+          last4: string | null
+          stripe_payment_method_id: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          brand?: string | null
+          created_at?: string | null
+          exp_month?: number | null
+          exp_year?: number | null
+          id?: string
+          is_default?: boolean | null
+          last4?: string | null
+          stripe_payment_method_id: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          brand?: string | null
+          created_at?: string | null
+          exp_month?: number | null
+          exp_year?: number | null
+          id?: string
+          is_default?: boolean | null
+          last4?: string | null
+          stripe_payment_method_id?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       portfolio_balances: {
         Row: {
           cash_balance: number | null
@@ -204,27 +270,36 @@ export type Database = {
       }
       profiles: {
         Row: {
+          address: string | null
           avatar_url: string | null
           created_at: string | null
           email: string | null
           full_name: string | null
           id: string
+          phone: string | null
+          theme_preference: string | null
           updated_at: string | null
         }
         Insert: {
+          address?: string | null
           avatar_url?: string | null
           created_at?: string | null
           email?: string | null
           full_name?: string | null
           id: string
+          phone?: string | null
+          theme_preference?: string | null
           updated_at?: string | null
         }
         Update: {
+          address?: string | null
           avatar_url?: string | null
           created_at?: string | null
           email?: string | null
           full_name?: string | null
           id?: string
+          phone?: string | null
+          theme_preference?: string | null
           updated_at?: string | null
         }
         Relationships: []

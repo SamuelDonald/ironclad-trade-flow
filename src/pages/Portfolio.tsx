@@ -8,8 +8,11 @@ import { usePortfolio } from "@/hooks/usePortfolio";
 import { useHoldings } from "@/hooks/useHoldings";
 import { useTrades } from "@/hooks/useTrades";
 import { useWatchlist } from "@/hooks/useWatchlist";
+import { useMarketPrices } from "@/hooks/useMarketPrices";
 import { supabase } from "@/integrations/supabase/client";
 import { AdminButton } from "@/components/AdminButton";
+import { CollapsiblePortfolio } from "@/components/CollapsiblePortfolio";
+import { PortfolioSkeleton, WatchlistSkeleton } from "@/components/SkeletonLoader";
 
 const Portfolio = () => {
   const navigate = useNavigate();
@@ -21,6 +24,10 @@ const Portfolio = () => {
   const { holdings, loading: holdingsLoading } = useHoldings();
   const { trades, loading: tradesLoading } = useTrades();
   const { watchlist, loading: watchlistLoading } = useWatchlist();
+  
+  // Get watchlist symbols for price fetching
+  const watchlistSymbols = watchlist.map(item => item.symbol);
+  const { prices, getPriceForSymbol } = useMarketPrices(watchlistSymbols);
 
   // Check authentication status
   React.useEffect(() => {
@@ -65,52 +72,9 @@ const Portfolio = () => {
               <Button onClick={() => navigate('/auth')}>Sign In</Button>
             </div>
           ) : portfolioLoading ? (
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-              {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="text-center">
-                  <div className="h-8 w-24 bg-muted animate-pulse rounded mx-auto mb-2"></div>
-                  <div className="h-4 w-20 bg-muted animate-pulse rounded mx-auto mb-2"></div>
-                  <div className="h-6 w-16 bg-muted animate-pulse rounded mx-auto"></div>
-                </div>
-              ))}
-            </div>
+            <PortfolioSkeleton />
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-              <div className="text-center">
-                <p className={`text-3xl font-bold transition-all duration-300 ${showDetails ? 'opacity-100' : 'opacity-0'}`}>
-                  {showDetails ? `$${portfolio.totalValue.toLocaleString()}` : '••••••'}
-                </p>
-                <p className="text-sm text-muted-foreground">Total Value</p>
-                <div className="flex items-center justify-center mt-2">
-                  {portfolio.dailyChange >= 0 ? (
-                    <TrendingUp className="w-4 h-4 text-green-500 mr-1" />
-                  ) : (
-                    <TrendingDown className="w-4 h-4 text-red-500 mr-1" />
-                  )}
-                  <span className={`${portfolio.dailyChange >= 0 ? "text-green-500" : "text-red-500"} transition-all duration-300`}>
-                    {showDetails ? `$${Math.abs(portfolio.dailyChange).toLocaleString()} (${portfolio.dailyChangePercent}%)` : '••••••'}
-                  </span>
-                </div>
-              </div>
-              <div className="text-center">
-                <p className={`text-xl font-semibold transition-all duration-300`}>
-                  {showDetails ? `$${portfolio.cashBalance.toLocaleString()}` : '••••••'}
-                </p>
-                <p className="text-sm text-muted-foreground">Cash Balance</p>
-              </div>
-              <div className="text-center">
-                <p className={`text-xl font-semibold transition-all duration-300`}>
-                  {showDetails ? `$${portfolio.investedAmount.toLocaleString()}` : '••••••'}
-                </p>
-                <p className="text-sm text-muted-foreground">Invested Amount</p>
-              </div>
-              <div className="text-center">
-                <p className={`text-xl font-semibold transition-all duration-300`}>
-                  {showDetails ? `$${portfolio.freeMargin.toLocaleString()}` : '••••••'}
-                </p>
-                <p className="text-sm text-muted-foreground">Free Margin</p>
-              </div>
-            </div>
+            <CollapsiblePortfolio portfolio={portfolio} showDetails={showDetails} />
           )}
 
           <div className="flex gap-4 mt-8">
@@ -147,20 +111,7 @@ const Portfolio = () => {
                 <p className="text-muted-foreground">Sign in to view your watchlist</p>
               </div>
             ) : watchlistLoading ? (
-              <div className="space-y-3">
-                {[1, 2, 3].map((i) => (
-                  <div key={i} className="flex items-center justify-between p-4 rounded-lg border">
-                    <div className="space-y-2">
-                      <div className="h-4 w-16 bg-muted animate-pulse rounded"></div>
-                      <div className="h-3 w-24 bg-muted animate-pulse rounded"></div>
-                    </div>
-                    <div className="text-right space-y-2">
-                      <div className="h-4 w-20 bg-muted animate-pulse rounded"></div>
-                      <div className="h-3 w-12 bg-muted animate-pulse rounded"></div>
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <WatchlistSkeleton />
             ) : watchlist.length === 0 ? (
               <div className="text-center py-6">
                 <p className="text-muted-foreground mb-2">No assets in watchlist</p>
@@ -185,11 +136,22 @@ const Portfolio = () => {
                       <p className="text-sm text-muted-foreground">{asset.name}</p>
                     </div>
                     <div className="text-right">
-                      <p className="font-semibold">${asset.price?.toLocaleString() || 'N/A'}</p>
-                      <p className={`text-sm flex items-center justify-end ${(asset.change_value || 0) >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                        {(asset.change_value || 0) >= 0 ? <TrendingUp className="w-3 h-3 mr-1" /> : <TrendingDown className="w-3 h-3 mr-1" />}
-                        {asset.change_value ? `${(asset.change_value > 0 ? '+' : '')}${asset.change_value}` : 'N/A'}
-                      </p>
+                      {(() => {
+                        const livePrice = getPriceForSymbol(asset.symbol);
+                        const price = livePrice?.price || asset.price || 0;
+                        const change = livePrice?.change_value || asset.change_value || 0;
+                        return (
+                          <>
+                            <p className="font-semibold">
+                              {price > 0 ? `$${price.toLocaleString()}` : 'Loading...'}
+                            </p>
+                            <p className={`text-sm flex items-center justify-end ${change >= 0 ? 'text-profit' : 'text-loss'}`}>
+                              {change >= 0 ? <TrendingUp className="w-3 h-3 mr-1" /> : <TrendingDown className="w-3 h-3 mr-1" />}
+                              {change !== 0 ? `${(change > 0 ? '+' : '')}${change}` : 'N/A'}
+                            </p>
+                          </>
+                        );
+                      })()}
                     </div>
                   </div>
                 ))}

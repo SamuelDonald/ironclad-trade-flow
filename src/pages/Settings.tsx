@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import React, { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { useAdmin } from "@/contexts/AdminContext"
 import { Button } from "@/components/ui/button"
@@ -9,6 +9,9 @@ import { Switch } from "@/components/ui/switch"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { toast } from "@/components/ui/use-toast"
 import { supabase } from "@/integrations/supabase/client"
+import { useProfile } from "@/hooks/useProfile"
+import { MobileFAB } from "@/components/MobileFAB"
+import { useIsMobile } from "@/hooks/use-mobile"
 import {
   Moon,
   Bell,
@@ -23,15 +26,66 @@ import { AdminDashboard } from "@/components/AdminDashboard"
 export default function SettingsPage() {
   const navigate = useNavigate()
   const { isAdmin, loading: adminLoading } = useAdmin()
-  const [darkMode, setDarkMode] = useState(false)
+  const { profile, updateProfile } = useProfile()
+  const isMobile = useIsMobile()
+  const [activeTab, setActiveTab] = useState("general")
+  const [darkMode, setDarkMode] = useState(profile?.theme_preference === 'dark')
   const [notifications, setNotifications] = useState(true)
   const [twoFactorAuth, setTwoFactorAuth] = useState(false)
+
+  // Update dark mode when profile loads
+  React.useEffect(() => {
+    if (profile?.theme_preference) {
+      const isDark = profile.theme_preference === 'dark'
+      setDarkMode(isDark)
+      document.documentElement.classList.toggle('dark', isDark)
+    }
+  }, [profile])
 
   const handleSaveSettings = () => {
     toast({
       title: "Settings Saved",
       description: "Your preferences have been updated successfully.",
     })
+  }
+
+  const handleDarkModeToggle = async (checked: boolean) => {
+    setDarkMode(checked)
+    document.documentElement.classList.toggle('dark', checked)
+    
+    try {
+      await updateProfile({ theme_preference: checked ? 'dark' : 'light' })
+    } catch (error) {
+      console.error('Failed to save theme preference:', error)
+    }
+  }
+
+  const handleChangePassword = async () => {
+    try {
+      const email = profile?.email
+      if (!email) {
+        toast({
+          title: "Error",
+          description: "No email found for password reset.",
+          variant: "destructive",
+        })
+        return
+      }
+
+      const { error } = await supabase.auth.resetPasswordForEmail(email)
+      if (error) throw error
+
+      toast({
+        title: "Password Reset Email Sent",
+        description: "Check your email for password reset instructions.",
+      })
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to send password reset email.",
+        variant: "destructive",
+      })
+    }
   }
 
   const handleLogout = async () => {
@@ -63,12 +117,22 @@ export default function SettingsPage() {
   }
 
 
+  const tabOptions = [
+    { label: "General", value: "general", onClick: () => setActiveTab("general") },
+    { label: "Security", value: "security", onClick: () => setActiveTab("security") },
+    { label: "Notifications", value: "notifications", onClick: () => setActiveTab("notifications") },
+    { label: "Preferences", value: "preferences", onClick: () => setActiveTab("preferences") },
+    { label: "About", value: "about", onClick: () => setActiveTab("about") }
+  ]
+
   return (
     <div className="container mx-auto px-4 py-8 pb-20">
       <h1 className="text-3xl font-bold text-indigo-700 mb-6">Settings</h1>
+      
+      <MobileFAB options={tabOptions} activeValue={activeTab} />
 
-      <Tabs defaultValue="general" className="space-y-6">
-        <TabsList className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2 bg-white p-2 rounded-xl shadow-sm overflow-x-auto">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+        <TabsList className={`grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2 bg-white p-2 rounded-xl shadow-sm overflow-x-auto ${isMobile ? 'hidden' : ''}`}>
           <TabsTrigger value="general">General</TabsTrigger>
           <TabsTrigger value="security">Security</TabsTrigger>
           <TabsTrigger value="notifications">Notifications</TabsTrigger>
@@ -90,7 +154,7 @@ export default function SettingsPage() {
                   </div>
                   <span className="text-sm">Dark Mode</span>
                 </div>
-                <Switch checked={darkMode} onCheckedChange={setDarkMode} />
+                <Switch checked={darkMode} onCheckedChange={handleDarkModeToggle} />
               </div>
 
               <div className="flex items-center justify-between">
@@ -137,6 +201,7 @@ export default function SettingsPage() {
                 </div>
                 <Button
                   size="sm"
+                  onClick={handleChangePassword}
                   className="bg-gradient-to-r from-purple-500 to-indigo-500 text-white hover:opacity-90"
                 >
                   Update

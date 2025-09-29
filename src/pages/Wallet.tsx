@@ -12,6 +12,7 @@ import { usePortfolio } from "@/hooks/usePortfolio";
 import { useTransactions } from "@/hooks/useTransactions";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { WalletSkeleton, TransactionSkeleton } from "@/components/SkeletonLoader";
 
 const WalletPage = () => {
   const [activeTab, setActiveTab] = useState("overview");
@@ -81,14 +82,7 @@ const WalletPage = () => {
           <Button onClick={() => navigate('/auth')}>Sign In</Button>
         </div>
       ) : portfolioLoading ? (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {[1, 2, 3].map((i) => (
-            <Card key={i} className="bg-gradient-to-tr from-purple-500 to-indigo-600 text-white shadow-lg rounded-2xl">
-              <CardHeader><CardTitle>Loading...</CardTitle></CardHeader>
-              <CardContent><div className="h-8 w-24 bg-white/20 animate-pulse rounded"></div></CardContent>
-            </Card>
-          ))}
-        </div>
+        <WalletSkeleton />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <Card className="bg-gradient-to-tr from-purple-500 to-indigo-600 text-white shadow-lg rounded-2xl">
@@ -96,7 +90,7 @@ const WalletPage = () => {
             <CardContent><p className="text-2xl font-bold">${portfolio.cashBalance.toLocaleString()}</p></CardContent>
           </Card>
           <Card className="bg-gradient-to-tr from-indigo-500 to-purple-600 text-white shadow-lg rounded-2xl">
-            <CardHeader><CardTitle>Invested</CardTitle></CardHeader>
+            <CardHeader><CardTitle>Invested Balance</CardTitle></CardHeader>
             <CardContent><p className="text-2xl font-bold">${portfolio.investedAmount.toLocaleString()}</p></CardContent>
           </Card>
           <Card className="bg-gradient-to-tr from-purple-400 to-indigo-500 text-white shadow-lg rounded-2xl">
@@ -127,20 +121,7 @@ const WalletPage = () => {
                   <p className="text-muted-foreground">Sign in to view your transactions</p>
                 </div>
               ) : transactionsLoading ? (
-                <div className="space-y-3">
-                  {[1, 2, 3].map((i) => (
-                    <div key={i} className="flex items-center justify-between py-3">
-                      <div className="space-y-2">
-                        <div className="h-4 w-20 bg-muted animate-pulse rounded"></div>
-                        <div className="h-3 w-32 bg-muted animate-pulse rounded"></div>
-                      </div>
-                      <div className="text-right space-y-2">
-                        <div className="h-4 w-16 bg-muted animate-pulse rounded"></div>
-                        <div className="h-5 w-20 bg-muted animate-pulse rounded"></div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                <TransactionSkeleton />
               ) : transactions.length === 0 ? (
                 <div className="text-center py-6">
                   <p className="text-muted-foreground">No transactions yet</p>
