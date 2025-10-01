@@ -145,6 +145,40 @@ export const useSupport = () => {
     }
   };
 
+  const uploadAttachment = async (conversationId: string, file: File) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('User not authenticated');
+
+      const fileName = `${user.id}/${conversationId}/${Date.now()}_${file.name}`;
+      
+      const { error: uploadError } = await supabase.storage
+        .from('support-attachments')
+        .upload(fileName, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('support-attachments')
+        .getPublicUrl(fileName);
+
+      return {
+        name: file.name,
+        url: publicUrl,
+        size: file.size,
+        type: file.type
+      };
+    } catch (error) {
+      console.error('Error uploading attachment:', error);
+      toast({
+        title: "Error",
+        description: "Failed to upload attachment",
+        variant: "destructive",
+      });
+      return null;
+    }
+  };
+
   useEffect(() => {
     fetchConversations();
 
@@ -169,7 +203,7 @@ export const useSupport = () => {
       .on(
         'postgres_changes',
         {
-          event: '*',
+          event: 'INSERT',
           schema: 'public',
           table: 'support_messages'
         },
@@ -177,7 +211,10 @@ export const useSupport = () => {
           // Only update if we're viewing this conversation
           const newRecord = payload.new as any;
           if (messages.length > 0 && newRecord?.conversation_id) {
-            fetchMessages(newRecord.conversation_id);
+            const currentConvId = messages[0]?.conversation_id;
+            if (currentConvId === newRecord.conversation_id) {
+              fetchMessages(newRecord.conversation_id);
+            }
           }
         }
       )
@@ -187,7 +224,7 @@ export const useSupport = () => {
       supabase.removeChannel(conversationsChannel);
       supabase.removeChannel(messagesChannel);
     };
-  }, []);
+  }, [messages]);
 
   return {
     conversations,
@@ -196,6 +233,7 @@ export const useSupport = () => {
     fetchConversations,
     fetchMessages,
     createConversation,
-    sendMessage
+    sendMessage,
+    uploadAttachment
   };
 };

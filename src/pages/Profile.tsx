@@ -34,9 +34,11 @@ import { useProfile } from "@/hooks/useProfile";
 import { usePaymentMethods } from "@/hooks/usePaymentMethods";
 import { MobileFAB } from "@/components/MobileFAB";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { AddPaymentMethodModal } from "@/components/AddPaymentMethodModal";
 
 const Profile = () => {
   const [activeTab, setActiveTab] = useState("personal");
+  const [showAddPaymentModal, setShowAddPaymentModal] = useState(false);
   const [notifications, setNotifications] = useState({
     emailAlerts: false,
     pushNotifications: false,
@@ -51,7 +53,7 @@ const Profile = () => {
   
   // Use real profile and payment method hooks
   const { profile, loading: profileLoading, updateProfile, uploadAvatar } = useProfile();
-  const { paymentMethods, loading: paymentLoading } = usePaymentMethods();
+  const { paymentMethods, loading: paymentLoading, removePaymentMethod, setDefaultPaymentMethod, refetch: refetchPayments } = usePaymentMethods();
 
   // Form state for profile editing
   const [formData, setFormData] = useState({
@@ -318,7 +320,7 @@ const Profile = () => {
               <Button
                 variant="outline"
                 className="w-full border-indigo-500 text-indigo-600"
-                onClick={() => navigate("/wallet")}
+                onClick={() => setShowAddPaymentModal(true)}
               >
                 <CreditCard className="w-4 h-4 mr-2" />
                 Add Payment Method
@@ -377,6 +379,13 @@ const Profile = () => {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Add Payment Method Modal */}
+      <AddPaymentMethodModal
+        open={showAddPaymentModal}
+        onOpenChange={setShowAddPaymentModal}
+        onSuccess={() => refetchPayments()}
+      />
     </div>
   );
 };

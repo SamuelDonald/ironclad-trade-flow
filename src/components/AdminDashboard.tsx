@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { AdminUserSearch } from "@/components/AdminUserSearch";
 
 type AdminSection = 'overview' | 'users' | 'transactions' | 'trades' | 'kyc' | 'support' | 'audit-logs';
 
@@ -204,22 +205,54 @@ export const AdminDashboard: React.FC = () => {
 
       if (response.ok) {
         setNewMessage('');
-        // Refresh messages
-        const updatedConversation = conversations.find(c => c.id === selectedConversation);
-        if (updatedConversation) {
-          setMessages([...updatedConversation.support_messages, {
-            id: Date.now(),
-            sender: 'admin',
-            body: newMessage,
-            created_at: new Date().toISOString()
-          }]);
-        }
+        loadSupportData();
       }
     } catch (error) {
       console.error('Error sending message:', error);
       toast({
         title: "Error",
         description: "Failed to send message",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleStartConversation = async (userId: string, userName: string) => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
+      const subject = `Admin-initiated conversation with ${userName}`;
+      const initialMessage = 'Hello, how can we help you?';
+
+      const response = await fetch('https://jgedidtpqfashojqagbd.functions.supabase.co/admin-support/start', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session.access_token}`
+        },
+        body: JSON.stringify({ 
+          user_id: userId, 
+          subject, 
+          initial_message: initialMessage 
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        toast({
+          title: "Success",
+          description: "Conversation started with user",
+        });
+        loadSupportData();
+        setSelectedConversation(data.conversation_id);
+        setMessages([{ sender: 'admin', body: initialMessage, created_at: new Date().toISOString() }]);
+      }
+    } catch (error) {
+      console.error('Error starting conversation:', error);
+      toast({
+        title: "Error",
+        description: "Failed to start conversation",
         variant: "destructive",
       });
     }
@@ -428,14 +461,26 @@ export const AdminDashboard: React.FC = () => {
         );
       case 'support':
         return (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Conversations List */}
+          <div className="space-y-6">
+            {/* User Search */}
             <Card>
               <CardHeader>
-                <CardTitle>Support Conversations ({conversations.length})</CardTitle>
+                <CardTitle>Search Users</CardTitle>
               </CardHeader>
-              <CardContent className="max-h-96 overflow-y-auto">
-                <div className="space-y-2">
+              <CardContent>
+                <AdminUserSearch onStartConversation={handleStartConversation} />
+              </CardContent>
+            </Card>
+
+            {/* Conversations and Chat */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Conversations List */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Support Conversations ({conversations.length})</CardTitle>
+                </CardHeader>
+                <CardContent className="max-h-96 overflow-y-auto">
+                  <div className="space-y-2">
                   {conversations.map((conversation) => (
                     <div
                       key={conversation.id}
@@ -522,6 +567,7 @@ export const AdminDashboard: React.FC = () => {
                 )}
               </CardContent>
             </Card>
+            </div>
           </div>
         );
       case 'audit-logs':
