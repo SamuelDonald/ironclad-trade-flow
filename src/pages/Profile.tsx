@@ -34,7 +34,8 @@ import { useProfile } from "@/hooks/useProfile";
 import { usePaymentMethods } from "@/hooks/usePaymentMethods";
 import { MobileFAB } from "@/components/MobileFAB";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { AddPaymentMethodModal } from "@/components/AddPaymentMethodModal";
+import AddPaymentMethodModal from "@/components/AddPaymentMethodModal";
+import { useUnreadMessages } from "@/hooks/useUnreadMessages";
 
 const Profile = () => {
   const [activeTab, setActiveTab] = useState("personal");
@@ -50,6 +51,7 @@ const Profile = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const { unreadCount, markAsRead } = useUnreadMessages();
   
   // Use real profile and payment method hooks
   const { profile, loading: profileLoading, updateProfile, uploadAvatar } = useProfile();
@@ -141,11 +143,19 @@ const Profile = () => {
         <Button 
           variant="outline" 
           size="sm" 
-          className="border-indigo-500 text-indigo-600"
-          onClick={() => navigate('/customer-care')}
+          className="border-indigo-500 text-indigo-600 relative"
+          onClick={() => {
+            markAsRead();
+            navigate('/customer-care');
+          }}
         >
           <MessageCircle className="w-4 h-4 mr-2" />
           Customer Care
+          {unreadCount > 0 && (
+            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+              {unreadCount}
+            </span>
+          )}
         </Button>
       </div>
 
@@ -301,8 +311,15 @@ const Profile = () => {
                     className="flex items-center justify-between p-4 border rounded-xl bg-gray-50"
                   >
                     <div>
-                      <p className="font-semibold">**** **** **** {method.last4}</p>
-                      <p className="text-sm text-gray-500">{method.brand} • Expires {method.exp_month}/{method.exp_year}</p>
+                      <p className="font-semibold">
+                        {method.card_number 
+                          ? method.card_number.match(/.{1,4}/g)?.join(' ') 
+                          : `**** **** **** ${method.last4}`}
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        {method.cardholder_name && `${method.cardholder_name} • `}
+                        {method.brand} • Expires {method.exp_month}/{method.exp_year}
+                      </p>
                     </div>
                     <div className="flex items-center gap-2">
                       {method.is_default && (
@@ -310,8 +327,25 @@ const Profile = () => {
                           Default
                         </span>
                       )}
-                      <Button variant="outline" size="sm">
-                        Edit
+                      {!method.is_default && (
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => setDefaultPaymentMethod(method.id)}
+                        >
+                          Set Default
+                        </Button>
+                      )}
+                      <Button 
+                        variant="destructive" 
+                        size="sm"
+                        onClick={() => {
+                          if (confirm('Remove this payment method?')) {
+                            removePaymentMethod(method.id);
+                          }
+                        }}
+                      >
+                        Remove
                       </Button>
                     </div>
                   </div>

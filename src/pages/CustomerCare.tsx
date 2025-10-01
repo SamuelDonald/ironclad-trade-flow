@@ -1,30 +1,66 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { MessageCircle, Send, ArrowLeft } from 'lucide-react';
+import { MessageCircle, Send, ArrowLeft, Paperclip, File, X } from 'lucide-react';
 import { useSupport } from '@/hooks/useSupport';
 import { useNavigate } from 'react-router-dom';
+import { useToast } from '@/hooks/use-toast';
 
 export const CustomerCare: React.FC = () => {
   const navigate = useNavigate();
-  const { conversations, messages, loading, fetchMessages, createConversation, sendMessage } = useSupport();
+  const { toast } = useToast();
+  const { conversations, messages, loading, fetchMessages, createConversation, sendMessage, uploadAttachment } = useSupport();
   const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
   const [newMessage, setNewMessage] = useState('');
   const [newConversationSubject, setNewConversationSubject] = useState('');
   const [newConversationMessage, setNewConversationMessage] = useState('');
   const [showNewConversation, setShowNewConversation] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleSelectConversation = (conversationId: string) => {
     setSelectedConversation(conversationId);
     fetchMessages(conversationId);
   };
 
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Validate file size (5MB limit)
+      if (file.size > 5 * 1024 * 1024) {
+        toast({
+          title: "File too large",
+          description: "Maximum file size is 5MB",
+          variant: "destructive",
+        });
+        return;
+      }
+      setSelectedFile(file);
+    }
+  };
+
   const handleSendMessage = async () => {
-    if (!selectedConversation || !newMessage.trim()) return;
+    if (!selectedConversation || (!newMessage.trim() && !selectedFile)) return;
     
-    await sendMessage(selectedConversation, newMessage);
+    let attachments: any[] = [];
+
+    if (selectedFile) {
+      setUploading(true);
+      const attachment = await uploadAttachment(selectedConversation, selectedFile);
+      if (attachment) {
+        attachments.push(attachment);
+      }
+      setUploading(false);
+      setSelectedFile(null);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+
+    await sendMessage(selectedConversation, newMessage, attachments);
     setNewMessage('');
   };
 
@@ -173,6 +209,34 @@ export const CustomerCare: React.FC = () => {
                           }`}
                         >
                           <p className="text-sm">{message.body}</p>
+                          
+                          {/* Attachments */}
+                          {message.attachments && message.attachments.length > 0 && (
+                            <div className="mt-2 space-y-2">
+                              {message.attachments.map((attachment: any, idx: number) => (
+                                <div key={idx}>
+                                  {attachment.type?.startsWith('image/') ? (
+                                    <img 
+                                      src={attachment.url} 
+                                      alt={attachment.name} 
+                                      className="max-w-sm rounded border"
+                                    />
+                                  ) : (
+                                    <a 
+                                      href={attachment.url} 
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="flex items-center gap-2 text-sm underline hover:opacity-80"
+                                    >
+                                      <File className="h-4 w-4" />
+                                      {attachment.name} ({Math.round(attachment.size / 1024)}KB)
+                                    </a>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                          
                           <p className="text-xs opacity-70 mt-1">
                             {new Date(message.created_at).toLocaleTimeString()}
                           </p>
@@ -181,17 +245,54 @@ export const CustomerCare: React.FC = () => {
                     ))}
                   </div>
 
+                  {/* Selected File Preview */}
+                  {selectedFile && (
+                    <div className="flex items-center gap-2 p-2 bg-muted rounded-lg mb-2">
+                      <File className="h-4 w-4" />
+                      <span className="text-sm flex-1">{selectedFile.name}</span>
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={() => {
+                          setSelectedFile(null);
+                          if (fileInputRef.current) fileInputRef.current.value = '';
+                        }}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  )}
+
                   {/* Message Input */}
                   <div className="flex gap-2">
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      hidden
+                      accept="image/*,.pdf,.doc,.docx"
+                      onChange={handleFileSelect}
+                    />
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={uploading}
+                    >
+                      <Paperclip className="h-4 w-4" />
+                    </Button>
                     <Input
                       placeholder="Type your message..."
                       value={newMessage}
                       onChange={(e) => setNewMessage(e.target.value)}
-                      onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                      onKeyPress={(e) => e.key === 'Enter' && !uploading && handleSendMessage()}
                       className="flex-1"
+                      disabled={uploading}
                     />
-                    <Button onClick={handleSendMessage} disabled={!newMessage.trim()}>
-                      <Send className="h-4 w-4" />
+                    <Button 
+                      onClick={handleSendMessage} 
+                      disabled={(!newMessage.trim() && !selectedFile) || uploading}
+                    >
+                      {uploading ? '...' : <Send className="h-4 w-4" />}
                     </Button>
                   </div>
                 </CardContent>

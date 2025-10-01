@@ -11,6 +11,8 @@ interface PaymentMethod {
   exp_month: number;
   exp_year: number;
   is_default: boolean;
+  cardholder_name?: string;
+  card_number?: string;
   created_at: string;
   updated_at: string;
 }
@@ -60,6 +62,8 @@ export const usePaymentMethods = () => {
     last4: string;
     exp_month: number;
     exp_year: number;
+    cardholder_name?: string;
+    card_number?: string;
   }) => {
     try {
       const { data: { user } } = await supabase.auth.getUser();

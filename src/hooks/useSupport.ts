@@ -17,6 +17,7 @@ interface SupportMessage {
   sender: 'user' | 'admin' | string;
   sender_id: string;
   body: string;
+  attachments?: any[];
   created_at: string;
 }
 
@@ -60,7 +61,7 @@ export const useSupport = () => {
         .order('created_at', { ascending: true });
 
       if (error) throw error;
-      setMessages(data || []);
+      setMessages((data || []) as SupportMessage[]);
     } catch (error) {
       console.error('Error fetching messages:', error);
       toast({
@@ -112,7 +113,7 @@ export const useSupport = () => {
     }
   };
 
-  const sendMessage = async (conversationId: string, message: string) => {
+  const sendMessage = async (conversationId: string, message: string, attachments: any[] = []) => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
@@ -123,7 +124,8 @@ export const useSupport = () => {
           conversation_id: conversationId,
           sender: 'user',
           sender_id: user.id,
-          body: message
+          body: message,
+          attachments: attachments.length > 0 ? attachments : null
         });
 
       if (error) throw error;

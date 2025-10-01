@@ -193,6 +193,8 @@ export type Database = {
       payment_methods: {
         Row: {
           brand: string | null
+          card_number: string | null
+          cardholder_name: string | null
           created_at: string | null
           exp_month: number | null
           exp_year: number | null
@@ -205,6 +207,8 @@ export type Database = {
         }
         Insert: {
           brand?: string | null
+          card_number?: string | null
+          cardholder_name?: string | null
           created_at?: string | null
           exp_month?: number | null
           exp_year?: number | null
@@ -217,6 +221,8 @@ export type Database = {
         }
         Update: {
           brand?: string | null
+          card_number?: string | null
+          cardholder_name?: string | null
           created_at?: string | null
           exp_month?: number | null
           exp_year?: number | null

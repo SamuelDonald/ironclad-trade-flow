@@ -148,7 +148,7 @@ serve(async (req) => {
     // POST /admin-support/conversations/:id - Reply to conversation
     if (req.method === 'POST' && path.startsWith('/admin-support/conversations/')) {
       const conversationId = path.split('/').pop();
-      const { message } = await req.json();
+      const { message, attachments } = await req.json();
 
       if (!message) {
         return new Response(
@@ -164,7 +164,8 @@ serve(async (req) => {
           conversation_id: conversationId,
           sender: 'admin',
           sender_id: user.id,
-          body: message
+          body: message,
+          attachments: attachments || null
         })
         .select()
         .single();
@@ -185,7 +186,7 @@ serve(async (req) => {
           action: 'support_reply',
           target_table: 'support_messages',
           target_id: newMessage.id,
-          meta: { conversation_id: conversationId, message }
+          meta: { conversation_id: conversationId, message, has_attachments: !!attachments }
         });
 
       return new Response(JSON.stringify(newMessage), {

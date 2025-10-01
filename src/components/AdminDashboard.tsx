@@ -12,7 +12,10 @@ import {
   Eye,
   BarChart3,
   MessageCircle,
-  Send
+  Send,
+  Paperclip,
+  File,
+  X
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -53,7 +56,10 @@ export const AdminDashboard: React.FC = () => {
   const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
   const [messages, setMessages] = useState<any[]>([]);
   const [newMessage, setNewMessage] = useState('');
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
   const [loading, setLoading] = useState(false);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   // Load real data
   useEffect(() => {
@@ -187,12 +193,76 @@ export const AdminDashboard: React.FC = () => {
     }
   };
 
-  const sendSupportMessage = async () => {
-    if (!selectedConversation || !newMessage.trim()) return;
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Validate file size (5MB limit)
+      if (file.size > 5 * 1024 * 1024) {
+        toast({
+          title: "File too large",
+          description: "Maximum file size is 5MB",
+          variant: "destructive",
+        });
+        return;
+      }
+      setSelectedFile(file);
+    }
+  };
 
+  const uploadAttachment = async (conversationId: string, file: File) => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) throw new Error('Not authenticated');
+
+      const fileName = `admin/${conversationId}/${Date.now()}_${file.name}`;
+      
+      const { error: uploadError } = await supabase.storage
+        .from('support-attachments')
+        .upload(fileName, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('support-attachments')
+        .getPublicUrl(fileName);
+
+      return {
+        name: file.name,
+        url: publicUrl,
+        size: file.size,
+        type: file.type
+      };
+    } catch (error) {
+      console.error('Error uploading attachment:', error);
+      toast({
+        title: "Error",
+        description: "Failed to upload attachment",
+        variant: "destructive",
+      });
+      return null;
+    }
+  };
+
+  const sendSupportMessage = async () => {
+    if (!selectedConversation || (!newMessage.trim() && !selectedFile)) return;
+
+    try {
+      setUploading(true);
+      const { data: { session } } = await supabase.auth.getSession();
       if (!session) return;
+
+      let attachments: any[] = [];
+
+      if (selectedFile) {
+        const attachment = await uploadAttachment(selectedConversation, selectedFile);
+        if (attachment) {
+          attachments.push(attachment);
+        }
+        setSelectedFile(null);
+        if (fileInputRef.current) {
+          fileInputRef.current.value = '';
+        }
+      }
 
       const response = await fetch(`https://jgedidtpqfashojqagbd.functions.supabase.co/admin-support/conversations/${selectedConversation}`, {
         method: 'POST',
@@ -200,7 +270,10 @@ export const AdminDashboard: React.FC = () => {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${session.access_token}`
         },
-        body: JSON.stringify({ message: newMessage })
+        body: JSON.stringify({ 
+          message: newMessage,
+          attachments: attachments.length > 0 ? attachments : undefined
+        })
       });
 
       if (response.ok) {
@@ -214,6 +287,8 @@ export const AdminDashboard: React.FC = () => {
         description: "Failed to send message",
         variant: "destructive",
       });
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -533,6 +608,34 @@ export const AdminDashboard: React.FC = () => {
                             }`}
                           >
                             <p className="text-sm">{message.body}</p>
+                            
+                            {/* Attachments */}
+                            {message.attachments && message.attachments.length > 0 && (
+                              <div className="mt-2 space-y-2">
+                                {message.attachments.map((attachment: any, idx: number) => (
+                                  <div key={idx}>
+                                    {attachment.type?.startsWith('image/') ? (
+                                      <img 
+                                        src={attachment.url} 
+                                        alt={attachment.name} 
+                                        className="max-w-sm rounded border"
+                                      />
+                                    ) : (
+                                      <a 
+                                        href={attachment.url} 
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="flex items-center gap-2 text-sm underline hover:opacity-80"
+                                      >
+                                        <File className="h-4 w-4" />
+                                        {attachment.name} ({Math.round(attachment.size / 1024)}KB)
+                                      </a>
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                            
                             <p className="text-xs opacity-70 mt-1">
                               {new Date(message.created_at).toLocaleTimeString()}
                             </p>
@@ -541,21 +644,55 @@ export const AdminDashboard: React.FC = () => {
                       ))}
                     </div>
 
+                    {/* Selected File Preview */}
+                    {selectedFile && (
+                      <div className="flex items-center gap-2 p-2 bg-muted rounded-lg">
+                        <File className="h-4 w-4" />
+                        <span className="text-sm flex-1">{selectedFile.name}</span>
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => {
+                            setSelectedFile(null);
+                            if (fileInputRef.current) fileInputRef.current.value = '';
+                          }}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    )}
+
                     {/* Message Input */}
                     <div className="flex gap-2">
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        hidden
+                        accept="image/*,.pdf,.doc,.docx"
+                        onChange={handleFileSelect}
+                      />
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={uploading}
+                      >
+                        <Paperclip className="h-4 w-4" />
+                      </Button>
                       <Textarea
                         placeholder="Type your reply..."
                         value={newMessage}
                         onChange={(e) => setNewMessage(e.target.value)}
                         className="flex-1"
                         rows={3}
+                        disabled={uploading}
                       />
                       <Button 
                         onClick={sendSupportMessage} 
-                        disabled={!newMessage.trim()}
+                        disabled={(!newMessage.trim() && !selectedFile) || uploading}
                         size="sm"
                       >
-                        <Send className="h-4 w-4" />
+                        {uploading ? '...' : <Send className="h-4 w-4" />}
                       </Button>
                     </div>
                   </div>
