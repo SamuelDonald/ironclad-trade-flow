@@ -15,11 +15,13 @@ import {
   Send,
   Paperclip,
   File,
-  X
+  X,
+  ArrowLeft
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { AdminUserSearch } from "@/components/AdminUserSearch";
+import { useNavigate } from "react-router-dom";
 
 type AdminSection = 'overview' | 'users' | 'transactions' | 'trades' | 'kyc' | 'support' | 'audit-logs';
 
@@ -37,6 +39,7 @@ interface AdminStats {
 export const AdminDashboard: React.FC = () => {
   const [activeSection, setActiveSection] = useState<AdminSection>('overview');
   const { toast } = useToast();
+  const navigate = useNavigate();
   
   // Real data states
   const [liveStats, setLiveStats] = useState<AdminStats>({
@@ -69,6 +72,31 @@ export const AdminDashboard: React.FC = () => {
     loadTradesData();
     loadSupportData();
   }, []);
+
+  // Real-time support messages subscription
+  useEffect(() => {
+    if (!selectedConversation) return;
+    
+    const channel = supabase
+      .channel('admin_messages_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'support_messages',
+          filter: `conversation_id=eq.${selectedConversation}`
+        },
+        (payload) => {
+          setMessages(prev => [...prev, payload.new as any]);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [selectedConversation]);
 
   const loadOverviewData = async () => {
     try {
@@ -152,7 +180,21 @@ export const AdminDashboard: React.FC = () => {
 
       if (response.ok) {
         const data = await response.json();
-        setConversations(data);
+        
+        // Fetch user profiles for each conversation
+        const conversationsWithUsers = await Promise.all(
+          data.map(async (conv: any) => {
+            const { data: profile } = await supabase
+              .from('profiles')
+              .select('full_name, email')
+              .eq('id', conv.user_id)
+              .single();
+            
+            return { ...conv, user_profile: profile };
+          })
+        );
+        
+        setConversations(conversationsWithUsers);
       }
     } catch (error) {
       console.error('Error loading support data:', error);
@@ -556,7 +598,7 @@ export const AdminDashboard: React.FC = () => {
                 </CardHeader>
                 <CardContent className="max-h-96 overflow-y-auto">
                   <div className="space-y-2">
-                  {conversations.map((conversation) => (
+                   {conversations.map((conversation) => (
                     <div
                       key={conversation.id}
                       className={`p-3 border rounded-lg cursor-pointer transition-colors ${
@@ -570,6 +612,17 @@ export const AdminDashboard: React.FC = () => {
                       }}
                     >
                       <p className="font-medium">{conversation.subject || 'No subject'}</p>
+                      
+                      {/* User Info */}
+                      <div className="mt-2 mb-1 p-2 bg-blue-50 rounded border border-blue-200">
+                        <p className="text-sm font-semibold text-blue-900">
+                          {conversation.user_profile?.full_name || 'Unknown User'}
+                        </p>
+                        <p className="text-xs text-blue-700">
+                          {conversation.user_profile?.email || 'No email'}
+                        </p>
+                      </div>
+                      
                       <p className="text-sm text-muted-foreground">
                         {conversation.support_messages?.length || 0} messages
                       </p>
@@ -589,6 +642,16 @@ export const AdminDashboard: React.FC = () => {
             <Card>
               <CardHeader>
                 <CardTitle>Chat</CardTitle>
+                {selectedConversation && conversations.find(c => c.id === selectedConversation)?.user_profile && (
+                  <div className="mt-2 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                    <p className="font-semibold text-blue-900">
+                      Chatting with: {conversations.find(c => c.id === selectedConversation)?.user_profile?.full_name}
+                    </p>
+                    <p className="text-sm text-blue-700">
+                      {conversations.find(c => c.id === selectedConversation)?.user_profile?.email}
+                    </p>
+                  </div>
+                )}
               </CardHeader>
               <CardContent>
                 {selectedConversation ? (
@@ -728,6 +791,15 @@ export const AdminDashboard: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      {/* Back Button Header */}
+      <div className="flex items-center gap-4">
+        <Button variant="outline" size="sm" onClick={() => navigate('/portfolio')}>
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back to Portfolio
+        </Button>
+        <h1 className="text-2xl font-bold">Admin Dashboard</h1>
+      </div>
+
       {/* Navigation */}
       <Card>
         <CardContent className="p-4">

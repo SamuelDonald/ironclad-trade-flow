@@ -42,18 +42,27 @@ export const useUnreadMessages = () => {
     }
   };
 
-  const markAsRead = async () => {
+  const markAsRead = async (conversationId?: string) => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      // Update all conversations' last_read_at
-      await supabase
-        .from('support_conversations')
-        .update({ last_read_at: new Date().toISOString() })
-        .eq('user_id', user.id);
+      if (conversationId) {
+        // Update specific conversation's last_read_at
+        await supabase
+          .from('support_conversations')
+          .update({ last_read_at: new Date().toISOString() })
+          .eq('id', conversationId)
+          .eq('user_id', user.id);
+      } else {
+        // Update all conversations' last_read_at
+        await supabase
+          .from('support_conversations')
+          .update({ last_read_at: new Date().toISOString() })
+          .eq('user_id', user.id);
+      }
 
-      setUnreadCount(0);
+      fetchUnreadCount();
     } catch (error) {
       console.error('Error marking as read:', error);
     }

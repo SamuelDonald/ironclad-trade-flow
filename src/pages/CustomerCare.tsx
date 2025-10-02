@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useUnreadMessages } from '@/hooks/useUnreadMessages';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -12,6 +13,7 @@ export const CustomerCare: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { conversations, messages, loading, fetchMessages, createConversation, sendMessage, uploadAttachment } = useSupport();
+  const { markAsRead } = useUnreadMessages();
   const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
   const [newMessage, setNewMessage] = useState('');
   const [newConversationSubject, setNewConversationSubject] = useState('');
@@ -20,10 +22,17 @@ export const CustomerCare: React.FC = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll to bottom when new messages arrive
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
 
   const handleSelectConversation = (conversationId: string) => {
     setSelectedConversation(conversationId);
     fetchMessages(conversationId);
+    markAsRead(conversationId);
   };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -192,10 +201,13 @@ export const CustomerCare: React.FC = () => {
               <>
                 <CardHeader>
                   <CardTitle>Chat</CardTitle>
+                  <p className="text-sm text-muted-foreground">
+                    Send follow-up messages to continue the conversation
+                  </p>
                 </CardHeader>
                 <CardContent className="flex flex-col h-full">
                   {/* Messages */}
-                  <div className="flex-1 space-y-4 overflow-y-auto mb-4 max-h-96">
+                  <div className="flex-1 space-y-4 overflow-y-auto mb-4 max-h-[400px] min-h-[200px]">
                     {messages.map((message) => (
                       <div
                         key={message.id}
@@ -243,6 +255,7 @@ export const CustomerCare: React.FC = () => {
                         </div>
                       </div>
                     ))}
+                    <div ref={messagesEndRef} />
                   </div>
 
                   {/* Selected File Preview */}
