@@ -793,10 +793,10 @@ export const AdminDashboard: React.FC = () => {
     <div className="space-y-6">
       {/* Back Button Header */}
       <div className="flex items-center gap-4">
-        <Button variant="outline" size="sm" onClick={() => navigate('/portfolio')}>
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Portfolio
-        </Button>
+            <Button variant="outline" size="sm" onClick={() => navigate('/')}>
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Home
+            </Button>
         <h1 className="text-2xl font-bold">Admin Dashboard</h1>
       </div>
 

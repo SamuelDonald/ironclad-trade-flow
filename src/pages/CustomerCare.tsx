@@ -112,9 +112,9 @@ export const CustomerCare: React.FC = () => {
       </div>
 
       <div className="container mx-auto px-4 py-6">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-200px)]">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Conversations List */}
-          <Card className="lg:col-span-1">
+          <Card className="lg:col-span-1 h-[calc(100vh-200px)] flex flex-col">
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="flex items-center gap-2">
                 <MessageCircle className="h-5 w-5" />
@@ -196,18 +196,18 @@ export const CustomerCare: React.FC = () => {
           </Card>
 
           {/* Chat Area */}
-          <Card className="lg:col-span-2">
+          <Card className="lg:col-span-2 h-[calc(100vh-200px)] flex flex-col">
             {selectedConversation ? (
               <>
-                <CardHeader>
+                <CardHeader className="flex-shrink-0">
                   <CardTitle>Chat</CardTitle>
                   <p className="text-sm text-muted-foreground">
                     Send follow-up messages to continue the conversation
                   </p>
                 </CardHeader>
-                <CardContent className="flex flex-col h-full">
+                <CardContent className="flex flex-col flex-1 min-h-0">
                   {/* Messages */}
-                  <div className="flex-1 space-y-4 overflow-y-auto mb-4 max-h-[400px] min-h-[200px]">
+                  <div className="flex-1 space-y-4 overflow-y-auto mb-4 min-h-0">
                     {messages.map((message) => (
                       <div
                         key={message.id}
@@ -277,7 +277,7 @@ export const CustomerCare: React.FC = () => {
                   )}
 
                   {/* Message Input */}
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 flex-shrink-0 mt-auto">
                     <input
                       ref={fileInputRef}
                       type="file"
