@@ -82,6 +82,41 @@ serve(async (req) => {
 
       if (error) throw error;
 
+      // Enrich conversations with user data
+      const enrichedConversations = await Promise.all(
+        (conversations || []).map(async (conv) => {
+          let user_name = 'Unknown user';
+          let user_email = 'No email';
+
+          if (conv.user_id) {
+            // Fetch user email from auth.users
+            const { data: authUser } = await supabase.auth.admin.getUserById(conv.user_id);
+            if (authUser?.user?.email) {
+              user_email = authUser.user.email;
+            }
+
+            // Fetch full name from profiles
+            const { data: profile } = await supabase
+              .from('profiles')
+              .select('full_name')
+              .eq('id', conv.user_id)
+              .single();
+
+            if (profile?.full_name) {
+              user_name = profile.full_name;
+            } else if (authUser?.user?.email) {
+              user_name = authUser.user.email;
+            }
+          }
+
+          return {
+            ...conv,
+            user_name,
+            user_email
+          };
+        })
+      );
+
       // Log admin action
       await supabase.from('admin_audits').insert({
         admin_user_id: adminUser.id,
@@ -89,7 +124,7 @@ serve(async (req) => {
         meta: { search: search || null }
       });
 
-      return new Response(JSON.stringify(conversations), {
+      return new Response(JSON.stringify(enrichedConversations), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
     }

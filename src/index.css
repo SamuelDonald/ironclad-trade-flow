@@ -168,4 +168,13 @@
   .bg-warning {
     background-color: hsl(var(--warning));
   }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
 }

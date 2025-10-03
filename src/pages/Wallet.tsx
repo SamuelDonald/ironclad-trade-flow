@@ -39,15 +39,18 @@ const WalletPage = () => {
   const cryptoAddresses = {
     BTC: {
       address: "bc1qzqmxyf6uxmtgce6jn6weefre4h8h6udm9dzu6a",
-      qrCode: "https://jgedidtpqfashojqagbd.supabase.co/storage/v1/object/sign/QR%20codes/BTC.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hNjhjYTQwYS1hNGVmLTQ5YmQtOWM4Ny00ODBkZDk0MDhiNjUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJRUiBjb2Rlcy9CVEMuanBnIiwiaWF0IjoxNzU4ODg5OTU2LCJleHAiOjE3OTA0MjU5NTZ9.jo7XY_5VlWlanNf4hQv09KI1jEE3tMC0py6BBKxZWK0"
+      qrCode: "https://jgedidtpqfashojqagbd.supabase.co/storage/v1/object/sign/QR%20codes/BTC.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hNjhjYTQwYS1hNGVmLTQ5YmQtOWM4Ny00ODBkZDk0MDhiNjUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJRUiBjb2Rlcy9CVEMuanBnIiwiaWF0IjoxNzU4ODg5OTU2LCJleHAiOjE3OTA0MjU5NTZ9.jo7XY_5VlWlanNf4hQv09KI1jEE3tMC0py6BBKxZWK0",
+      logo: "https://jgedidtpqfashojqagbd.supabase.co/storage/v1/object/sign/WalletLogo's/BTC%20logo.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hNjhjYTQwYS1hNGVmLTQ5YmQtOWM4Ny00ODBkZDk0MDhiNjUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJXYWxsZXRMb2dvJ3MvQlRDIGxvZ28uanBnIiwiaWF0IjoxNzU5NDkxMDE5LCJleHAiOjE3OTEwMjcwMTl9.blU3tn3g06BaYvbUydYcSgscvAR9KKvrFiGbCz141H0"
     },
     SOL: {
       address: "AXz6WH3MTERUNfmrTSFBCKganuPf1Jg4FJGMUk5Y5PKr",
-      qrCode: "https://jgedidtpqfashojqagbd.supabase.co/storage/v1/object/sign/QR%20codes/SOL.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hNjhjYTQwYS1hNGVmLTQ5YmQtOWM4Ny00ODBkZDk0MDhiNjUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJRUiBjb2Rlcy9TT0wuanBnIiwiaWF0IjoxNzU4ODg5OTczLCJleHAiOjE3OTA0MjU5NzN9.c8qXJriUQy1fi8dZeAOLb1EuZYByct7xLadWu9oTQvo"
+      qrCode: "https://jgedidtpqfashojqagbd.supabase.co/storage/v1/object/sign/QR%20codes/SOL.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hNjhjYTQwYS1hNGVmLTQ5YmQtOWM4Ny00ODBkZDk0MDhiNjUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJRUiBjb2Rlcy9TT0wuanBnIiwiaWF0IjoxNzU4ODg5OTczLCJleHAiOjE3OTA0MjU5NzN9.c8qXJriUQy1fi8dZeAOLb1EuZYByct7xLadWu9oTQvo",
+      logo: "https://jgedidtpqfashojqagbd.supabase.co/storage/v1/object/sign/WalletLogo's/SOL%20logo.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hNjhjYTQwYS1hNGVmLTQ5YmQtOWM4Ny00ODBkZDk0MDhiNjUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJXYWxsZXRMb2dvJ3MvU09MIGxvZ28uanBnIiwiaWF0IjoxNzU5NDkxMDAzLCJleHAiOjE3OTEwMjcwMDN9._DcHVxnlQVn7rxSIgpRNj1ef3I2zQpb5nWd329rP_Yo"
     },
     "USDT-ERC20": {
       address: "0xb8a0BaC9FdF3ef67BDA63638310255508Db3a12A",
-      qrCode: "https://jgedidtpqfashojqagbd.supabase.co/storage/v1/object/sign/QR%20codes/USDT.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hNjhjYTQwYS1hNGVmLTQ5YmQtOWM4Ny00ODBkZDk0MDhiNjUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJRUiBjb2Rlcy9VU0RULmpwZyIsImlhdCI6MTc1ODg4OTk4NywiZXhwIjoxNzkwNDI1OTg3fQ.dAalhHJF1Cd8Y31TNX3yLXLgWLjOlJe4d_W2_S3oyM8"
+      qrCode: "https://jgedidtpqfashojqagbd.supabase.co/storage/v1/object/sign/QR%20codes/USDT.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hNjhjYTQwYS1hNGVmLTQ5YmQtOWM4Ny00ODBkZDk0MDhiNjUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJRUiBjb2Rlcy9VU0RULmpwZyIsImlhdCI6MTc1ODg4OTk4NywiZXhwIjoxNzkwNDI1OTg3fQ.dAalhHJF1Cd8Y31TNX3yLXLgWLjOlJe4d_W2_S3oyM8",
+      logo: "https://jgedidtpqfashojqagbd.supabase.co/storage/v1/object/sign/WalletLogo's/USDT%20logo.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hNjhjYTQwYS1hNGVmLTQ5YmQtOWM4Ny00ODBkZDk0MDhiNjUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJXYWxsZXRMb2dvJ3MvVVNEVCBsb2dvLmpwZyIsImlhdCI6MTc1OTQ5MDk4MywiZXhwIjoxNzkxMDI2OTgzfQ.CbJz4faAyIqEeaoCPu2O4sL3WheMrs49u8gN6lxyagQ"
     },
   };
 
@@ -84,20 +87,45 @@ const WalletPage = () => {
       ) : portfolioLoading ? (
         <WalletSkeleton />
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card className="bg-gradient-to-tr from-purple-500 to-indigo-600 text-white shadow-lg rounded-2xl">
-            <CardHeader><CardTitle>Cash Balance</CardTitle></CardHeader>
-            <CardContent><p className="text-2xl font-bold">${portfolio.cashBalance.toLocaleString()}</p></CardContent>
-          </Card>
-          <Card className="bg-gradient-to-tr from-indigo-500 to-purple-600 text-white shadow-lg rounded-2xl">
-            <CardHeader><CardTitle>Invested Balance</CardTitle></CardHeader>
-            <CardContent><p className="text-2xl font-bold">${portfolio.investedAmount.toLocaleString()}</p></CardContent>
-          </Card>
-          <Card className="bg-gradient-to-tr from-purple-400 to-indigo-500 text-white shadow-lg rounded-2xl">
-            <CardHeader><CardTitle>Free Margin</CardTitle></CardHeader>
-            <CardContent><p className="text-2xl font-bold">${portfolio.freeMargin.toLocaleString()}</p></CardContent>
-          </Card>
-        </div>
+        <>
+          {/* Mobile: Horizontal Carousel */}
+          <div className="md:hidden flex gap-4 overflow-x-auto pb-4 px-4 -mx-4 snap-x snap-mandatory scrollbar-hide">
+            <Card className="flex-shrink-0 w-44 h-44 sm:w-52 sm:h-52 rounded-2xl p-4 snap-center shadow-lg bg-white border border-gray-100">
+              <CardContent className="p-0 h-full flex flex-col justify-between">
+                <div className="text-xs text-gray-500">Cash Balance</div>
+                <div className="text-2xl sm:text-3xl font-bold text-black">${portfolio.cashBalance.toLocaleString()}</div>
+              </CardContent>
+            </Card>
+            <Card className="flex-shrink-0 w-44 h-44 sm:w-52 sm:h-52 rounded-2xl p-4 snap-center shadow-lg" style={{ backgroundColor: '#00b7ff' }}>
+              <CardContent className="p-0 h-full flex flex-col justify-between">
+                <div className="text-xs text-white/80">Invested Balance</div>
+                <div className="text-2xl sm:text-3xl font-bold text-white">${portfolio.investedAmount.toLocaleString()}</div>
+              </CardContent>
+            </Card>
+            <Card className="flex-shrink-0 w-44 h-44 sm:w-52 sm:h-52 rounded-2xl p-4 snap-center shadow-lg" style={{ backgroundColor: '#00e676' }}>
+              <CardContent className="p-0 h-full flex flex-col justify-between">
+                <div className="text-xs text-white/80">Free Margin</div>
+                <div className="text-2xl sm:text-3xl font-bold text-white">${portfolio.freeMargin.toLocaleString()}</div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Desktop & Tablet: Original Grid */}
+          <div className="hidden md:grid grid-cols-1 md:grid-cols-3 gap-6">
+            <Card className="bg-gradient-to-tr from-purple-500 to-indigo-600 text-white shadow-lg rounded-2xl">
+              <CardHeader><CardTitle>Cash Balance</CardTitle></CardHeader>
+              <CardContent><p className="text-2xl font-bold">${portfolio.cashBalance.toLocaleString()}</p></CardContent>
+            </Card>
+            <Card className="bg-gradient-to-tr from-indigo-500 to-purple-600 text-white shadow-lg rounded-2xl">
+              <CardHeader><CardTitle>Invested Balance</CardTitle></CardHeader>
+              <CardContent><p className="text-2xl font-bold">${portfolio.investedAmount.toLocaleString()}</p></CardContent>
+            </Card>
+            <Card className="bg-gradient-to-tr from-purple-400 to-indigo-500 text-white shadow-lg rounded-2xl">
+              <CardHeader><CardTitle>Free Margin</CardTitle></CardHeader>
+              <CardContent><p className="text-2xl font-bold">${portfolio.freeMargin.toLocaleString()}</p></CardContent>
+            </Card>
+          </div>
+        </>
       )}
 
       {/* ✅ Tabs (modern Figma-style) */}
@@ -181,7 +209,18 @@ const WalletPage = () => {
                   onClick={() => openQRCode(crypto, data.qrCode)}
                 >
                   <div className="flex items-center justify-between mb-2">
-                    <h4 className="font-semibold">{crypto}</h4>
+                    <div className="flex items-center gap-3">
+                      <img 
+                        src={data.logo} 
+                        alt={`${crypto} logo`} 
+                        className="w-8 h-8 rounded-full object-cover"
+                        loading="lazy"
+                        onError={(e) => {
+                          e.currentTarget.src = '/placeholder.svg';
+                        }}
+                      />
+                      <h4 className="font-semibold">{crypto}</h4>
+                    </div>
                     <Button 
                       variant="ghost" 
                       size="sm" 

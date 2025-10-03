@@ -180,21 +180,8 @@ export const AdminDashboard: React.FC = () => {
 
       if (response.ok) {
         const data = await response.json();
-        
-        // Fetch user profiles for each conversation
-        const conversationsWithUsers = await Promise.all(
-          data.map(async (conv: any) => {
-            const { data: profile } = await supabase
-              .from('profiles')
-              .select('full_name, email')
-              .eq('id', conv.user_id)
-              .single();
-            
-            return { ...conv, user_profile: profile };
-          })
-        );
-        
-        setConversations(conversationsWithUsers);
+        // Data already enriched with user_name and user_email from backend
+        setConversations(data);
       }
     } catch (error) {
       console.error('Error loading support data:', error);

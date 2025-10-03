@@ -148,61 +148,94 @@ const MarketPage = () => {
               No forex pairs found matching your search criteria.
             </div>
           ) : (
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {filteredAssets.map((asset) => (
-                <Card key={asset.symbol} className="hover:shadow-md transition-shadow">
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <div 
-                      className="cursor-pointer flex-1"
+            <>
+              {/* Desktop: Card Grid */}
+              <div className="hidden md:grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {filteredAssets.map((asset) => (
+                  <Card key={asset.symbol} className="hover:shadow-md transition-shadow">
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <div 
+                        className="cursor-pointer flex-1"
+                        onClick={() => setSelectedAsset(asset)}
+                      >
+                        <CardTitle className="text-lg font-bold text-indigo-700">
+                          {asset.symbol}
+                        </CardTitle>
+                        <p className="text-sm text-muted-foreground">{asset.name}</p>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleWatchlist(asset);
+                        }}
+                        className="text-yellow-500 hover:text-yellow-600"
+                      >
+                        <Star className={`h-4 w-4 ${isInWatchlist(asset.symbol) ? 'fill-current' : ''}`} />
+                      </Button>
+                    </CardHeader>
+                    <CardContent 
+                      className="cursor-pointer"
                       onClick={() => setSelectedAsset(asset)}
                     >
-                      <CardTitle className="text-lg font-bold text-indigo-700">
-                        {asset.symbol}
-                      </CardTitle>
-                      <p className="text-sm text-muted-foreground">{asset.name}</p>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        toggleWatchlist(asset);
-                      }}
-                      className="text-yellow-500 hover:text-yellow-600"
-                    >
-                      <Star className={`h-4 w-4 ${isInWatchlist(asset.symbol) ? 'fill-current' : ''}`} />
-                    </Button>
-                  </CardHeader>
-                  <CardContent 
-                    className="cursor-pointer"
+                      <div className="flex items-center justify-between">
+                        <div className="flex flex-col">
+                          <p className="text-2xl font-bold">
+                            {asset.price}
+                          </p>
+                          <div className="flex items-center space-x-1">
+                            {asset.change >= 0 ? (
+                              <TrendingUp className="h-4 w-4 text-green-500" />
+                            ) : (
+                              <TrendingDown className="h-4 w-4 text-red-500" />
+                            )}
+                            <span className={`text-sm font-medium ${
+                              asset.change >= 0 ? 'text-green-500' : 'text-red-500'
+                            }`}>
+                              {asset.change >= 0 ? '+' : ''}{asset.change}
+                            </span>
+                          </div>
+                        </div>
+                        <Badge variant="secondary" className="bg-green-100 text-green-700">
+                          {asset.category}
+                        </Badge>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+
+              {/* Mobile: Compact List */}
+              <div className="md:hidden divide-y">
+                {filteredAssets.map((asset) => (
+                  <div
+                    key={asset.symbol}
+                    className="flex items-center justify-between py-3 px-4 hover:bg-accent/5 cursor-pointer"
                     onClick={() => setSelectedAsset(asset)}
                   >
-                    <div className="flex items-center justify-between">
-                      <div className="flex flex-col">
-                        <p className="text-2xl font-bold">
-                          {asset.price}
-                        </p>
-                        <div className="flex items-center space-x-1">
-                          {asset.change >= 0 ? (
-                            <TrendingUp className="h-4 w-4 text-green-500" />
-                          ) : (
-                            <TrendingDown className="h-4 w-4 text-red-500" />
-                          )}
-                          <span className={`text-sm font-medium ${
-                            asset.change >= 0 ? 'text-green-500' : 'text-red-500'
-                          }`}>
-                            {asset.change >= 0 ? '+' : ''}{asset.change}
-                          </span>
-                        </div>
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                      <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+                        <span className="text-xs font-bold text-green-700">{asset.symbol.substring(0, 2)}</span>
                       </div>
-                      <Badge variant="secondary" className="bg-green-100 text-green-700">
-                        {asset.category}
-                      </Badge>
+                      {isInWatchlist(asset.symbol) && (
+                        <Star className="w-3 h-3 fill-yellow-500 text-yellow-500 flex-shrink-0" />
+                      )}
+                      <div className="leading-tight min-w-0 flex-1">
+                        <p className="font-bold text-sm truncate">{asset.symbol}</p>
+                        <p className="text-xs text-muted-foreground truncate">{asset.name}</p>
+                      </div>
                     </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+                    <div className="text-right flex-shrink-0 ml-2">
+                      <p className="font-bold text-sm">{asset.price}</p>
+                      <p className={`text-xs ${asset.change >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                        {asset.change >= 0 ? '+' : ''}{asset.change}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
           )}
         </TabsContent>
 
@@ -213,68 +246,101 @@ const MarketPage = () => {
               No stocks found matching your search criteria.
             </div>
           ) : (
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {filteredAssets.map((asset) => (
-                <Card key={asset.symbol} className="hover:shadow-md transition-shadow">
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <div 
-                      className="cursor-pointer flex-1"
+            <>
+              {/* Desktop: Card Grid */}
+              <div className="hidden md:grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {filteredAssets.map((asset) => (
+                  <Card key={asset.symbol} className="hover:shadow-md transition-shadow">
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <div 
+                        className="cursor-pointer flex-1"
+                        onClick={() => setSelectedAsset(asset)}
+                      >
+                        <CardTitle className="text-lg font-bold text-indigo-700">
+                          {asset.symbol}
+                        </CardTitle>
+                        <p className="text-sm text-muted-foreground">{asset.name}</p>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleWatchlist(asset);
+                        }}
+                        className="text-yellow-500 hover:text-yellow-600"
+                      >
+                        <Star className={`h-4 w-4 ${isInWatchlist(asset.symbol) ? 'fill-current' : ''}`} />
+                      </Button>
+                    </CardHeader>
+                    <CardContent 
+                      className="cursor-pointer"
                       onClick={() => setSelectedAsset(asset)}
                     >
-                      <CardTitle className="text-lg font-bold text-indigo-700">
-                        {asset.symbol}
-                      </CardTitle>
-                      <p className="text-sm text-muted-foreground">{asset.name}</p>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        toggleWatchlist(asset);
-                      }}
-                      className="text-yellow-500 hover:text-yellow-600"
-                    >
-                      <Star className={`h-4 w-4 ${isInWatchlist(asset.symbol) ? 'fill-current' : ''}`} />
-                    </Button>
-                  </CardHeader>
-                  <CardContent 
-                    className="cursor-pointer"
-                    onClick={() => setSelectedAsset(asset)}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex flex-col">
-                        <p className="text-2xl font-bold">
-                          ${asset.price}
-                        </p>
-                        <div className="flex items-center space-x-1">
-                          {asset.change >= 0 ? (
-                            <TrendingUp className="h-4 w-4 text-green-500" />
-                          ) : (
-                            <TrendingDown className="h-4 w-4 text-red-500" />
+                      <div className="flex items-center justify-between">
+                        <div className="flex flex-col">
+                          <p className="text-2xl font-bold">
+                            ${asset.price}
+                          </p>
+                          <div className="flex items-center space-x-1">
+                            {asset.change >= 0 ? (
+                              <TrendingUp className="h-4 w-4 text-green-500" />
+                            ) : (
+                              <TrendingDown className="h-4 w-4 text-red-500" />
+                            )}
+                            <span className={`text-sm font-medium ${
+                              asset.change >= 0 ? 'text-green-500' : 'text-red-500'
+                            }`}>
+                              {asset.change >= 0 ? '+' : ''}${asset.change}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="flex flex-col items-end space-y-2">
+                          <Badge variant="secondary" className="bg-blue-100 text-blue-700">
+                            {asset.category}
+                          </Badge>
+                          {asset.volume && (
+                            <p className="text-xs text-muted-foreground">
+                              Vol: {formatMarketCap(asset.volume)}
+                            </p>
                           )}
-                          <span className={`text-sm font-medium ${
-                            asset.change >= 0 ? 'text-green-500' : 'text-red-500'
-                          }`}>
-                            {asset.change >= 0 ? '+' : ''}${asset.change}
-                          </span>
                         </div>
                       </div>
-                      <div className="flex flex-col items-end space-y-2">
-                        <Badge variant="secondary" className="bg-blue-100 text-blue-700">
-                          {asset.category}
-                        </Badge>
-                        {asset.volume && (
-                          <p className="text-xs text-muted-foreground">
-                            Vol: {formatMarketCap(asset.volume)}
-                          </p>
-                        )}
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+
+              {/* Mobile: Compact List */}
+              <div className="md:hidden divide-y">
+                {filteredAssets.map((asset) => (
+                  <div
+                    key={asset.symbol}
+                    className="flex items-center justify-between py-3 px-4 hover:bg-accent/5 cursor-pointer"
+                    onClick={() => setSelectedAsset(asset)}
+                  >
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                      <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                        <span className="text-xs font-bold text-blue-700">{asset.symbol.substring(0, 2)}</span>
+                      </div>
+                      {isInWatchlist(asset.symbol) && (
+                        <Star className="w-3 h-3 fill-yellow-500 text-yellow-500 flex-shrink-0" />
+                      )}
+                      <div className="leading-tight min-w-0 flex-1">
+                        <p className="font-bold text-sm truncate">{asset.symbol}</p>
+                        <p className="text-xs text-muted-foreground truncate">{asset.name}</p>
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+                    <div className="text-right flex-shrink-0 ml-2">
+                      <p className="font-bold text-sm">${asset.price}</p>
+                      <p className={`text-xs ${asset.change >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                        {asset.change >= 0 ? '+' : ''}${asset.change}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
           )}
         </TabsContent>
 
@@ -285,68 +351,101 @@ const MarketPage = () => {
               No cryptocurrencies found matching your search criteria.
             </div>
           ) : (
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {filteredAssets.map((asset) => (
-                <Card key={asset.symbol} className="hover:shadow-md transition-shadow">
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <div 
-                      className="cursor-pointer flex-1"
+            <>
+              {/* Desktop: Card Grid */}
+              <div className="hidden md:grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {filteredAssets.map((asset) => (
+                  <Card key={asset.symbol} className="hover:shadow-md transition-shadow">
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <div 
+                        className="cursor-pointer flex-1"
+                        onClick={() => setSelectedAsset(asset)}
+                      >
+                        <CardTitle className="text-lg font-bold text-indigo-700">
+                          {asset.symbol}
+                        </CardTitle>
+                        <p className="text-sm text-muted-foreground">{asset.name}</p>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleWatchlist(asset);
+                        }}
+                        className="text-yellow-500 hover:text-yellow-600"
+                      >
+                        <Star className={`h-4 w-4 ${isInWatchlist(asset.symbol) ? 'fill-current' : ''}`} />
+                      </Button>
+                    </CardHeader>
+                    <CardContent 
+                      className="cursor-pointer"
                       onClick={() => setSelectedAsset(asset)}
                     >
-                      <CardTitle className="text-lg font-bold text-indigo-700">
-                        {asset.symbol}
-                      </CardTitle>
-                      <p className="text-sm text-muted-foreground">{asset.name}</p>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        toggleWatchlist(asset);
-                      }}
-                      className="text-yellow-500 hover:text-yellow-600"
-                    >
-                      <Star className={`h-4 w-4 ${isInWatchlist(asset.symbol) ? 'fill-current' : ''}`} />
-                    </Button>
-                  </CardHeader>
-                  <CardContent 
-                    className="cursor-pointer"
-                    onClick={() => setSelectedAsset(asset)}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex flex-col">
-                        <p className="text-2xl font-bold">
-                          ${asset.price.toLocaleString()}
-                        </p>
-                        <div className="flex items-center space-x-1">
-                          {asset.change >= 0 ? (
-                            <TrendingUp className="h-4 w-4 text-green-500" />
-                          ) : (
-                            <TrendingDown className="h-4 w-4 text-red-500" />
+                      <div className="flex items-center justify-between">
+                        <div className="flex flex-col">
+                          <p className="text-2xl font-bold">
+                            ${asset.price.toLocaleString()}
+                          </p>
+                          <div className="flex items-center space-x-1">
+                            {asset.change >= 0 ? (
+                              <TrendingUp className="h-4 w-4 text-green-500" />
+                            ) : (
+                              <TrendingDown className="h-4 w-4 text-red-500" />
+                            )}
+                            <span className={`text-sm font-medium ${
+                              asset.change >= 0 ? 'text-green-500' : 'text-red-500'
+                            }`}>
+                              {asset.change >= 0 ? '+' : ''}${asset.change}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="flex flex-col items-end space-y-2">
+                          <Badge variant="secondary" className="bg-purple-100 text-purple-700">
+                            {asset.category}
+                          </Badge>
+                          {asset.volume && (
+                            <p className="text-xs text-muted-foreground">
+                              Vol: {formatMarketCap(asset.volume)}
+                            </p>
                           )}
-                          <span className={`text-sm font-medium ${
-                            asset.change >= 0 ? 'text-green-500' : 'text-red-500'
-                          }`}>
-                            {asset.change >= 0 ? '+' : ''}${asset.change}
-                          </span>
                         </div>
                       </div>
-                      <div className="flex flex-col items-end space-y-2">
-                        <Badge variant="secondary" className="bg-purple-100 text-purple-700">
-                          {asset.category}
-                        </Badge>
-                        {asset.volume && (
-                          <p className="text-xs text-muted-foreground">
-                            Vol: {formatMarketCap(asset.volume)}
-                          </p>
-                        )}
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+
+              {/* Mobile: Compact List */}
+              <div className="md:hidden divide-y">
+                {filteredAssets.map((asset) => (
+                  <div
+                    key={asset.symbol}
+                    className="flex items-center justify-between py-3 px-4 hover:bg-accent/5 cursor-pointer"
+                    onClick={() => setSelectedAsset(asset)}
+                  >
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                      <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0">
+                        <span className="text-xs font-bold text-purple-700">{asset.symbol.substring(0, 2)}</span>
+                      </div>
+                      {isInWatchlist(asset.symbol) && (
+                        <Star className="w-3 h-3 fill-yellow-500 text-yellow-500 flex-shrink-0" />
+                      )}
+                      <div className="leading-tight min-w-0 flex-1">
+                        <p className="font-bold text-sm truncate">{asset.symbol}</p>
+                        <p className="text-xs text-muted-foreground truncate">{asset.name}</p>
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+                    <div className="text-right flex-shrink-0 ml-2">
+                      <p className="font-bold text-sm">${asset.price.toLocaleString()}</p>
+                      <p className={`text-xs ${asset.change >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                        {asset.change >= 0 ? '+' : ''}${asset.change}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
           )}
         </TabsContent>
       </Tabs>
