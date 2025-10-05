@@ -142,6 +142,19 @@
   .transition-spring {
     transition: var(--transition-spring);
   }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  .safe-area-bottom {
+    padding-bottom: max(env(safe-area-inset-bottom), 72px);
+  }
 }
 
 @layer utilities {

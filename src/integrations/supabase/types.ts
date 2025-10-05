@@ -282,6 +282,11 @@ export type Database = {
           email: string | null
           full_name: string | null
           id: string
+          kyc_documents: Json | null
+          kyc_rejection_reason: string | null
+          kyc_reviewed_at: string | null
+          kyc_status: string | null
+          kyc_submitted_at: string | null
           phone: string | null
           theme_preference: string | null
           updated_at: string | null
@@ -293,6 +298,11 @@ export type Database = {
           email?: string | null
           full_name?: string | null
           id: string
+          kyc_documents?: Json | null
+          kyc_rejection_reason?: string | null
+          kyc_reviewed_at?: string | null
+          kyc_status?: string | null
+          kyc_submitted_at?: string | null
           phone?: string | null
           theme_preference?: string | null
           updated_at?: string | null
@@ -304,6 +314,11 @@ export type Database = {
           email?: string | null
           full_name?: string | null
           id?: string
+          kyc_documents?: Json | null
+          kyc_rejection_reason?: string | null
+          kyc_reviewed_at?: string | null
+          kyc_status?: string | null
+          kyc_submitted_at?: string | null
           phone?: string | null
           theme_preference?: string | null
           updated_at?: string | null

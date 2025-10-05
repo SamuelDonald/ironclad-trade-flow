@@ -73,26 +73,52 @@ export const usePortfolio = () => {
   useEffect(() => {
     fetchPortfolio();
 
-    // Set up real-time subscription
-    const channel = supabase
-      .channel('portfolio_changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'portfolio_balances'
-        },
-        () => {
-          fetchPortfolio();
-        }
-      )
-      .subscribe();
+    const getUserAndSubscribe = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      // Set up real-time subscription for this specific user
+      const channel = supabase
+        .channel(`portfolio_changes:${user.id}`)
+        .on(
+          'postgres_changes',
+          {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'portfolio_balances',
+            filter: `user_id=eq.${user.id}`
+          },
+          (payload) => {
+            console.log('Portfolio updated by admin:', payload.new);
+            setPortfolio({
+              cashBalance: Number(payload.new.cash_balance) || 0,
+              investedAmount: Number(payload.new.invested_amount) || 0,
+              freeMargin: Number(payload.new.free_margin) || 0,
+              totalValue: Number(payload.new.total_value) || 0,
+              dailyChange: Number(payload.new.daily_change) || 0,
+              dailyChangePercent: Number(payload.new.daily_change_percent) || 0,
+            });
+            
+            // Show toast notification
+            toast({
+              title: 'Balance Updated',
+              description: 'Your account balance has been updated by an administrator',
+            });
+          }
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    };
+
+    const cleanup = getUserAndSubscribe();
 
     return () => {
-      supabase.removeChannel(channel);
+      cleanup.then(fn => fn?.());
     };
-  }, []);
+  }, [toast]);
 
   return { portfolio, loading, refetch: fetchPortfolio };
 };

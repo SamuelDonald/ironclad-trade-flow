@@ -10,6 +10,8 @@ interface Profile {
   phone?: string;
   address?: string;
   theme_preference?: string;
+  kyc_status?: string;
+  kyc_rejection_reason?: string;
   created_at: string;
   updated_at: string;
 }
@@ -166,26 +168,56 @@ export const useProfile = () => {
   useEffect(() => {
     fetchProfile();
 
-    // Set up real-time subscription
-    const channel = supabase
-      .channel('profile_changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'profiles'
-        },
-        () => {
-          fetchProfile();
-        }
-      )
-      .subscribe();
+    const getUserAndSubscribe = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      // Set up real-time subscription for KYC status updates
+      const channel = supabase
+        .channel(`profile_changes:${user.id}`)
+        .on(
+          'postgres_changes',
+          {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'profiles',
+            filter: `id=eq.${user.id}`
+          },
+          (payload) => {
+            const oldStatus = profile?.kyc_status;
+            const newStatus = payload.new.kyc_status;
+            
+            if (oldStatus !== newStatus) {
+              setProfile(payload.new as Profile);
+              
+              if (newStatus === 'approved') {
+                toast({
+                  title: 'KYC Approved',
+                  description: 'Your identity verification has been approved!',
+                });
+              } else if (newStatus === 'rejected') {
+                toast({
+                  title: 'KYC Rejected',
+                  description: `Your KYC was rejected: ${payload.new.kyc_rejection_reason}`,
+                  variant: 'destructive',
+                });
+              }
+            }
+          }
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    };
+
+    const cleanup = getUserAndSubscribe();
 
     return () => {
-      supabase.removeChannel(channel);
+      cleanup.then(fn => fn?.());
     };
-  }, []);
+  }, [profile?.kyc_status, toast]);
 
   return { 
     profile, 

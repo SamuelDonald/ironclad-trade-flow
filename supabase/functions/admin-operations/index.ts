@@ -50,40 +50,112 @@ serve(async (req) => {
 
     // Get overview data
     if (req.method === 'GET' && path === '/admin-operations/overview') {
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
       const [
         { count: totalUsers },
         { count: totalTrades },
         { count: totalTransactions },
+        { count: pendingKycCount },
+        { count: pendingDepositsCount },
+        { count: pendingWithdrawalsCount },
+        { count: activeTraders },
         { data: recentTrades }
       ] = await Promise.all([
         supabase.from('profiles').select('*', { count: 'exact', head: true }),
         supabase.from('trades').select('*', { count: 'exact', head: true }),
         supabase.from('transactions').select('*', { count: 'exact', head: true }),
-        supabase.from('trades').select('*').order('created_at', { ascending: false }).limit(5)
+        supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('kyc_status', 'pending'),
+        supabase.from('transactions').select('*', { count: 'exact', head: true }).eq('type', 'deposit').eq('status', 'pending'),
+        supabase.from('transactions').select('*', { count: 'exact', head: true }).eq('type', 'withdrawal').eq('status', 'pending'),
+        supabase.from('trades').select('user_id', { count: 'exact', head: true }).gte('created_at', thirtyDaysAgo.toISOString()),
+        supabase.from('trades').select(`
+          *,
+          profiles(full_name, email)
+        `).order('created_at', { ascending: false }).limit(20)
       ]);
 
       return new Response(JSON.stringify({
         totalUsers,
-        totalTrades,
-        totalTransactions,
+        activeTraders,
+        totalDeposits: 0,
+        totalWithdrawals: 0,
+        pendingTransactions: 0,
+        activeTrades: totalTrades,
+        pendingKyc: pendingKycCount,
+        totalAssets: 0,
+        pendingKycCount,
+        pendingDepositsCount,
+        pendingWithdrawalsCount,
         recentTrades
       }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
     }
 
-    // Get users with portfolio data
+    // Get users with portfolio data and search/pagination
     if (req.method === 'GET' && path === '/admin-operations/users') {
-      const { data: users, error } = await supabase
+      const searchQuery = url.searchParams.get('search') || '';
+      const limit = parseInt(url.searchParams.get('limit') || '20');
+      const offset = parseInt(url.searchParams.get('offset') || '0');
+
+      let query = supabase
         .from('profiles')
         .select(`
           *,
           portfolio_balances(cash_balance, invested_amount, free_margin, total_value)
         `);
 
+      if (searchQuery) {
+        query = query.or(`full_name.ilike.%${searchQuery}%,email.ilike.%${searchQuery}%`);
+      }
+
+      const { data: users, error } = await query
+        .range(offset, offset + limit - 1)
+        .order('created_at', { ascending: false });
+
       if (error) throw error;
 
-      return new Response(JSON.stringify(users), {
+      // Get last_sign_in_at from auth.users
+      const usersWithAuth = await Promise.all(users.map(async (user) => {
+        const { data: authData } = await supabase.auth.admin.getUserById(user.id);
+        return {
+          ...user,
+          last_sign_in_at: authData?.user?.last_sign_in_at || null
+        };
+      }));
+
+      return new Response(JSON.stringify(usersWithAuth), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
+    // Get user detail by ID
+    if (req.method === 'GET' && path.startsWith('/admin-operations/users/') && !path.endsWith('/balances')) {
+      const userId = path.split('/')[3];
+
+      const [
+        { data: profile },
+        { data: portfolio },
+        { count: paymentMethodsCount },
+        { data: recentTransactions },
+        { data: recentTrades }
+      ] = await Promise.all([
+        supabase.from('profiles').select('*').eq('id', userId).single(),
+        supabase.from('portfolio_balances').select('*').eq('user_id', userId).single(),
+        supabase.from('payment_methods').select('*', { count: 'exact', head: true }).eq('user_id', userId),
+        supabase.from('transactions').select('*').eq('user_id', userId).order('created_at', { ascending: false }).limit(5),
+        supabase.from('trades').select('*').eq('user_id', userId).order('created_at', { ascending: false }).limit(5)
+      ]);
+
+      return new Response(JSON.stringify({
+        profile,
+        portfolio,
+        paymentMethodsCount,
+        recentTransactions,
+        recentTrades
+      }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
     }
@@ -91,24 +163,42 @@ serve(async (req) => {
     // Update user balances
     if (req.method === 'PUT' && path.startsWith('/admin-operations/users/') && path.endsWith('/balances')) {
       const userId = path.split('/')[3];
-      const { cashBalance, investedAmount, freeMargin } = await req.json();
+      const { mode, cashBalance, investedAmount, freeMargin, reason } = await req.json();
+
+      if (!reason || reason.trim() === '') {
+        throw new Error('Reason is required for balance updates');
+      }
 
       // Get current balances for audit
       const { data: currentBalance } = await supabase
         .from('portfolio_balances')
         .select('*')
         .eq('user_id', userId)
-        .single();
+        .maybeSingle();
+
+      let newCashBalance, newInvestedAmount, newFreeMargin;
+
+      if (mode === 'delta') {
+        // Add to existing values
+        newCashBalance = (parseFloat(currentBalance?.cash_balance || 0) + parseFloat(cashBalance || 0));
+        newInvestedAmount = (parseFloat(currentBalance?.invested_amount || 0) + parseFloat(investedAmount || 0));
+        newFreeMargin = (parseFloat(currentBalance?.free_margin || 0) + parseFloat(freeMargin || 0));
+      } else {
+        // Set absolute values (only update fields that are provided)
+        newCashBalance = cashBalance !== undefined ? parseFloat(cashBalance) : parseFloat(currentBalance?.cash_balance || 0);
+        newInvestedAmount = investedAmount !== undefined ? parseFloat(investedAmount) : parseFloat(currentBalance?.invested_amount || 0);
+        newFreeMargin = freeMargin !== undefined ? parseFloat(freeMargin) : parseFloat(currentBalance?.free_margin || 0);
+      }
 
       // Update or insert balances
       const { data: updatedBalance, error } = await supabase
         .from('portfolio_balances')
         .upsert({
           user_id: userId,
-          cash_balance: cashBalance,
-          invested_amount: investedAmount,
-          free_margin: freeMargin,
-          total_value: cashBalance + investedAmount,
+          cash_balance: newCashBalance,
+          invested_amount: newInvestedAmount,
+          free_margin: newFreeMargin,
+          total_value: newCashBalance + newInvestedAmount,
           updated_at: new Date().toISOString()
         })
         .select()
@@ -126,11 +216,103 @@ serve(async (req) => {
           target_id: userId,
           meta: {
             before: currentBalance,
-            after: { cashBalance, investedAmount, freeMargin }
+            after: { cash_balance: newCashBalance, invested_amount: newInvestedAmount, free_margin: newFreeMargin },
+            reason,
+            mode
           }
         });
 
       return new Response(JSON.stringify(updatedBalance), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
+    // Get KYC submissions
+    if (req.method === 'GET' && path === '/admin-operations/kyc') {
+      const status = url.searchParams.get('status') || 'pending';
+      const limit = parseInt(url.searchParams.get('limit') || '20');
+      const offset = parseInt(url.searchParams.get('offset') || '0');
+
+      const { data: kycSubmissions, error } = await supabase
+        .from('profiles')
+        .select('id, full_name, email, kyc_status, kyc_submitted_at, kyc_documents, kyc_rejection_reason')
+        .eq('kyc_status', status)
+        .order('kyc_submitted_at', { ascending: false })
+        .range(offset, offset + limit - 1);
+
+      if (error) throw error;
+
+      return new Response(JSON.stringify(kycSubmissions.map(k => ({ ...k, user_id: k.id }))), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
+    // Approve KYC
+    if (req.method === 'POST' && path.includes('/kyc/') && path.endsWith('/approve')) {
+      const userId = path.split('/')[3];
+
+      const { data: updatedProfile, error } = await supabase
+        .from('profiles')
+        .update({
+          kyc_status: 'approved',
+          kyc_reviewed_at: new Date().toISOString()
+        })
+        .eq('id', userId)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      // Log admin action
+      await supabase
+        .from('admin_audits')
+        .insert({
+          admin_user_id: adminUser.id,
+          action: 'kyc_approved',
+          target_table: 'profiles',
+          target_id: userId,
+          meta: { status: 'approved' }
+        });
+
+      return new Response(JSON.stringify(updatedProfile), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
+    // Reject KYC
+    if (req.method === 'POST' && path.includes('/kyc/') && path.endsWith('/reject')) {
+      const userId = path.split('/')[3];
+      const { reason } = await req.json();
+
+      if (!reason || reason.trim() === '') {
+        throw new Error('Rejection reason is required');
+      }
+
+      const { data: updatedProfile, error } = await supabase
+        .from('profiles')
+        .update({
+          kyc_status: 'rejected',
+          kyc_rejection_reason: reason,
+          kyc_reviewed_at: new Date().toISOString()
+        })
+        .eq('id', userId)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      // Log admin action
+      await supabase
+        .from('admin_audits')
+        .insert({
+          admin_user_id: adminUser.id,
+          action: 'kyc_rejected',
+          target_table: 'profiles',
+          target_id: userId,
+          meta: { status: 'rejected', reason }
+        });
+
+      return new Response(JSON.stringify(updatedProfile), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
     }
