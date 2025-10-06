@@ -1,6 +1,64 @@
-import { Home, BarChart3, Wallet, User, Settings } from "lucide-react";
+import { Home, BarChart3, Wallet, User, Settings, LucideIcon } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Button } from "@/components/ui/button";
+
+interface NavBubbleItemProps {
+  item: { icon: LucideIcon; label: string; path: string };
+  isActive: boolean;
+  onClick: () => void;
+}
+
+const NavBubbleItem = ({ item, isActive, onClick }: NavBubbleItemProps) => {
+  const Icon = item.icon;
+  
+  return (
+    <button
+      onClick={onClick}
+      aria-label={item.label}
+      aria-current={isActive ? "page" : undefined}
+      className={`
+        relative flex flex-col items-center justify-center gap-1 
+        transition-all duration-500 ease-out
+        ${isActive ? 'translate-y-[-16px]' : 'translate-y-0'}
+        w-[60px] cursor-pointer group
+      `}
+    >
+      {/* Bubble Background Circle */}
+      <div className={`
+        relative flex items-center justify-center
+        w-[56px] h-[56px] rounded-full
+        transition-all duration-500 will-change-transform
+        ${isActive 
+          ? 'bg-gradient-to-br from-primary to-primary-light shadow-lg shadow-primary/30 scale-110 bubble-active animate-bubble-float dark:from-primary-dark dark:to-primary' 
+          : 'bg-transparent scale-100 group-hover:bg-muted/50 dark:group-hover:bg-muted/30'
+        }
+      `}
+      style={{
+        transition: 'all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)'
+      }}
+      >
+        {/* Icon */}
+        <Icon className={`
+          transition-all duration-300
+          ${isActive 
+            ? 'w-6 h-6 text-primary-foreground' 
+            : 'w-5 h-5 text-muted-foreground group-hover:text-foreground'
+          }
+        `} />
+      </div>
+      
+      {/* Label */}
+      <span className={`
+        text-[10px] font-medium transition-all duration-300
+        ${isActive 
+          ? 'text-primary opacity-100 translate-y-0' 
+          : 'text-muted-foreground opacity-60 translate-y-[-2px] group-hover:opacity-80'
+        }
+      `}>
+        {item.label}
+      </span>
+    </button>
+  );
+};
 
 const BottomNavigation = () => {
   const navigate = useNavigate();
@@ -14,28 +72,37 @@ const BottomNavigation = () => {
     { icon: Settings, label: "Settings", path: "/settings" },
   ];
 
+  const activeIndex = navItems.findIndex(item => item.path === location.pathname);
+
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-border z-50">
-      <div className="flex items-center justify-around py-2">
-        {navItems.map((item) => {
-          const Icon = item.icon;
-          const isActive = location.pathname === item.path;
-          
-          return (
-            <Button
-              key={item.path}
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate(item.path)}
-              className={`flex-1 flex-col gap-1 h-16 transition-spring ${
-                isActive ? "text-primary bg-primary/10" : "text-muted-foreground"
-              }`}
-            >
-              <Icon className="w-5 h-5" />
-              <span className="text-xs">{item.label}</span>
-            </Button>
-          );
-        })}
+    <div className="fixed bottom-0 left-0 right-0 z-50 px-3 pb-2 sm:px-6 sm:pb-4 md:px-8 md:pb-6">
+      {/* Main Floating Container */}
+      <div className="relative navbar-bubble rounded-t-[32px] mx-auto max-w-md md:max-w-lg overflow-visible">
+        
+        {/* Gooey Background Animation Layer */}
+        <div 
+          className="gooey-background animate-gooey-morph"
+          style={{
+            left: `${activeIndex >= 0 ? activeIndex * (100 / navItems.length) : 0}%`,
+            width: `${100 / navItems.length}%`
+          }}
+        />
+        
+        {/* Navigation Items Container */}
+        <div className="relative flex items-end justify-around h-[70px] px-2">
+          {navItems.map((item) => {
+            const isActive = location.pathname === item.path;
+            
+            return (
+              <NavBubbleItem 
+                key={item.path}
+                item={item}
+                isActive={isActive}
+                onClick={() => navigate(item.path)}
+              />
+            );
+          })}
+        </div>
       </div>
     </div>
   );

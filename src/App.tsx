@@ -62,7 +62,7 @@ const App = () => {
           <Toaster />
           <Sonner />
           <BrowserRouter>
-            <div className="min-h-screen bg-background">
+            <div className="min-h-screen bg-background pb-24 md:pb-28">
               <Routes>
                 {!user ? (
                   <Route path="*" element={<Auth />} />
