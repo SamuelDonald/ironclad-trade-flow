@@ -60,7 +60,7 @@ export type Database = {
           meta: Json | null
           role: string
           updated_at: string | null
-          user_id: string | null
+          user_id: string
         }
         Insert: {
           created_at?: string | null
@@ -69,7 +69,7 @@ export type Database = {
           meta?: Json | null
           role?: string
           updated_at?: string | null
-          user_id?: string | null
+          user_id: string
         }
         Update: {
           created_at?: string | null
@@ -78,7 +78,7 @@ export type Database = {
           meta?: Json | null
           role?: string
           updated_at?: string | null
-          user_id?: string | null
+          user_id?: string
         }
         Relationships: []
       }
@@ -522,12 +522,12 @@ export type Database = {
     }
     Functions: {
       is_admin_user: {
-        Args: { _email: string }
+        Args: { _email: string } | { _user_id: string }
         Returns: boolean
       }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "superadmin" | "admin" | "moderator"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -654,6 +654,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["superadmin", "admin", "moderator"],
+    },
   },
 } as const
