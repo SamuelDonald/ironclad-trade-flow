@@ -19,8 +19,15 @@ export const useBalanceUpdate = () => {
     try {
       setLoading(true);
 
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) throw new Error('Not authenticated');
+      // Refresh session if needed
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError || !session) {
+        const { data: refreshData } = await supabase.auth.refreshSession();
+        if (!refreshData.session) {
+          throw new Error('Session expired. Please log in again.');
+        }
+      }
 
       const { data, error } = await supabase.functions.invoke(
         `admin-operations/users/${userId}/balances`,
@@ -34,7 +41,18 @@ export const useBalanceUpdate = () => {
         }
       );
 
-      if (error) throw error;
+      if (error) {
+        console.error('Edge function error details:', {
+          message: error.message,
+          status: error.status,
+          context: error.context
+        });
+        throw error;
+      }
+
+      if (!data) {
+        throw new Error('No data returned from edge function');
+      }
 
       toast({
         title: 'Success',

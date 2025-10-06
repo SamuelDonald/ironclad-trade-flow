@@ -23,8 +23,15 @@ export const useAdminKYC = (status: string = 'pending', page: number = 1) => {
       setLoading(true);
       setError(null);
 
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) throw new Error('Not authenticated');
+      // Refresh session if needed
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError || !session) {
+        const { data: refreshData } = await supabase.auth.refreshSession();
+        if (!refreshData.session) {
+          throw new Error('Session expired. Please log in again.');
+        }
+      }
 
       const params = new URLSearchParams({
         status,
@@ -32,7 +39,7 @@ export const useAdminKYC = (status: string = 'pending', page: number = 1) => {
       });
 
       const { data, error: fetchError } = await supabase.functions.invoke(
-        `admin-operations/kyc?${params}`,
+        `admin-operations/kyc?${params.toString()}`,
         {
           headers: {
             Authorization: `Bearer ${session.access_token}`,
@@ -40,7 +47,18 @@ export const useAdminKYC = (status: string = 'pending', page: number = 1) => {
         }
       );
 
-      if (fetchError) throw fetchError;
+      if (fetchError) {
+        console.error('Edge function error details:', {
+          message: fetchError.message,
+          status: fetchError.status,
+          context: fetchError.context
+        });
+        throw fetchError;
+      }
+
+      if (!data) {
+        throw new Error('No data returned from edge function');
+      }
       setSubmissions(data.submissions || []);
       setTotalCount(data.totalCount || 0);
     } catch (err: any) {

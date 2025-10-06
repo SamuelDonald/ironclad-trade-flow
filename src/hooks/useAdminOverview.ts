@@ -24,13 +24,35 @@ export const useAdminOverview = () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error('Not authenticated');
 
-      const { data, error: fetchError } = await supabase.functions.invoke('admin-operations', {
+      // Refresh session if needed
+      const { data: { session: currentSession }, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError || !currentSession) {
+        const { data: refreshData } = await supabase.auth.refreshSession();
+        if (!refreshData.session) {
+          throw new Error('Session expired. Please log in again.');
+        }
+      }
+
+      const { data, error: fetchError } = await supabase.functions.invoke('admin-operations/overview', {
         headers: {
-          Authorization: `Bearer ${session.access_token}`,
+          Authorization: `Bearer ${(currentSession || session).access_token}`,
         },
       });
 
-      if (fetchError) throw fetchError;
+      if (fetchError) {
+        console.error('Edge function error details:', {
+          message: fetchError.message,
+          status: fetchError.status,
+          context: fetchError.context
+        });
+        throw fetchError;
+      }
+
+      if (!data) {
+        throw new Error('No data returned from edge function');
+      }
+
       setStats(data);
     } catch (err: any) {
       console.error('Error fetching overview:', err);

@@ -24,17 +24,25 @@ export const useAdminUsers = (searchQuery: string = '', page: number = 1, limit:
       setLoading(true);
       setError(null);
 
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) throw new Error('Not authenticated');
+      // Refresh session if needed
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError || !session) {
+        const { data: refreshData } = await supabase.auth.refreshSession();
+        if (!refreshData.session) {
+          throw new Error('Session expired. Please log in again.');
+        }
+      }
 
+      const offset = (page - 1) * limit;
       const params = new URLSearchParams({
         search: searchQuery,
-        page: page.toString(),
+        offset: offset.toString(),
         limit: limit.toString(),
       });
 
       const { data, error: fetchError } = await supabase.functions.invoke(
-        `admin-operations/users?${params}`,
+        `admin-operations/users?${params.toString()}`,
         {
           headers: {
             Authorization: `Bearer ${session.access_token}`,
@@ -42,7 +50,18 @@ export const useAdminUsers = (searchQuery: string = '', page: number = 1, limit:
         }
       );
 
-      if (fetchError) throw fetchError;
+      if (fetchError) {
+        console.error('Edge function error details:', {
+          message: fetchError.message,
+          status: fetchError.status,
+          context: fetchError.context
+        });
+        throw fetchError;
+      }
+
+      if (!data) {
+        throw new Error('No data returned from edge function');
+      }
       setUsers(data.users || []);
       setTotalCount(data.totalCount || 0);
     } catch (err: any) {

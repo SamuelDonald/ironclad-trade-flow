@@ -48,8 +48,20 @@ serve(async (req) => {
     const url = new URL(req.url);
     const path = url.pathname;
 
+    console.log('[Admin Operations] Request received:', {
+      method: req.method,
+      path,
+      timestamp: new Date().toISOString()
+    });
+
+    console.log('[Admin Operations] Admin verified:', {
+      adminId: adminUser.id,
+      email: adminUser.email,
+      role: adminUser.role
+    });
+
     // Get overview data
-    if (req.method === 'GET' && path === '/admin-operations/overview') {
+    if (req.method === 'GET' && (path === '/admin-operations/overview' || path.endsWith('/overview'))) {
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
@@ -76,7 +88,7 @@ serve(async (req) => {
         `).order('created_at', { ascending: false }).limit(20)
       ]);
 
-      return new Response(JSON.stringify({
+      const responseData = {
         totalUsers,
         activeTraders,
         totalDeposits: 0,
@@ -89,13 +101,21 @@ serve(async (req) => {
         pendingDepositsCount,
         pendingWithdrawalsCount,
         recentTrades
-      }), {
+      };
+
+      console.log('[Admin Operations] Sending overview response:', {
+        path,
+        status: 200,
+        dataKeys: Object.keys(responseData)
+      });
+
+      return new Response(JSON.stringify(responseData), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
     }
 
     // Get users with portfolio data and search/pagination
-    if (req.method === 'GET' && path === '/admin-operations/users') {
+    if (req.method === 'GET' && (path === '/admin-operations/users' || path.endsWith('/users'))) {
       const searchQuery = url.searchParams.get('search') || '';
       const limit = parseInt(url.searchParams.get('limit') || '20');
       const offset = parseInt(url.searchParams.get('offset') || '0');
@@ -120,13 +140,32 @@ serve(async (req) => {
       // Get last_sign_in_at from auth.users
       const usersWithAuth = await Promise.all(users.map(async (user) => {
         const { data: authData } = await supabase.auth.admin.getUserById(user.id);
+        const portfolio = user.portfolio_balances?.[0] || {};
         return {
-          ...user,
+          id: user.id,
+          email: user.email,
+          full_name: user.full_name,
+          kyc_status: user.kyc_status,
+          cash_balance: portfolio.cash_balance || 0,
+          invested_amount: portfolio.invested_amount || 0,
+          free_margin: portfolio.free_margin || 0,
+          total_value: portfolio.total_value || 0,
           last_sign_in_at: authData?.user?.last_sign_in_at || null
         };
       }));
 
-      return new Response(JSON.stringify(usersWithAuth), {
+      const { count: totalCount } = await supabase
+        .from('profiles')
+        .select('*', { count: 'exact', head: true });
+
+      console.log('[Admin Operations] Sending users response:', {
+        path,
+        status: 200,
+        userCount: usersWithAuth.length,
+        totalCount
+      });
+
+      return new Response(JSON.stringify({ users: usersWithAuth, totalCount }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
     }
@@ -228,7 +267,7 @@ serve(async (req) => {
     }
 
     // Get KYC submissions
-    if (req.method === 'GET' && path === '/admin-operations/kyc') {
+    if (req.method === 'GET' && (path === '/admin-operations/kyc' || path.endsWith('/kyc'))) {
       const status = url.searchParams.get('status') || 'pending';
       const limit = parseInt(url.searchParams.get('limit') || '20');
       const offset = parseInt(url.searchParams.get('offset') || '0');
@@ -242,7 +281,22 @@ serve(async (req) => {
 
       if (error) throw error;
 
-      return new Response(JSON.stringify(kycSubmissions.map(k => ({ ...k, user_id: k.id }))), {
+      const { count: totalCount } = await supabase
+        .from('profiles')
+        .select('*', { count: 'exact', head: true })
+        .eq('kyc_status', status);
+
+      console.log('[Admin Operations] Sending KYC response:', {
+        path,
+        status: 200,
+        submissionCount: kycSubmissions.length,
+        totalCount
+      });
+
+      return new Response(JSON.stringify({ 
+        submissions: kycSubmissions.map(k => ({ ...k, user_id: k.id })), 
+        totalCount 
+      }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
     }
