@@ -48,9 +48,16 @@ export const KYCPanel: React.FC = () => {
                     <div className="flex-1">
                       <p className="font-medium">{submission.full_name || 'No name'}</p>
                       <p className="text-sm text-muted-foreground">{submission.email}</p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Submitted {formatDistanceToNow(new Date(submission.kyc_submitted_at), { addSuffix: true })}
-                      </p>
+                      {submission.kyc_submitted_at && (
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Submitted {formatDistanceToNow(new Date(submission.kyc_submitted_at), { addSuffix: true })}
+                        </p>
+                      )}
+                      {!submission.kyc_submitted_at && (
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Pending submission
+                        </p>
+                      )}
                     </div>
                     <div className="flex items-center gap-3">
                       <div className="text-right">

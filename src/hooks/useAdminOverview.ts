@@ -46,6 +46,16 @@ export const useAdminOverview = () => {
           status: fetchError.status,
           context: fetchError.context
         });
+        
+        // Show user-friendly message
+        if (fetchError.message?.includes('relationship') || fetchError.message?.includes('PGRST200')) {
+          setError('Database configuration error. The admin panel data is being fixed.');
+        } else if (fetchError.message?.includes('Access denied')) {
+          setError('Access denied. You do not have admin privileges.');
+        } else {
+          setError(fetchError.message || 'Failed to load overview data');
+        }
+        
         throw fetchError;
       }
 

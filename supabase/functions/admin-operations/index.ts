@@ -82,11 +82,21 @@ serve(async (req) => {
         supabase.from('transactions').select('*', { count: 'exact', head: true }).eq('type', 'deposit').eq('status', 'pending'),
         supabase.from('transactions').select('*', { count: 'exact', head: true }).eq('type', 'withdrawal').eq('status', 'pending'),
         supabase.from('trades').select('user_id', { count: 'exact', head: true }).gte('created_at', thirtyDaysAgo.toISOString()),
-        supabase.from('trades').select(`
-          *,
-          profiles(full_name, email)
-        `).order('created_at', { ascending: false }).limit(20)
+        supabase.from('trades').select('*').order('created_at', { ascending: false }).limit(20)
       ]);
+
+      // Fetch user emails for recent trades
+      const userIds = [...new Set(recentTrades?.map(t => t.user_id) || [])];
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('id, email, full_name')
+        .in('id', userIds);
+
+      // Map trades with user data
+      const tradesWithUsers = recentTrades?.map(trade => ({
+        ...trade,
+        profiles: profiles?.find(p => p.id === trade.user_id) || null
+      })) || [];
 
       const responseData = {
         totalUsers,
@@ -100,7 +110,7 @@ serve(async (req) => {
         pendingKycCount,
         pendingDepositsCount,
         pendingWithdrawalsCount,
-        recentTrades
+        recentTrades: tradesWithUsers
       };
 
       console.log('[Admin Operations] Sending overview response:', {
@@ -122,10 +132,7 @@ serve(async (req) => {
 
       let query = supabase
         .from('profiles')
-        .select(`
-          *,
-          portfolio_balances(cash_balance, invested_amount, free_margin, total_value)
-        `);
+        .select('*');
 
       if (searchQuery) {
         query = query.or(`full_name.ilike.%${searchQuery}%,email.ilike.%${searchQuery}%`);
@@ -137,10 +144,17 @@ serve(async (req) => {
 
       if (error) throw error;
 
+      // Fetch portfolio balances for these users
+      const userIds = users.map(u => u.id);
+      const { data: portfolios } = await supabase
+        .from('portfolio_balances')
+        .select('*')
+        .in('user_id', userIds);
+
       // Get last_sign_in_at from auth.users
       const usersWithAuth = await Promise.all(users.map(async (user) => {
         const { data: authData } = await supabase.auth.admin.getUserById(user.id);
-        const portfolio = user.portfolio_balances?.[0] || {};
+        const portfolio = portfolios?.find(p => p.user_id === user.id) || {};
         return {
           id: user.id,
           email: user.email,
@@ -375,15 +389,25 @@ serve(async (req) => {
     if (req.method === 'GET' && path === '/admin-operations/transactions') {
       const { data: transactions, error } = await supabase
         .from('transactions')
-        .select(`
-          *,
-          profiles(full_name, email)
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
 
-      return new Response(JSON.stringify(transactions), {
+      // Fetch user profiles
+      const userIds = [...new Set(transactions?.map(t => t.user_id) || [])];
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('id, full_name, email')
+        .in('id', userIds);
+
+      // Map transactions with user data
+      const transactionsWithUsers = transactions?.map(transaction => ({
+        ...transaction,
+        profiles: profiles?.find(p => p.id === transaction.user_id) || null
+      })) || [];
+
+      return new Response(JSON.stringify(transactionsWithUsers), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
     }
@@ -392,15 +416,25 @@ serve(async (req) => {
     if (req.method === 'GET' && path === '/admin-operations/trades') {
       const { data: trades, error } = await supabase
         .from('trades')
-        .select(`
-          *,
-          profiles(full_name, email)
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
 
-      return new Response(JSON.stringify(trades), {
+      // Fetch user profiles
+      const userIds = [...new Set(trades?.map(t => t.user_id) || [])];
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('id, full_name, email')
+        .in('id', userIds);
+
+      // Map trades with user data
+      const tradesWithUsers = trades?.map(trade => ({
+        ...trade,
+        profiles: profiles?.find(p => p.id === trade.user_id) || null
+      })) || [];
+
+      return new Response(JSON.stringify(tradesWithUsers), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
     }
