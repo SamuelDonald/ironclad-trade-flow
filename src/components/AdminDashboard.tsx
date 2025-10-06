@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { 
   Users, 
@@ -22,6 +21,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { AdminUserSearch } from "@/components/AdminUserSearch";
 import { useNavigate } from "react-router-dom";
+import { OverviewPanel } from "./admin/OverviewPanel";
+import { UsersPanel } from "./admin/UsersPanel";
+import { KYCPanel } from "./admin/KYCPanel";
 
 type AdminSection = 'overview' | 'users' | 'transactions' | 'trades' | 'kyc' | 'support' | 'audit-logs';
 
@@ -435,8 +437,12 @@ export const AdminDashboard: React.FC = () => {
   const renderSection = () => {
     switch (activeSection) {
       case 'overview':
-        return renderOverview();
+        return <OverviewPanel />;
       case 'users':
+        return <UsersPanel />;
+      case 'kyc':
+        return <KYCPanel />;
+      case 'transactions':
         return (
           <Card>
             <CardHeader>
@@ -545,20 +551,6 @@ export const AdminDashboard: React.FC = () => {
                     </div>
                   </div>
                 ))}
-              </div>
-            </CardContent>
-          </Card>
-        );
-      case 'kyc':
-        return (
-          <Card>
-            <CardHeader>
-              <CardTitle>KYC Review</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground mb-4">Review and approve customer identity verification documents.</p>
-              <div className="text-center py-8">
-                <p className="text-muted-foreground">No pending KYC applications</p>
               </div>
             </CardContent>
           </Card>
