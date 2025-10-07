@@ -35,20 +35,18 @@ export const useAdminUsers = (searchQuery: string = '', page: number = 1, limit:
       }
 
       const offset = (page - 1) * limit;
-      const params = new URLSearchParams({
-        search: searchQuery,
-        offset: offset.toString(),
-        limit: limit.toString(),
-      });
 
-      const { data, error: fetchError } = await supabase.functions.invoke(
-        `admin-operations/users?${params.toString()}`,
-        {
-          headers: {
-            Authorization: `Bearer ${session.access_token}`,
-          },
-        }
-      );
+      const { data, error: fetchError } = await supabase.functions.invoke('admin-operations', {
+        body: {
+          action: 'users',
+          search: searchQuery,
+          offset,
+          limit
+        },
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
 
       if (fetchError) {
         console.error('Edge function error details:', {

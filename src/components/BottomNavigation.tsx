@@ -75,9 +75,9 @@ const BottomNavigation = () => {
   const activeIndex = navItems.findIndex(item => item.path === location.pathname);
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 px-3 pb-2 sm:px-6 sm:pb-4 lg:px-8 lg:pb-6">
+    <div className="fixed bottom-0 left-0 right-0 z-50">
       {/* Main Floating Container */}
-      <div className="relative navbar-bubble rounded-t-[32px] mx-auto max-w-md lg:max-w-none overflow-visible">
+      <div className="relative navbar-bubble rounded-t-[32px] w-full overflow-visible">
         
         {/* Gooey Background Animation Layer */}
         <div 

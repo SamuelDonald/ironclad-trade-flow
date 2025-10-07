@@ -47,10 +47,26 @@ serve(async (req) => {
     const { adminUser } = await requireAdmin(req, supabase);
     const url = new URL(req.url);
     const path = url.pathname;
-
+    
+    // Parse request body or URL for action-based routing
+    let body: any = {};
+    let action = '';
+    
+    if (req.method === 'POST' || req.method === 'PUT') {
+      body = await req.json();
+      action = body.action || '';
+    } else {
+      // For GET requests, check URL path
+      if (path.endsWith('/overview')) action = 'overview';
+      else if (path.endsWith('/users') && !path.includes('/users/')) action = 'users';
+      else if (path.endsWith('/kyc') && !path.includes('/kyc/')) action = 'kyc';
+      else if (path.endsWith('/transactions')) action = 'transactions';
+      else if (path.endsWith('/trades')) action = 'trades';
+    }
+    
     console.log('[Admin Operations] Request received:', {
       method: req.method,
-      path,
+      action,
       timestamp: new Date().toISOString()
     });
 
@@ -61,7 +77,7 @@ serve(async (req) => {
     });
 
     // Get overview data
-    if (req.method === 'GET' && (path === '/admin-operations/overview' || path.endsWith('/overview'))) {
+    if (action === 'overview') {
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
@@ -100,21 +116,16 @@ serve(async (req) => {
 
       const responseData = {
         totalUsers,
-        activeTraders,
-        totalDeposits: 0,
-        totalWithdrawals: 0,
-        pendingTransactions: 0,
-        activeTrades: totalTrades,
-        pendingKyc: pendingKycCount,
-        totalAssets: 0,
-        pendingKycCount,
-        pendingDepositsCount,
-        pendingWithdrawalsCount,
+        totalTrades,
+        totalTransactions,
+        pendingKYC: pendingKycCount,
+        pendingDeposits: pendingDepositsCount,
+        pendingWithdrawals: pendingWithdrawalsCount,
         recentTrades: tradesWithUsers
       };
 
       console.log('[Admin Operations] Sending overview response:', {
-        path,
+        action,
         status: 200,
         dataKeys: Object.keys(responseData)
       });
@@ -125,10 +136,10 @@ serve(async (req) => {
     }
 
     // Get users with portfolio data and search/pagination
-    if (req.method === 'GET' && (path === '/admin-operations/users' || path.endsWith('/users'))) {
-      const searchQuery = url.searchParams.get('search') || '';
-      const limit = parseInt(url.searchParams.get('limit') || '20');
-      const offset = parseInt(url.searchParams.get('offset') || '0');
+    if (action === 'users') {
+      const searchQuery = body.search || '';
+      const limit = body.limit || 20;
+      const offset = body.offset || 0;
 
       let query = supabase
         .from('profiles')
@@ -173,7 +184,7 @@ serve(async (req) => {
         .select('*', { count: 'exact', head: true });
 
       console.log('[Admin Operations] Sending users response:', {
-        path,
+        action,
         status: 200,
         userCount: usersWithAuth.length,
         totalCount

@@ -34,7 +34,8 @@ export const useAdminOverview = () => {
         }
       }
 
-      const { data, error: fetchError } = await supabase.functions.invoke('admin-operations/overview', {
+      const { data, error: fetchError } = await supabase.functions.invoke('admin-operations', {
+        body: { action: 'overview' },
         headers: {
           Authorization: `Bearer ${(currentSession || session).access_token}`,
         },
