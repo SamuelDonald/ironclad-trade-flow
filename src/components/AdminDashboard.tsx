@@ -100,6 +100,28 @@ export const AdminDashboard: React.FC = () => {
     };
   }, [selectedConversation]);
 
+  // Real-time support conversations subscription
+  useEffect(() => {
+    const channel = supabase
+      .channel('admin_conversations_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'support_conversations'
+        },
+        () => {
+          loadSupportData();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
   const loadOverviewData = async () => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
@@ -182,8 +204,15 @@ export const AdminDashboard: React.FC = () => {
 
       if (response.ok) {
         const data = await response.json();
-        // Data already enriched with user_name and user_email from backend
-        setConversations(data);
+        // Enrich with user_profile for easier access
+        const enrichedData = data.map((conv: any) => ({
+          ...conv,
+          user_profile: {
+            full_name: conv.user_name,
+            email: conv.user_email
+          }
+        }));
+        setConversations(enrichedData);
       }
     } catch (error) {
       console.error('Error loading support data:', error);

@@ -195,20 +195,57 @@ serve(async (req) => {
       });
     }
 
-    // Get user detail by ID
+    // Get user detail by ID (action-based)
+    if (action === 'user-details' && body.userId) {
+      const userId = body.userId;
+
+      const [
+        { data: profile },
+        { data: portfolio },
+        { data: paymentMethods },
+        { data: recentTransactions },
+        { data: recentTrades }
+      ] = await Promise.all([
+        supabase.from('profiles').select('*').eq('id', userId).single(),
+        supabase.from('portfolio_balances').select('*').eq('user_id', userId).single(),
+        supabase.from('payment_methods').select('*').eq('user_id', userId),
+        supabase.from('transactions').select('*').eq('user_id', userId).order('created_at', { ascending: false }).limit(5),
+        supabase.from('trades').select('*').eq('user_id', userId).order('created_at', { ascending: false }).limit(5)
+      ]);
+
+      console.log('[Admin Operations] Sending user details response:', {
+        action,
+        status: 200,
+        userId,
+        hasProfile: !!profile,
+        hasPortfolio: !!portfolio
+      });
+
+      return new Response(JSON.stringify({
+        profile,
+        portfolio,
+        paymentMethods,
+        recentTransactions,
+        recentTrades
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
+    // Get user detail by ID (legacy path-based)
     if (req.method === 'GET' && path.startsWith('/admin-operations/users/') && !path.endsWith('/balances')) {
       const userId = path.split('/')[3];
 
       const [
         { data: profile },
         { data: portfolio },
-        { count: paymentMethodsCount },
+        { data: paymentMethods },
         { data: recentTransactions },
         { data: recentTrades }
       ] = await Promise.all([
         supabase.from('profiles').select('*').eq('id', userId).single(),
         supabase.from('portfolio_balances').select('*').eq('user_id', userId).single(),
-        supabase.from('payment_methods').select('*', { count: 'exact', head: true }).eq('user_id', userId),
+        supabase.from('payment_methods').select('*').eq('user_id', userId),
         supabase.from('transactions').select('*').eq('user_id', userId).order('created_at', { ascending: false }).limit(5),
         supabase.from('trades').select('*').eq('user_id', userId).order('created_at', { ascending: false }).limit(5)
       ]);
@@ -216,7 +253,7 @@ serve(async (req) => {
       return new Response(JSON.stringify({
         profile,
         portfolio,
-        paymentMethodsCount,
+        paymentMethods,
         recentTransactions,
         recentTrades
       }), {
@@ -291,7 +328,44 @@ serve(async (req) => {
       });
     }
 
-    // Get KYC submissions
+    // Get KYC submissions (action-based)
+    if (action === 'kyc') {
+      const status = body.status || 'pending';
+      const page = body.page || 1;
+      const limit = 20;
+      const offset = (page - 1) * limit;
+
+      const { data: kycSubmissions, error } = await supabase
+        .from('profiles')
+        .select('id, full_name, email, kyc_status, kyc_submitted_at, kyc_documents, kyc_rejection_reason, phone, address')
+        .eq('kyc_status', status)
+        .order('created_at', { ascending: false })
+        .range(offset, offset + limit - 1);
+
+      if (error) throw error;
+
+      const { count: totalCount } = await supabase
+        .from('profiles')
+        .select('*', { count: 'exact', head: true })
+        .eq('kyc_status', status);
+
+      console.log('[Admin Operations] Sending KYC response:', {
+        action,
+        status: 200,
+        kycStatus: status,
+        submissionCount: kycSubmissions?.length || 0,
+        totalCount
+      });
+
+      return new Response(JSON.stringify({ 
+        submissions: kycSubmissions?.map(k => ({ ...k, user_id: k.id })) || [], 
+        totalCount: totalCount || 0
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
+    // Get KYC submissions (legacy path-based)
     if (req.method === 'GET' && (path === '/admin-operations/kyc' || path.endsWith('/kyc'))) {
       const status = url.searchParams.get('status') || 'pending';
       const limit = parseInt(url.searchParams.get('limit') || '20');
@@ -299,9 +373,9 @@ serve(async (req) => {
 
       const { data: kycSubmissions, error } = await supabase
         .from('profiles')
-        .select('id, full_name, email, kyc_status, kyc_submitted_at, kyc_documents, kyc_rejection_reason')
+        .select('id, full_name, email, kyc_status, kyc_submitted_at, kyc_documents, kyc_rejection_reason, phone, address')
         .eq('kyc_status', status)
-        .order('kyc_submitted_at', { ascending: false })
+        .order('created_at', { ascending: false })
         .range(offset, offset + limit - 1);
 
       if (error) throw error;
