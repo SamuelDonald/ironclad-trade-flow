@@ -52,6 +52,19 @@ export const BalanceAdjustmentForm: React.FC<BalanceAdjustmentFormProps> = ({
     }
   };
 
+  if (!currentBalances) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Adjust User Balances</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-muted-foreground">Loading balance information...</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card>
       <CardHeader>
@@ -62,15 +75,15 @@ export const BalanceAdjustmentForm: React.FC<BalanceAdjustmentFormProps> = ({
           <div className="grid grid-cols-3 gap-4 p-4 bg-muted/50 rounded-lg">
             <div>
               <p className="text-sm text-muted-foreground">Current Cash</p>
-              <p className="font-semibold">${currentBalances.cash_balance.toFixed(2)}</p>
+              <p className="font-semibold">${(currentBalances.cash_balance || 0).toFixed(2)}</p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Current Invested</p>
-              <p className="font-semibold">${currentBalances.invested_amount.toFixed(2)}</p>
+              <p className="font-semibold">${(currentBalances.invested_amount || 0).toFixed(2)}</p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Current Margin</p>
-              <p className="font-semibold">${currentBalances.free_margin.toFixed(2)}</p>
+              <p className="font-semibold">${(currentBalances.free_margin || 0).toFixed(2)}</p>
             </div>
           </div>
 
