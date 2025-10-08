@@ -33,19 +33,12 @@ export const useAdminKYC = (status: string = 'pending', page: number = 1) => {
         }
       }
 
-      const params = new URLSearchParams({
-        status,
-        page: page.toString(),
+      const { data, error: fetchError } = await supabase.functions.invoke('admin-operations', {
+        body: { action: 'kyc', status, page },
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
       });
-
-      const { data, error: fetchError } = await supabase.functions.invoke(
-        `admin-operations/kyc?${params.toString()}`,
-        {
-          headers: {
-            Authorization: `Bearer ${session.access_token}`,
-          },
-        }
-      );
 
       if (fetchError) {
         console.error('Edge function error details:', {
@@ -72,6 +65,24 @@ export const useAdminKYC = (status: string = 'pending', page: number = 1) => {
   useEffect(() => {
     fetchKYC();
   }, [status, page]);
+
+  // Real-time subscription for KYC updates
+  useEffect(() => {
+    const channel = supabase
+      .channel('kyc-changes')
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'profiles',
+      }, () => {
+        fetchKYC();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
 
   return { submissions, totalCount, loading, error, refetch: fetchKYC };
 };

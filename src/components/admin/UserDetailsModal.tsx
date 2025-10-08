@@ -24,20 +24,39 @@ export const UserDetailsModal: React.FC<UserDetailsModalProps> = ({ userId, open
     }
   }, [userId, open]);
 
+  // Real-time subscription for balance updates
+  useEffect(() => {
+    if (!open || !userId) return;
+
+    const channel = supabase
+      .channel(`user-details-${userId}`)
+      .on('postgres_changes', {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'portfolio_balances',
+        filter: `user_id=eq.${userId}`
+      }, () => {
+        fetchUserDetails();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [open, userId]);
+
   const fetchUserDetails = async () => {
     try {
       setLoading(true);
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return;
 
-      const { data, error } = await supabase.functions.invoke(
-        `admin-operations/users/${userId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${session.access_token}`,
-          },
-        }
-      );
+      const { data, error } = await supabase.functions.invoke('admin-operations', {
+        body: { action: 'user-details', userId },
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
 
       if (error) throw error;
       setUserDetails(data);

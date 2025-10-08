@@ -16,6 +16,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -207,9 +208,25 @@ const Profile = () => {
           </Card>
 
           <Card className="shadow-lg rounded-2xl border">
-            <CardHeader>
-              <CardTitle className="text-indigo-700">Personal Information</CardTitle>
-              <CardDescription>Update your details and contact info</CardDescription>
+            <CardHeader className="relative">
+              <div className="flex items-start justify-between">
+                <div>
+                  <CardTitle className="text-indigo-700">Personal Information</CardTitle>
+                  <CardDescription>Update your details and contact info</CardDescription>
+                </div>
+                {profile?.kyc_status && (
+                  <Badge 
+                    variant={
+                      profile.kyc_status === 'approved' ? 'default' : 
+                      profile.kyc_status === 'rejected' ? 'destructive' : 
+                      'secondary'
+                    }
+                    className="absolute top-6 right-6"
+                  >
+                    KYC: {profile.kyc_status.charAt(0).toUpperCase() + profile.kyc_status.slice(1)}
+                  </Badge>
+                )}
+              </div>
             </CardHeader>
             <CardContent className="space-y-6">
               <div>
