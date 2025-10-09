@@ -184,23 +184,6 @@ export const AdminDashboard: React.FC = () => {
     }
   };
 
-  const loadTradesData = async () => {
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) return;
-
-      const response = await fetch('https://jgedidtpqfashojqagbd.functions.supabase.co/admin-operations/trades', {
-        headers: { Authorization: `Bearer ${session.access_token}` }
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setTransactions(data);
-      }
-    } catch (error) {
-      console.error('Error loading transactions data:', error);
-    }
-  };
 
   const loadTradesData = async () => {
     try {
