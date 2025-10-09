@@ -209,8 +209,8 @@ const Profile = () => {
 
           <Card className="shadow-lg rounded-2xl border">
             <CardHeader className="relative">
-              <div className="flex items-start justify-between">
-                <div>
+              <div className="flex flex-wrap items-start justify-between gap-2">
+                <div className="flex-1 min-w-0">
                   <CardTitle className="text-indigo-700">Personal Information</CardTitle>
                   <CardDescription>Update your details and contact info</CardDescription>
                 </div>
@@ -221,7 +221,7 @@ const Profile = () => {
                       profile.kyc_status === 'rejected' ? 'destructive' : 
                       'secondary'
                     }
-                    className="absolute top-6 right-6"
+                    className="absolute top-4 sm:top-6 right-4 sm:right-6 text-xs sm:text-sm"
                   >
                     KYC: {profile.kyc_status.charAt(0).toUpperCase() + profile.kyc_status.slice(1)}
                   </Badge>

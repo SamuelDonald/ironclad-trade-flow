@@ -195,6 +195,75 @@ serve(async (req) => {
       });
     }
 
+    // Approve KYC (action-based)
+    if (action === 'approve-kyc' && body.userId) {
+      const userId = body.userId;
+
+      const { data: updatedProfile, error } = await supabase
+        .from('profiles')
+        .update({
+          kyc_status: 'approved',
+          kyc_reviewed_at: new Date().toISOString(),
+          kyc_rejection_reason: null
+        })
+        .eq('id', userId)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      await supabase.from('admin_audits').insert({
+        admin_user_id: adminUser.id,
+        action: 'kyc_approved',
+        target_table: 'profiles',
+        target_id: userId,
+        meta: { status: 'approved' }
+      });
+
+      console.log('[Admin Operations] KYC approved:', { userId });
+
+      return new Response(JSON.stringify(updatedProfile), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
+    // Reject KYC (action-based)
+    if (action === 'reject-kyc' && body.userId && body.reason) {
+      const userId = body.userId;
+      const reason = body.reason;
+
+      if (!reason || reason.trim() === '') {
+        throw new Error('Rejection reason is required');
+      }
+
+      const { data: updatedProfile, error } = await supabase
+        .from('profiles')
+        .update({
+          kyc_status: 'rejected',
+          kyc_rejection_reason: reason,
+          kyc_reviewed_at: new Date().toISOString()
+        })
+        .eq('id', userId)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      await supabase.from('admin_audits').insert({
+        admin_user_id: adminUser.id,
+        action: 'kyc_rejected',
+        target_table: 'profiles',
+        target_id: userId,
+        meta: { status: 'rejected', reason }
+      });
+
+      console.log('[Admin Operations] KYC rejected:', { userId, reason });
+
+      return new Response(JSON.stringify(updatedProfile), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
     // Get user detail by ID (action-based)
     if (action === 'user-details' && body.userId) {
       const userId = body.userId;
@@ -207,7 +276,7 @@ serve(async (req) => {
         { data: recentTrades }
       ] = await Promise.all([
         supabase.from('profiles').select('*').eq('id', userId).single(),
-        supabase.from('portfolio_balances').select('*').eq('user_id', userId).single(),
+        supabase.from('portfolio_balances').select('cash_balance, invested_amount, free_margin, total_value, daily_change, daily_change_percent').eq('user_id', userId).single(),
         supabase.from('payment_methods').select('*').eq('user_id', userId),
         supabase.from('transactions').select('*').eq('user_id', userId).order('created_at', { ascending: false }).limit(5),
         supabase.from('trades').select('*').eq('user_id', userId).order('created_at', { ascending: false }).limit(5)
@@ -218,7 +287,8 @@ serve(async (req) => {
         status: 200,
         userId,
         hasProfile: !!profile,
-        hasPortfolio: !!portfolio
+        hasPortfolio: !!portfolio,
+        portfolioFields: portfolio ? Object.keys(portfolio) : []
       });
 
       return new Response(JSON.stringify({
@@ -470,7 +540,41 @@ serve(async (req) => {
       });
     }
 
-    // Get all transactions
+    // Get all transactions (action-based)
+    if (action === 'transactions') {
+      const { data: transactions, error } = await supabase
+        .from('transactions')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(100);
+
+      if (error) throw error;
+
+      // Fetch user profiles
+      const userIds = [...new Set(transactions?.map(t => t.user_id) || [])];
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('id, full_name, email')
+        .in('id', userIds);
+
+      // Map transactions with user data
+      const transactionsWithUsers = transactions?.map(transaction => ({
+        ...transaction,
+        profiles: profiles?.find(p => p.id === transaction.user_id) || null
+      })) || [];
+
+      console.log('[Admin Operations] Sending transactions response:', {
+        action,
+        status: 200,
+        transactionCount: transactionsWithUsers.length
+      });
+
+      return new Response(JSON.stringify(transactionsWithUsers), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
+    // Get all transactions (legacy path-based)
     if (req.method === 'GET' && path === '/admin-operations/transactions') {
       const { data: transactions, error } = await supabase
         .from('transactions')

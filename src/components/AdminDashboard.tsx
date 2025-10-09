@@ -159,10 +159,37 @@ export const AdminDashboard: React.FC = () => {
 
   const loadTransactionsData = async () => {
     try {
+      setLoading(true);
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return;
 
-      const response = await fetch('https://jgedidtpqfashojqagbd.functions.supabase.co/admin-operations/transactions', {
+      const { data, error } = await supabase.functions.invoke('admin-operations', {
+        body: { action: 'transactions' },
+      });
+
+      if (error) throw error;
+
+      if (data) {
+        setTransactions(data);
+      }
+    } catch (error) {
+      console.error('Error loading transactions:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to load transactions',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadTradesData = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
+      const response = await fetch('https://jgedidtpqfashojqagbd.functions.supabase.co/admin-operations/trades', {
         headers: { Authorization: `Bearer ${session.access_token}` }
       });
 

@@ -31,15 +31,12 @@ export const KYCReviewModal: React.FC<KYCReviewModalProps> = ({
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return;
 
-      const { error } = await supabase.functions.invoke(
-        `admin-operations/kyc/${submission.id}/approve`,
-        {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${session.access_token}`,
-          },
-        }
-      );
+      const { error } = await supabase.functions.invoke('admin-operations', {
+        body: {
+          action: 'approve-kyc',
+          userId: submission.id,
+        },
+      });
 
       if (error) throw error;
 
@@ -75,17 +72,13 @@ export const KYCReviewModal: React.FC<KYCReviewModalProps> = ({
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return;
 
-      const { error } = await supabase.functions.invoke(
-        `admin-operations/kyc/${submission.id}/reject`,
-        {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${session.access_token}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ reason: rejectionReason }),
-        }
-      );
+      const { error } = await supabase.functions.invoke('admin-operations', {
+        body: {
+          action: 'reject-kyc',
+          userId: submission.id,
+          reason: rejectionReason,
+        },
+      });
 
       if (error) throw error;
 
