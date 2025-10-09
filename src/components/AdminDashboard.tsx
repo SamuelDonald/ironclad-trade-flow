@@ -150,7 +150,8 @@ export const AdminDashboard: React.FC = () => {
 
       if (response.ok) {
         const data = await response.json();
-        setUsers(data);
+        // The edge function returns { users: [...], totalCount: ... }
+        setUsers(data.users || []);
       }
     } catch (error) {
       console.error('Error loading users data:', error);
