@@ -19,25 +19,18 @@ export const useBalanceUpdate = () => {
     try {
       setLoading(true);
 
-      // Refresh session if needed
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-      
-      if (sessionError || !session) {
-        const { data: refreshData } = await supabase.auth.refreshSession();
-        if (!refreshData.session) {
-          throw new Error('Session expired. Please log in again.');
-        }
-      }
-
       const { data, error } = await supabase.functions.invoke(
-        `admin-operations/users/${userId}/balances`,
+        'admin-operations',
         {
-          method: 'PUT',
-          headers: {
-            Authorization: `Bearer ${session.access_token}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ updates, mode, reason }),
+          body: {
+            action: 'update-balances',
+            userId,
+            cashBalance: updates.cash_balance,
+            investedAmount: updates.invested_amount,
+            freeMargin: updates.free_margin,
+            mode,
+            reason
+          }
         }
       );
 
@@ -45,7 +38,9 @@ export const useBalanceUpdate = () => {
         console.error('Edge function error details:', {
           message: error.message,
           status: error.status,
-          context: error.context
+          context: error.context,
+          name: error.name,
+          fullError: error
         });
         throw error;
       }

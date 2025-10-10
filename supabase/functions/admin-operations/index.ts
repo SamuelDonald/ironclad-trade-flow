@@ -372,10 +372,19 @@ serve(async (req) => {
       });
     }
 
-    // Update user balances
+    // Update user balances (path-based - legacy support)
     if (req.method === 'PUT' && path.startsWith('/admin-operations/users/') && path.endsWith('/balances')) {
       const userId = path.split('/')[3];
       const { mode, cashBalance, investedAmount, freeMargin, reason } = await req.json();
+
+      console.log('[Admin Operations] Path-based balance update:', {
+        userId,
+        mode,
+        cashBalance,
+        investedAmount,
+        freeMargin,
+        reason,
+      });
 
       if (!reason || reason.trim() === '') {
         throw new Error('Reason is required for balance updates');
@@ -433,6 +442,94 @@ serve(async (req) => {
             mode
           }
         });
+
+      console.log('[Admin Operations] Balance updated successfully:', {
+        userId,
+        mode,
+        newBalances: { cash_balance: newCashBalance, invested_amount: newInvestedAmount, free_margin: newFreeMargin },
+      });
+
+      return new Response(JSON.stringify(updatedBalance), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
+    // Update user balances (action-based)
+    if (action === 'update-balances' || body.userId) {
+      const userId = body.userId;
+      const { mode, cashBalance, investedAmount, freeMargin, reason } = body;
+
+      console.log('[Admin Operations] Action-based balance update:', {
+        userId,
+        mode,
+        cashBalance,
+        investedAmount,
+        freeMargin,
+        reason,
+      });
+
+      if (!reason || reason.trim() === '') {
+        throw new Error('Reason is required for balance updates');
+      }
+
+      // Get current balances for audit
+      const { data: currentBalance } = await supabase
+        .from('portfolio_balances')
+        .select('*')
+        .eq('user_id', userId)
+        .maybeSingle();
+
+      let newCashBalance, newInvestedAmount, newFreeMargin;
+
+      if (mode === 'delta') {
+        // Add to existing values
+        newCashBalance = parseFloat(currentBalance?.cash_balance || 0) + parseFloat(cashBalance || 0);
+        newInvestedAmount = parseFloat(currentBalance?.invested_amount || 0) + parseFloat(investedAmount || 0);
+        newFreeMargin = parseFloat(currentBalance?.free_margin || 0) + parseFloat(freeMargin || 0);
+      } else {
+        // Set absolute values (only update fields that are provided)
+        newCashBalance = cashBalance !== undefined ? parseFloat(cashBalance) : parseFloat(currentBalance?.cash_balance || 0);
+        newInvestedAmount = investedAmount !== undefined ? parseFloat(investedAmount) : parseFloat(currentBalance?.invested_amount || 0);
+        newFreeMargin = freeMargin !== undefined ? parseFloat(freeMargin) : parseFloat(currentBalance?.free_margin || 0);
+      }
+
+      // Update or insert balances
+      const { data: updatedBalance, error } = await supabase
+        .from('portfolio_balances')
+        .upsert({
+          user_id: userId,
+          cash_balance: newCashBalance,
+          invested_amount: newInvestedAmount,
+          free_margin: newFreeMargin,
+          total_value: newCashBalance + newInvestedAmount,
+          updated_at: new Date().toISOString()
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      // Log admin action
+      await supabase
+        .from('admin_audits')
+        .insert({
+          admin_user_id: adminUser.id,
+          action: 'balance_update',
+          target_table: 'portfolio_balances',
+          target_id: userId,
+          meta: {
+            before: currentBalance,
+            after: { cash_balance: newCashBalance, invested_amount: newInvestedAmount, free_margin: newFreeMargin },
+            reason,
+            mode
+          }
+        });
+
+      console.log('[Admin Operations] Balance updated successfully:', {
+        userId,
+        mode,
+        newBalances: { cash_balance: newCashBalance, invested_amount: newInvestedAmount, free_margin: newFreeMargin },
+      });
 
       return new Response(JSON.stringify(updatedBalance), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
