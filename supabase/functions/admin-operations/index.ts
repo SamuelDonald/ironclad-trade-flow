@@ -270,30 +270,51 @@ serve(async (req) => {
 
       const [
         { data: profile },
-        { data: portfolio },
+        { data: portfolio, error: portfolioError },
         { data: paymentMethods },
         { data: recentTransactions },
         { data: recentTrades }
       ] = await Promise.all([
         supabase.from('profiles').select('*').eq('id', userId).single(),
-        supabase.from('portfolio_balances').select('cash_balance, invested_amount, free_margin, total_value, daily_change, daily_change_percent').eq('user_id', userId).single(),
+        supabase.from('portfolio_balances').select('cash_balance, invested_amount, free_margin, total_value, daily_change, daily_change_percent').eq('user_id', userId).maybeSingle(),
         supabase.from('payment_methods').select('*').eq('user_id', userId),
         supabase.from('transactions').select('*').eq('user_id', userId).order('created_at', { ascending: false }).limit(5),
         supabase.from('trades').select('*').eq('user_id', userId).order('created_at', { ascending: false }).limit(5)
       ]);
+
+      // If no portfolio exists, create one with default values
+      let finalPortfolio = portfolio;
+      if (!portfolio && !portfolioError) {
+        const { data: newPortfolio } = await supabase
+          .from('portfolio_balances')
+          .insert({
+            user_id: userId,
+            cash_balance: 0,
+            invested_amount: 0,
+            free_margin: 0,
+            total_value: 0,
+            daily_change: 0,
+            daily_change_percent: 0
+          })
+          .select('cash_balance, invested_amount, free_margin, total_value, daily_change, daily_change_percent')
+          .single();
+        
+        finalPortfolio = newPortfolio;
+        console.log('[Admin Operations] Created new portfolio for user:', userId);
+      }
 
       console.log('[Admin Operations] Sending user details response:', {
         action,
         status: 200,
         userId,
         hasProfile: !!profile,
-        hasPortfolio: !!portfolio,
-        portfolioFields: portfolio ? Object.keys(portfolio) : []
+        hasPortfolio: !!finalPortfolio,
+        portfolioFields: finalPortfolio ? Object.keys(finalPortfolio) : []
       });
 
       return new Response(JSON.stringify({
         profile,
-        portfolio,
+        portfolio: finalPortfolio,
         paymentMethods,
         recentTransactions,
         recentTrades
@@ -308,21 +329,41 @@ serve(async (req) => {
 
       const [
         { data: profile },
-        { data: portfolio },
+        { data: portfolio, error: portfolioError },
         { data: paymentMethods },
         { data: recentTransactions },
         { data: recentTrades }
       ] = await Promise.all([
         supabase.from('profiles').select('*').eq('id', userId).single(),
-        supabase.from('portfolio_balances').select('*').eq('user_id', userId).single(),
+        supabase.from('portfolio_balances').select('*').eq('user_id', userId).maybeSingle(),
         supabase.from('payment_methods').select('*').eq('user_id', userId),
         supabase.from('transactions').select('*').eq('user_id', userId).order('created_at', { ascending: false }).limit(5),
         supabase.from('trades').select('*').eq('user_id', userId).order('created_at', { ascending: false }).limit(5)
       ]);
 
+      // If no portfolio exists, create one with default values
+      let finalPortfolio = portfolio;
+      if (!portfolio && !portfolioError) {
+        const { data: newPortfolio } = await supabase
+          .from('portfolio_balances')
+          .insert({
+            user_id: userId,
+            cash_balance: 0,
+            invested_amount: 0,
+            free_margin: 0,
+            total_value: 0,
+            daily_change: 0,
+            daily_change_percent: 0
+          })
+          .select()
+          .single();
+        
+        finalPortfolio = newPortfolio;
+      }
+
       return new Response(JSON.stringify({
         profile,
-        portfolio,
+        portfolio: finalPortfolio,
         paymentMethods,
         recentTransactions,
         recentTrades

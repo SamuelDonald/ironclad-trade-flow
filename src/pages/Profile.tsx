@@ -139,25 +139,40 @@ const Profile = () => {
   return (
     <div className="container max-w-4xl mx-auto p-6 pb-20 space-y-8">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <h1 className="text-3xl font-bold text-indigo-700">Profile</h1>
-        <Button 
-          variant="outline" 
-          size="sm" 
-          className="border-indigo-500 text-indigo-600 relative"
-          onClick={() => {
-            markAsRead();
-            navigate('/customer-care');
-          }}
-        >
-          <MessageCircle className="w-4 h-4 mr-2" />
-          Customer Care
-          {unreadCount > 0 && (
-            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-              {unreadCount}
-            </span>
+        <div className="flex items-center gap-3 w-full sm:w-auto">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="border-indigo-500 text-indigo-600 relative flex-1 sm:flex-initial"
+            onClick={() => {
+              markAsRead();
+              navigate('/customer-care');
+            }}
+          >
+            <MessageCircle className="w-4 h-4 mr-2" />
+            Customer Care
+            {unreadCount > 0 && (
+              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                {unreadCount}
+              </span>
+            )}
+          </Button>
+          {/* KYC Badge - Mobile Only */}
+          {profile?.kyc_status && (
+            <Badge 
+              variant={
+                profile.kyc_status === 'approved' ? 'default' : 
+                profile.kyc_status === 'rejected' ? 'destructive' : 
+                'secondary'
+              }
+              className="block sm:hidden text-xs whitespace-nowrap"
+            >
+              KYC: {profile.kyc_status.charAt(0).toUpperCase() + profile.kyc_status.slice(1)}
+            </Badge>
           )}
-        </Button>
+        </div>
       </div>
 
       {/* Mobile FAB for tab navigation */}
@@ -214,6 +229,7 @@ const Profile = () => {
                   <CardTitle className="text-indigo-700">Personal Information</CardTitle>
                   <CardDescription>Update your details and contact info</CardDescription>
                 </div>
+                {/* KYC Badge - Desktop/Tablet Only */}
                 {profile?.kyc_status && (
                   <Badge 
                     variant={
@@ -221,7 +237,7 @@ const Profile = () => {
                       profile.kyc_status === 'rejected' ? 'destructive' : 
                       'secondary'
                     }
-                    className="absolute top-4 sm:top-6 right-4 sm:right-6 text-xs sm:text-sm"
+                    className="hidden sm:block absolute top-6 right-6 text-sm"
                   >
                     KYC: {profile.kyc_status.charAt(0).toUpperCase() + profile.kyc_status.slice(1)}
                   </Badge>

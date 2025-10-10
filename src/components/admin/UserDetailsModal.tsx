@@ -59,6 +59,24 @@ export const UserDetailsModal: React.FC<UserDetailsModalProps> = ({ userId, open
       });
 
       if (error) throw error;
+      
+      console.log('[UserDetailsModal] Fetched user details:', {
+        hasPortfolio: !!data?.portfolio,
+        portfolioData: data?.portfolio
+      });
+      
+      // Ensure portfolio has default values if missing
+      if (data && !data.portfolio) {
+        data.portfolio = {
+          cash_balance: 0,
+          invested_amount: 0,
+          free_margin: 0,
+          total_value: 0,
+          daily_change: 0,
+          daily_change_percent: 0
+        };
+      }
+      
       setUserDetails(data);
     } catch (err) {
       console.error('Error fetching user details:', err);
