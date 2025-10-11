@@ -54,13 +54,22 @@ serve(async (req) => {
     
     if (req.method === 'POST' || req.method === 'PUT') {
       try {
-        const contentType = req.headers.get('content-type');
+        // Clone the request to avoid body already consumed errors
+        const clonedReq = req.clone();
+        const contentType = clonedReq.headers.get('content-type');
+        
         if (contentType && contentType.includes('application/json')) {
-          const text = await req.text();
+          const text = await clonedReq.text();
+          console.log('[Admin Operations] Raw request body:', text.substring(0, 200));
+          
           if (text && text.trim().length > 0) {
             body = JSON.parse(text);
             action = body.action || '';
+          } else {
+            console.log('[Admin Operations] Empty request body received');
           }
+        } else {
+          console.log('[Admin Operations] Non-JSON content type:', contentType);
         }
       } catch (parseError) {
         console.error('[Admin Operations] JSON parse error:', parseError);
