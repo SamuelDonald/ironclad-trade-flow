@@ -24,14 +24,32 @@ const Auth = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
-  // Check for email confirmation redirect
+  // Check for email confirmation redirect and errors
   useEffect(() => {
     const redirect = searchParams.get('redirect');
+    const error = searchParams.get('error');
+    const errorDescription = searchParams.get('error_description');
+    
     if (redirect === 'confirmed') {
       toast({
-        title: "Email confirmed successfully",
-        description: "Please sign in to continue.",
+        title: "Email Confirmed",
+        description: "Your email has been successfully confirmed. Please sign in to continue.",
       });
+    } else if (error) {
+      // Handle Supabase auth errors
+      if (error === 'access_denied' && errorDescription?.includes('expired')) {
+        toast({
+          title: "Confirmation Link Expired",
+          description: "Please request a new confirmation email by signing up again.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Authentication Error",
+          description: errorDescription || "An error occurred. Please try again.",
+          variant: "destructive",
+        });
+      }
     }
   }, [searchParams, toast]);
 

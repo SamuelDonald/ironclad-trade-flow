@@ -30,6 +30,9 @@ export const useBalanceUpdate = () => {
             freeMargin: updates.free_margin,
             mode,
             reason
+          },
+          headers: {
+            'Content-Type': 'application/json'
           }
         }
       );
@@ -57,9 +60,22 @@ export const useBalanceUpdate = () => {
       return data;
     } catch (err: any) {
       console.error('Error updating balance:', err);
+      
+      // Provide user-friendly error messages
+      let errorMessage = 'Failed to update balance';
+      if (err.message?.includes('JSON')) {
+        errorMessage = 'Invalid request format. Please try again.';
+      } else if (err.message?.includes('authorization') || err.message?.includes('denied')) {
+        errorMessage = 'Authorization failed. Please sign in again.';
+      } else if (err.message?.includes('Reason is required')) {
+        errorMessage = 'Please provide a reason for the balance update.';
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+      
       toast({
         title: 'Error',
-        description: err.message || 'Failed to update balance',
+        description: errorMessage,
         variant: 'destructive',
       });
       throw err;
