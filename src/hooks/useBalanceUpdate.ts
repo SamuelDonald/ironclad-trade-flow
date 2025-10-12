@@ -19,6 +19,23 @@ export const useBalanceUpdate = () => {
     try {
       setLoading(true);
 
+      // Validate required fields before sending
+      if (!userId || !reason || reason.trim() === '') {
+        throw new Error('User ID and reason are required');
+      }
+
+      console.log('[useBalanceUpdate] Sending request:', {
+        action: 'update-balances',
+        userId,
+        mode,
+        hasReason: !!reason,
+        balanceFields: {
+          cashBalance: updates.cash_balance,
+          investedAmount: updates.invested_amount,
+          freeMargin: updates.free_margin
+        }
+      });
+
       const { data, error } = await supabase.functions.invoke(
         'admin-operations',
         {

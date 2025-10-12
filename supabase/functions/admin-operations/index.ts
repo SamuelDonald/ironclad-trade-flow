@@ -54,27 +54,26 @@ serve(async (req) => {
     
     if (req.method === 'POST' || req.method === 'PUT') {
       try {
-        // Clone the request to avoid body already consumed errors
-        const clonedReq = req.clone();
-        const contentType = clonedReq.headers.get('content-type');
+        // Simply await req.json() without cloning - this is the standard way
+        body = await req.json();
+        action = body.action || '';
         
-        if (contentType && contentType.includes('application/json')) {
-          const text = await clonedReq.text();
-          console.log('[Admin Operations] Raw request body:', text.substring(0, 200));
-          
-          if (text && text.trim().length > 0) {
-            body = JSON.parse(text);
-            action = body.action || '';
-          } else {
-            console.log('[Admin Operations] Empty request body received');
-          }
-        } else {
-          console.log('[Admin Operations] Non-JSON content type:', contentType);
-        }
+        console.log('[Admin Operations] Request received:', {
+          method: req.method,
+          action,
+          timestamp: new Date().toISOString()
+        });
+        
+        console.log('[Admin Operations] Request body:', {
+          action,
+          hasUserId: !!body.userId,
+          hasReason: !!body.reason,
+          bodyKeys: Object.keys(body)
+        });
       } catch (parseError) {
-        console.error('[Admin Operations] JSON parse error:', parseError);
+        console.error('[Admin Operations] Failed to parse request body:', parseError);
         return new Response(
-          JSON.stringify({ error: 'Invalid JSON in request body' }),
+          JSON.stringify({ error: 'Invalid request body format' }),
           { 
             status: 400,
             headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -89,18 +88,6 @@ serve(async (req) => {
       else if (path.endsWith('/transactions')) action = 'transactions';
       else if (path.endsWith('/trades')) action = 'trades';
     }
-    
-    console.log('[Admin Operations] Parsed body:', {
-      action,
-      hasUserId: !!body.userId,
-      bodyKeys: Object.keys(body)
-    });
-    
-    console.log('[Admin Operations] Request received:', {
-      method: req.method,
-      action,
-      timestamp: new Date().toISOString()
-    });
 
     console.log('[Admin Operations] Admin verified:', {
       adminId: adminUser.id,
@@ -406,23 +393,36 @@ serve(async (req) => {
 
     // Update user balances (consolidated - both path-based and action-based)
     if ((req.method === 'PUT' && path.startsWith('/admin-operations/users/') && path.endsWith('/balances')) || 
-        (action === 'update-balances' || (body.userId && body.reason))) {
+        action === 'update-balances') {
+      
+      console.log('[Admin Operations] Balance update handler triggered');
       
       const userId = body.userId || path.split('/')[3];
       const { mode, cashBalance, investedAmount, freeMargin, reason } = body;
 
-      console.log('[Admin Operations] Balance update request:', {
+      console.log('[Admin Operations] Balance update details:', {
         userId,
         mode,
         cashBalance,
         investedAmount,
         freeMargin,
-        reason,
-        source: action === 'update-balances' ? 'action-based' : 'path-based'
+        hasReason: !!reason
       });
 
+      if (!userId) {
+        console.error('[Admin Operations] Missing userId in balance update request');
+        return new Response(
+          JSON.stringify({ error: 'User ID is required' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
       if (!reason || reason.trim() === '') {
-        throw new Error('Reason is required for balance updates');
+        console.error('[Admin Operations] Missing or empty reason in balance update request');
+        return new Response(
+          JSON.stringify({ error: 'Reason is required for balance updates' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
       }
 
       // Get current balances for audit
