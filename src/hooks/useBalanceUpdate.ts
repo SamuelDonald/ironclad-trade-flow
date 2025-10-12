@@ -24,11 +24,23 @@ export const useBalanceUpdate = () => {
         throw new Error('User ID and reason are required');
       }
 
+      const requestBody = {
+        action: 'update-balances',
+        userId,
+        cashBalance: updates.cash_balance,
+        investedAmount: updates.invested_amount,
+        freeMargin: updates.free_margin,
+        mode,
+        reason
+      };
+
       console.log('[useBalanceUpdate] Sending request:', {
         action: 'update-balances',
         userId,
         mode,
         hasReason: !!reason,
+        reasonLength: reason?.length || 0,
+        stringifiedBody: JSON.stringify(requestBody),
         balanceFields: {
           cashBalance: updates.cash_balance,
           investedAmount: updates.invested_amount,
@@ -39,15 +51,7 @@ export const useBalanceUpdate = () => {
       const { data, error } = await supabase.functions.invoke(
         'admin-operations',
         {
-          body: {
-            action: 'update-balances',
-            userId,
-            cashBalance: updates.cash_balance,
-            investedAmount: updates.invested_amount,
-            freeMargin: updates.free_margin,
-            mode,
-            reason
-          },
+          body: requestBody,
           headers: {
             'Content-Type': 'application/json'
           }
@@ -76,7 +80,12 @@ export const useBalanceUpdate = () => {
 
       return data;
     } catch (err: any) {
-      console.error('Error updating balance:', err);
+      console.error('[useBalanceUpdate] Error updating balance:', {
+        message: err.message,
+        context: err.context,
+        details: err,
+        stack: err.stack
+      });
       
       // Provide user-friendly error messages
       let errorMessage = 'Failed to update balance';

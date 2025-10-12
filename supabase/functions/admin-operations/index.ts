@@ -54,26 +54,53 @@ serve(async (req) => {
     
     if (req.method === 'POST' || req.method === 'PUT') {
       try {
-        // Simply await req.json() without cloning - this is the standard way
-        body = await req.json();
+        // Use req.text() instead of req.json() for better compatibility with Supabase function invocation
+        const rawBody = await req.text();
+        
+        console.log('[Admin Operations] Raw request body received:', {
+          method: req.method,
+          bodyLength: rawBody.length,
+          timestamp: new Date().toISOString()
+        });
+        
+        // Handle empty body case
+        if (!rawBody || rawBody.trim() === '') {
+          console.error('[Admin Operations] Empty request body received');
+          return new Response(
+            JSON.stringify({ error: 'Request body is empty' }),
+            { 
+              status: 400,
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            }
+          );
+        }
+        
+        // Parse the body text as JSON
+        body = JSON.parse(rawBody);
         action = body.action || '';
         
-        console.log('[Admin Operations] Request received:', {
+        console.log('[Admin Operations] Request parsed successfully:', {
           method: req.method,
           action,
           timestamp: new Date().toISOString()
         });
         
-        console.log('[Admin Operations] Request body:', {
+        console.log('[Admin Operations] Request body details:', {
           action,
           hasUserId: !!body.userId,
           hasReason: !!body.reason,
           bodyKeys: Object.keys(body)
         });
       } catch (parseError) {
-        console.error('[Admin Operations] Failed to parse request body:', parseError);
+        console.error('[Admin Operations] Failed to parse request body:', {
+          error: parseError.message,
+          stack: parseError.stack
+        });
         return new Response(
-          JSON.stringify({ error: 'Invalid request body format' }),
+          JSON.stringify({ 
+            error: 'Invalid request body format',
+            details: parseError.message 
+          }),
           { 
             status: 400,
             headers: { ...corsHeaders, 'Content-Type': 'application/json' }
