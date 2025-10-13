@@ -54,9 +54,12 @@ serve(async (req) => {
     
     if (req.method === 'POST' || req.method === 'PUT') {
       try {
-        // Use req.json() directly - supabase.functions.invoke() handles JSON serialization
-        body = await req.json();
-        action = body.action || '';
+        // Safely parse JSON - check if body exists first
+        const text = await req.text();
+        if (text && text.trim()) {
+          body = JSON.parse(text);
+          action = body.action || '';
+        }
         
         console.log('[Admin Operations] Request parsed:', {
           method: req.method,
@@ -70,7 +73,7 @@ serve(async (req) => {
           hasReason: !!body.reason,
           bodyKeys: Object.keys(body)
         });
-      } catch (parseError) {
+      } catch (parseError: any) {
         console.error('[Admin Operations] JSON parse error:', {
           error: parseError.message,
           stack: parseError.stack
