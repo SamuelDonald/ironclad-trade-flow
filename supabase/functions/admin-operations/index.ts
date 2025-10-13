@@ -54,51 +54,31 @@ serve(async (req) => {
     
     if (req.method === 'POST' || req.method === 'PUT') {
       try {
-        // Use req.text() instead of req.json() for better compatibility with Supabase function invocation
-        const rawBody = await req.text();
-        
-        console.log('[Admin Operations] Raw request body received:', {
-          method: req.method,
-          bodyLength: rawBody.length,
-          timestamp: new Date().toISOString()
-        });
-        
-        // Handle empty body case
-        if (!rawBody || rawBody.trim() === '') {
-          console.error('[Admin Operations] Empty request body received');
-          return new Response(
-            JSON.stringify({ error: 'Request body is empty' }),
-            { 
-              status: 400,
-              headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-            }
-          );
-        }
-        
-        // Parse the body text as JSON
-        body = JSON.parse(rawBody);
+        // Use req.json() directly - supabase.functions.invoke() handles JSON serialization
+        body = await req.json();
         action = body.action || '';
         
-        console.log('[Admin Operations] Request parsed successfully:', {
+        console.log('[Admin Operations] Request parsed:', {
           method: req.method,
           action,
           timestamp: new Date().toISOString()
         });
         
-        console.log('[Admin Operations] Request body details:', {
+        console.log('[Admin Operations] Request body:', {
           action,
           hasUserId: !!body.userId,
           hasReason: !!body.reason,
           bodyKeys: Object.keys(body)
         });
       } catch (parseError) {
-        console.error('[Admin Operations] Failed to parse request body:', {
+        console.error('[Admin Operations] JSON parse error:', {
           error: parseError.message,
           stack: parseError.stack
         });
         return new Response(
           JSON.stringify({ 
-            error: 'Invalid request body format',
+            ok: false,
+            error: 'Invalid JSON in request body',
             details: parseError.message 
           }),
           { 
@@ -474,7 +454,7 @@ serve(async (req) => {
       }
 
       // Update or insert balances
-      const { data: updatedBalance, error } = await supabase
+      const { data: updatedBalance, error: updateError } = await supabase
         .from('portfolio_balances')
         .upsert({
           user_id: userId,
@@ -487,23 +467,48 @@ serve(async (req) => {
         .select()
         .single();
 
-      if (error) throw error;
-
-      // Log admin action
-      await supabase
-        .from('admin_audits')
-        .insert({
-          admin_user_id: adminUser.id,
-          action: 'balance_update',
-          target_table: 'portfolio_balances',
-          target_id: userId,
-          meta: {
-            before: currentBalance,
-            after: { cash_balance: newCashBalance, invested_amount: newInvestedAmount, free_margin: newFreeMargin },
-            reason,
-            mode
-          }
+      if (updateError) {
+        console.error('[Admin Operations] Database update error:', {
+          code: updateError.code,
+          message: updateError.message,
+          details: updateError.details,
+          hint: updateError.hint
         });
+        
+        return new Response(
+          JSON.stringify({ 
+            ok: false,
+            error: 'Failed to update portfolio balances',
+            details: updateError.message,
+            code: updateError.code
+          }),
+          { 
+            status: 500,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          }
+        );
+      }
+
+      // Try to log admin action (don't fail request if this fails)
+      try {
+        await supabase
+          .from('admin_audits')
+          .insert({
+            admin_user_id: adminUser.id,
+            action: 'balance_update',
+            target_table: 'portfolio_balances',
+            target_id: userId,
+            meta: {
+              before: currentBalance,
+              after: { cash_balance: newCashBalance, invested_amount: newInvestedAmount, free_margin: newFreeMargin },
+              reason,
+              mode
+            }
+          });
+      } catch (auditError) {
+        console.error('[Admin Operations] Failed to log audit entry:', auditError);
+        // Continue - don't block the update
+      }
 
       console.log('[Admin Operations] Balance updated successfully:', {
         userId,
@@ -511,7 +516,10 @@ serve(async (req) => {
         newBalances: { cash_balance: newCashBalance, invested_amount: newInvestedAmount, free_margin: newFreeMargin }
       });
 
-      return new Response(JSON.stringify(updatedBalance), {
+      return new Response(JSON.stringify({
+        ok: true,
+        data: updatedBalance
+      }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
     }

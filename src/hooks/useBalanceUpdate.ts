@@ -59,18 +59,24 @@ export const useBalanceUpdate = () => {
       );
 
       if (error) {
-        console.error('Edge function error details:', {
+        console.error('[useBalanceUpdate] Edge function error:', {
           message: error.message,
           status: error.status,
           context: error.context,
           name: error.name,
           fullError: error
         });
-        throw error;
+        throw new Error(error.message || 'Edge function returned an error');
       }
 
       if (!data) {
         throw new Error('No data returned from edge function');
+      }
+
+      // Check if response indicates failure
+      if (data.ok === false) {
+        console.error('[useBalanceUpdate] Edge function returned error:', data);
+        throw new Error(data.error || data.details || 'Balance update failed');
       }
 
       toast({
@@ -78,7 +84,8 @@ export const useBalanceUpdate = () => {
         description: 'User balance updated successfully',
       });
 
-      return data;
+      // Return the actual data (unwrap from { ok: true, data: ... })
+      return data.data || data;
     } catch (err: any) {
       console.error('[useBalanceUpdate] Error updating balance:', {
         message: err.message,
