@@ -58,6 +58,13 @@ export const useBalanceUpdate = () => {
         }
       );
 
+      console.log('[useBalanceUpdate] Edge function response:', {
+        hasData: !!data,
+        hasError: !!error,
+        data: data,
+        error: error
+      });
+
       if (error) {
         console.error('[useBalanceUpdate] Edge function error:', {
           message: error.message,
@@ -66,10 +73,18 @@ export const useBalanceUpdate = () => {
           name: error.name,
           fullError: error
         });
-        throw new Error(error.message || 'Edge function returned an error');
+        
+        // Try to extract more details from the error
+        let errorMessage = error.message || 'Edge function returned an error';
+        if (error.context && typeof error.context === 'object') {
+          errorMessage += ` - Context: ${JSON.stringify(error.context)}`;
+        }
+        
+        throw new Error(errorMessage);
       }
 
       if (!data) {
+        console.error('[useBalanceUpdate] No data returned from edge function');
         throw new Error('No data returned from edge function');
       }
 

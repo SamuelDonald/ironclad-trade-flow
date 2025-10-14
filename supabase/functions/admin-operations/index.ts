@@ -54,11 +54,45 @@ serve(async (req) => {
     
     if (req.method === 'POST' || req.method === 'PUT') {
       try {
-        // Parse JSON body directly - supabase.functions.invoke() sends JSON automatically
-        body = await req.json();
+        console.log('[Admin Operations] About to parse request body...');
+        console.log('[Admin Operations] Request headers:', {
+          contentType: req.headers.get('content-type'),
+          contentLength: req.headers.get('content-length'),
+          authorization: req.headers.get('authorization') ? 'Present' : 'Missing'
+        });
+        
+        // Clone request so we can read body multiple times if needed
+        const clonedReq = req.clone();
+        const bodyText = await clonedReq.text();
+        
+        console.log('[Admin Operations] Raw request body text:', bodyText);
+        console.log('[Admin Operations] Body text length:', bodyText?.length || 0);
+        
+        if (!bodyText || bodyText.trim() === '') {
+          console.error('[Admin Operations] CRITICAL: Empty request body received!');
+          return new Response(
+            JSON.stringify({ 
+              ok: false,
+              error: 'Empty request body',
+              details: 'The request body is empty. Expected JSON with action, userId, reason, etc.',
+              debugInfo: {
+                method: req.method,
+                contentType: req.headers.get('content-type'),
+                contentLength: req.headers.get('content-length')
+              }
+            }),
+            { 
+              status: 400,
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            }
+          );
+        }
+        
+        // Parse JSON body
+        body = JSON.parse(bodyText);
         action = body.action || '';
         
-        console.log('[Admin Operations] Request parsed:', {
+        console.log('[Admin Operations] Request parsed successfully:', {
           method: req.method,
           action,
           timestamp: new Date().toISOString()
@@ -68,18 +102,27 @@ serve(async (req) => {
           action,
           hasUserId: !!body.userId,
           hasReason: !!body.reason,
-          bodyKeys: Object.keys(body)
+          bodyKeys: Object.keys(body),
+          fullBody: JSON.stringify(body)
         });
       } catch (parseError: any) {
-        console.error('[Admin Operations] JSON parse error:', {
+        console.error('[Admin Operations] CRITICAL JSON parse error:', {
           error: parseError.message,
-          stack: parseError.stack
+          stack: parseError.stack,
+          errorType: parseError.constructor.name
         });
         return new Response(
           JSON.stringify({ 
             ok: false,
             error: 'Invalid JSON in request body',
-            details: parseError.message 
+            details: parseError.message,
+            errorType: parseError.constructor.name,
+            stack: parseError.stack,
+            debugInfo: {
+              method: req.method,
+              contentType: req.headers.get('content-type'),
+              contentLength: req.headers.get('content-length')
+            }
           }),
           { 
             status: 400,
