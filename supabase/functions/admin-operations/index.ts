@@ -406,9 +406,17 @@ serve(async (req) => {
         action === 'update-balances') {
       
       console.log('[Admin Operations] Balance update handler triggered');
-      
-      const userId = body.userId || path.split('/')[3];
-      const { mode, cashBalance, investedAmount, freeMargin, reason } = body;
+
+      const userId = body.userId || (path.split('/')[3] || null);
+
+      // Accept both camelCase and snake_case incoming fields (frontend may send either)
+      const {
+        mode,
+        reason,
+        cashBalance = (body && body.cash_balance),
+        investedAmount = (body && body.invested_amount),
+        freeMargin = (body && body.free_margin)
+      } = body || {};
 
       console.log('[Admin Operations] Balance update details:', {
         userId,
@@ -419,10 +427,11 @@ serve(async (req) => {
         hasReason: !!reason
       });
 
+      // Validate
       if (!userId) {
         console.error('[Admin Operations] Missing userId in balance update request');
         return new Response(
-          JSON.stringify({ error: 'User ID is required' }),
+          JSON.stringify({ ok: false, error: 'User ID is required' }),
           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
@@ -430,101 +439,164 @@ serve(async (req) => {
       if (!reason || reason.trim() === '') {
         console.error('[Admin Operations] Missing or empty reason in balance update request');
         return new Response(
-          JSON.stringify({ error: 'Reason is required for balance updates' }),
+          JSON.stringify({ ok: false, error: 'Reason is required for balance updates' }),
           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
 
-      // Get current balances for audit
-      const { data: currentBalance } = await supabase
-        .from('portfolio_balances')
-        .select('*')
-        .eq('user_id', userId)
-        .maybeSingle();
-
-      let newCashBalance, newInvestedAmount, newFreeMargin;
-
-      if (mode === 'delta') {
-        // Add to existing values
-        newCashBalance = parseFloat(currentBalance?.cash_balance || 0) + parseFloat(cashBalance || 0);
-        newInvestedAmount = parseFloat(currentBalance?.invested_amount || 0) + parseFloat(investedAmount || 0);
-        newFreeMargin = parseFloat(currentBalance?.free_margin || 0) + parseFloat(freeMargin || 0);
-      } else {
-        // Set absolute values (only update fields that are provided)
-        newCashBalance = cashBalance !== undefined ? parseFloat(cashBalance) : parseFloat(currentBalance?.cash_balance || 0);
-        newInvestedAmount = investedAmount !== undefined ? parseFloat(investedAmount) : parseFloat(currentBalance?.invested_amount || 0);
-        newFreeMargin = freeMargin !== undefined ? parseFloat(freeMargin) : parseFloat(currentBalance?.free_margin || 0);
-      }
-
-      // Update or insert balances
-      const { data: updatedBalance, error: updateError } = await supabase
-        .from('portfolio_balances')
-        .upsert({
-          user_id: userId,
-          cash_balance: newCashBalance,
-          invested_amount: newInvestedAmount,
-          free_margin: newFreeMargin,
-          total_value: newCashBalance + newInvestedAmount,
-          updated_at: new Date().toISOString()
-        })
-        .select()
-        .single();
-
-      if (updateError) {
-        console.error('[Admin Operations] Database update error:', {
-          code: updateError.code,
-          message: updateError.message,
-          details: updateError.details,
-          hint: updateError.hint
-        });
-        
-        return new Response(
-          JSON.stringify({ 
-            ok: false,
-            error: 'Failed to update portfolio balances',
-            details: updateError.message,
-            code: updateError.code
-          }),
-          { 
-            status: 500,
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-          }
-        );
-      }
-
-      // Try to log admin action (don't fail request if this fails)
       try {
-        await supabase
-          .from('admin_audits')
-          .insert({
+        // Read current balances (maybe single)
+        const { data: currentBalance, error: readErr } = await supabase
+          .from('portfolio_balances')
+          .select('*')
+          .eq('user_id', userId)
+          .maybeSingle();
+
+        if (readErr) {
+          console.error('[Admin Operations] Error reading current portfolio_balances:', readErr);
+          return new Response(
+            JSON.stringify({ ok: false, error: 'Failed to read current balances', details: readErr.message }),
+            { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+
+        // If no portfolio exists, create one with safe defaults
+        let activeBalance = currentBalance;
+        if (!activeBalance) {
+          const { data: inserted, error: insertErr } = await supabase
+            .from('portfolio_balances')
+            .insert({
+              user_id: userId,
+              cash_balance: 0,
+              invested_amount: 0,
+              free_margin: 0,
+              total_value: 0,
+              daily_change: 0,
+              daily_change_percent: 0,
+              updated_at: new Date().toISOString()
+            })
+            .select()
+            .single();
+
+          if (insertErr) {
+            console.error('[Admin Operations] Failed to create portfolio row for user:', insertErr);
+            return new Response(
+              JSON.stringify({ ok: false, error: 'Failed to ensure portfolio row exists', details: insertErr.message }),
+              { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            );
+          }
+          activeBalance = inserted;
+          console.log('[Admin Operations] Created new portfolio row for user:', userId);
+        }
+
+        // Helper parse to ensure numeric values
+        const parseNumeric = (v: any) => {
+          if (v === undefined || v === null || v === '') return undefined;
+          const n = Number(v);
+          return Number.isNaN(n) ? undefined : n;
+        };
+
+        // Compute new balances depending on mode
+        let newCashBalance: number;
+        let newInvestedAmount: number;
+        let newFreeMargin: number;
+
+        const parsedCash = parseNumeric(cashBalance);
+        const parsedInvested = parseNumeric(investedAmount);
+        const parsedFree = parseNumeric(freeMargin);
+
+        if (mode === 'delta') {
+          newCashBalance = (parseFloat(activeBalance?.cash_balance || '0') || 0) + (parsedCash || 0);
+          newInvestedAmount = (parseFloat(activeBalance?.invested_amount || '0') || 0) + (parsedInvested || 0);
+          newFreeMargin = (parseFloat(activeBalance?.free_margin || '0') || 0) + (parsedFree || 0);
+        } else { // absolute or undefined -> set absolute for provided fields; fallback to existing
+          newCashBalance = parsedCash !== undefined ? parsedCash : (parseFloat(activeBalance?.cash_balance || '0') || 0);
+          newInvestedAmount = parsedInvested !== undefined ? parsedInvested : (parseFloat(activeBalance?.invested_amount || '0') || 0);
+          newFreeMargin = parsedFree !== undefined ? parsedFree : (parseFloat(activeBalance?.free_margin || '0') || 0);
+        }
+
+        // Defensive checks: ensure values are finite numbers
+        if (![newCashBalance, newInvestedAmount, newFreeMargin].every(Number.isFinite)) {
+          console.error('[Admin Operations] Computed non-finite balance values', {
+            newCashBalance, newInvestedAmount, newFreeMargin
+          });
+          return new Response(
+            JSON.stringify({ ok: false, error: 'Invalid numeric values computed for balances' }),
+            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+
+        // Upsert the balances in a safe manner
+        let updatedBalance;
+        try {
+          const { data, error: updateError } = await supabase
+            .from('portfolio_balances')
+            .upsert({
+              user_id: userId,
+              cash_balance: newCashBalance,
+              invested_amount: newInvestedAmount,
+              free_margin: newFreeMargin,
+              total_value: Number(newCashBalance) + Number(newInvestedAmount),
+              updated_at: new Date().toISOString()
+            })
+            .select()
+            .single();
+
+          if (updateError) {
+            console.error('[Admin Operations] Database update error:', updateError);
+            return new Response(
+              JSON.stringify({ ok: false, error: 'Failed to update portfolio balances', details: updateError.message }),
+              { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            );
+          }
+          updatedBalance = data;
+        } catch (dbErr: any) {
+          console.error('[Admin Operations] Unexpected DB error during upsert:', dbErr);
+          return new Response(
+            JSON.stringify({ ok: false, error: 'Unexpected DB error', details: dbErr?.message || String(dbErr) }),
+            { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+
+        // Insert admin audit record (best-effort, don't block update on failure)
+        try {
+          await supabase.from('admin_audits').insert({
             admin_user_id: adminUser.id,
             action: 'balance_update',
             target_table: 'portfolio_balances',
             target_id: userId,
             meta: {
-              before: currentBalance,
+              before: currentBalance || null,
               after: { cash_balance: newCashBalance, invested_amount: newInvestedAmount, free_margin: newFreeMargin },
               reason,
               mode
-            }
+            },
+            created_at: new Date().toISOString()
           });
-      } catch (auditError) {
-        console.error('[Admin Operations] Failed to log audit entry:', auditError);
-        // Continue - don't block the update
+        } catch (auditErr) {
+          console.error('[Admin Operations] Failed to log audit entry:', auditErr);
+          // continue - do not fail the whole operation
+        }
+
+        console.log('[Admin Operations] Balance updated successfully:', {
+          userId,
+          mode,
+          newBalances: { cash_balance: newCashBalance, invested_amount: newInvestedAmount, free_margin: newFreeMargin }
+        });
+
+        // Return canonical success response
+        return new Response(JSON.stringify({ ok: true, data: updatedBalance }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+
+      } catch (err: any) {
+        console.error('[Admin Operations] Unhandled error in balance update handler:', err);
+        const message = (err && err.message) ? err.message : 'Unknown server error';
+        return new Response(JSON.stringify({ ok: false, error: message }), {
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
       }
-
-      console.log('[Admin Operations] Balance updated successfully:', {
-        userId,
-        mode,
-        newBalances: { cash_balance: newCashBalance, invested_amount: newInvestedAmount, free_margin: newFreeMargin }
-      });
-
-      return new Response(JSON.stringify({
-        ok: true,
-        data: updatedBalance
-      }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      });
     }
 
     // Removed duplicate action-based handler - now consolidated above
