@@ -92,11 +92,19 @@ serve(async (req) => {
         body = JSON.parse(bodyText);
         action = body.action || '';
         
-        console.log('[Admin Operations] Request parsed successfully:', {
-          method: req.method,
-          action,
-          timestamp: new Date().toISOString()
-        });
+  console.log('[Admin Operations] Request parsed successfully:', {
+    method: req.method,
+    action,
+    timestamp: new Date().toISOString()
+  });
+
+  // Safeguard: Check if action is present
+  if (!action || action === '') {
+    console.error('[Admin Operations] No action found in request body:', {
+      bodyKeys: Object.keys(body),
+      bodyContent: JSON.stringify(body).substring(0, 200)
+    });
+  }
         
         console.log('[Admin Operations] Request body:', {
           action,
@@ -748,7 +756,7 @@ serve(async (req) => {
     // Reject KYC
     if (req.method === 'POST' && path.includes('/kyc/') && path.endsWith('/reject')) {
       const userId = path.split('/')[3];
-      const { reason } = await req.json();
+      const { reason } = body;
 
       if (!reason || reason.trim() === '') {
         throw new Error('Rejection reason is required');
