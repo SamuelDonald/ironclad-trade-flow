@@ -24,7 +24,46 @@ const Auth = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
-  // Check for email confirmation redirect and errors
+  // Handle Supabase email confirmation redirect tokens
+  useEffect(() => {
+    const handleEmailConfirmation = async () => {
+      const hash = window.location.hash;
+
+      if (hash.includes("access_token") && hash.includes("type=signup")) {
+        try {
+          const { data, error } = await supabase.auth.getSession();
+
+          if (error) {
+            console.error("Email confirmation error:", error);
+            toast({
+              title: "Confirmation Error",
+              description: error.message,
+              variant: "destructive",
+            });
+          } else if (data?.session) {
+            toast({
+              title: "Email Confirmed",
+              description: "Your email has been successfully confirmed. Please sign in to continue.",
+            });
+            // Clean the URL hash and redirect to /auth
+            window.history.replaceState(null, '', '/auth');
+            navigate("/auth", { replace: true });
+          }
+        } catch (err) {
+          console.error("Unexpected confirmation error:", err);
+          toast({
+            title: "Error",
+            description: "An unexpected error occurred during confirmation.",
+            variant: "destructive",
+          });
+        }
+      }
+    };
+
+    handleEmailConfirmation();
+  }, [navigate, toast]);
+
+  // Preserve existing query-based redirects and errors
   useEffect(() => {
     const redirect = searchParams.get('redirect');
     const error = searchParams.get('error');
@@ -36,7 +75,6 @@ const Auth = () => {
         description: "Your email has been successfully confirmed. Please sign in to continue.",
       });
     } else if (error) {
-      // Handle Supabase auth errors
       if (error === 'access_denied' && errorDescription?.includes('expired')) {
         toast({
           title: "Confirmation Link Expired",
