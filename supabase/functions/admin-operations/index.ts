@@ -61,20 +61,23 @@ serve(async (req) => {
           authorization: req.headers.get('authorization') ? 'Present' : 'Missing'
         });
         
-        // Clone request so we can read body multiple times if needed
-        const clonedReq = req.clone();
-        const bodyText = await clonedReq.text();
-        
-        console.log('[Admin Operations] Raw request body text:', bodyText);
-        console.log('[Admin Operations] Body text length:', bodyText?.length || 0);
-        
-        if (!bodyText || bodyText.trim() === '') {
-          console.error('[Admin Operations] CRITICAL: Empty request body received!');
+        // Parse JSON body directly (standard Deno/Supabase Edge Function pattern)
+        try {
+          body = await req.json();
+          console.log('[Admin Operations] Request body parsed successfully:', {
+            hasBody: !!body,
+            action: body?.action,
+            userId: body?.userId,
+            hasReason: !!body?.reason,
+            bodyKeys: body ? Object.keys(body) : []
+          });
+        } catch (jsonError) {
+          console.error('[Admin Operations] JSON parsing error:', jsonError);
           return new Response(
             JSON.stringify({ 
               ok: false,
-              error: 'Empty request body',
-              details: 'The request body is empty. Expected JSON with action, userId, reason, etc.',
+              error: 'Invalid JSON in request body',
+              details: jsonError instanceof Error ? jsonError.message : 'Failed to parse request body as JSON',
               debugInfo: {
                 method: req.method,
                 contentType: req.headers.get('content-type'),
@@ -88,8 +91,20 @@ serve(async (req) => {
           );
         }
         
-        // Parse JSON body
-        body = JSON.parse(bodyText);
+        if (!body) {
+          console.error('[Admin Operations] CRITICAL: Empty request body after parsing!');
+          return new Response(
+            JSON.stringify({ 
+              ok: false,
+              error: 'Empty request body',
+              details: 'The request body is empty. Expected JSON with action, userId, reason, etc.'
+            }),
+            { 
+              status: 400,
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            }
+          );
+        }
         action = body.action || '';
         
   console.log('[Admin Operations] Request parsed successfully:', {
