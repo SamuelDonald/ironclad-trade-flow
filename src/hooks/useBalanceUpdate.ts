@@ -2,6 +2,24 @@ import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
+interface BalanceUpdateRequest {
+  userId: string;
+  updates: {
+    cash_balance?: number;
+    invested_amount?: number;
+    free_margin?: number;
+  };
+  mode: 'delta' | 'absolute';
+  reason: string;
+}
+
+interface BalanceUpdateResponse {
+  success: boolean;
+  data?: any;
+  error?: string;
+  details?: string[];
+}
+
 export const useBalanceUpdate = () => {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
@@ -19,116 +37,108 @@ export const useBalanceUpdate = () => {
     try {
       setLoading(true);
 
-      // Validate required fields before sending
-      if (!userId || !reason || reason.trim() === '') {
-        throw new Error('User ID and reason are required');
+      // Client-side validation
+      if (!userId || typeof userId !== 'string') {
+        throw new Error('User ID is required');
       }
 
+      if (!reason || typeof reason !== 'string' || reason.trim() === '') {
+        throw new Error('Reason is required and cannot be empty');
+      }
+
+      if (!['delta', 'absolute'].includes(mode)) {
+        throw new Error('Mode must be either "delta" or "absolute"');
+      }
+
+      // At least one balance field must be provided
+      const hasBalanceUpdate = updates.cash_balance !== undefined || 
+                              updates.invested_amount !== undefined || 
+                              updates.free_margin !== undefined;
+
+      if (!hasBalanceUpdate) {
+        throw new Error('At least one balance field must be provided');
+      }
+
+      // Prepare request payload
       const requestBody = {
-        action: 'update-balances',
         userId,
         cashBalance: updates.cash_balance,
         investedAmount: updates.invested_amount,
         freeMargin: updates.free_margin,
         mode,
-        reason
+        reason: reason.trim()
       };
 
-      console.log('[useBalanceUpdate] Sending request:', {
-        action: 'update-balances',
+      console.log('[useBalanceUpdate] Sending balance update request:', {
         userId,
         mode,
-        hasReason: !!reason,
-        reasonLength: reason?.length || 0,
-        stringifiedBody: JSON.stringify(requestBody),
-        balanceFields: {
+        reason: reason.trim(),
+        updates: {
           cashBalance: updates.cash_balance,
           investedAmount: updates.invested_amount,
           freeMargin: updates.free_margin
         }
       });
 
-      // Debug: Log the exact payload being sent
-      console.log('[useBalanceUpdate] Request payload:', requestBody);
-
-      const { data, error } = await supabase.functions.invoke(
-        'admin-operations',
-        {
-          body: requestBody,
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        }
-      );
-
-      console.log('[useBalanceUpdate] Edge function response:', {
-        hasData: !!data,
-        hasError: !!error,
-        data: data,
-        error: error
+      // Call the new dedicated balance-update function
+      const { data, error } = await supabase.functions.invoke('balance-update', {
+        body: requestBody
       });
 
+      console.log('[useBalanceUpdate] Response received:', {
+        hasData: !!data,
+        hasError: !!error,
+        data,
+        error
+      });
+
+      // Handle Supabase function invocation errors
       if (error) {
-        console.error('[useBalanceUpdate] Edge function error:', {
-          message: error.message,
-          status: error.status,
-          context: error.context,
-          name: error.name,
-          fullError: error
-        });
+        console.error('[useBalanceUpdate] Function invocation error:', error);
+        throw new Error(error.message || 'Failed to invoke balance update function');
+      }
+
+      // Handle missing response data
+      if (!data) {
+        console.error('[useBalanceUpdate] No response data received');
+        throw new Error('No response received from balance update function');
+      }
+
+      // Parse the response
+      const response: BalanceUpdateResponse = data;
+
+      // Handle function-level errors
+      if (!response.success) {
+        console.error('[useBalanceUpdate] Function returned error:', response);
         
-        // Try to extract more details from the error
-        let errorMessage = error.message || 'Edge function returned an error';
-        if (error.context && typeof error.context === 'object') {
-          errorMessage += ` - Context: ${JSON.stringify(error.context)}`;
+        let errorMessage = response.error || 'Balance update failed';
+        if (response.details && Array.isArray(response.details)) {
+          errorMessage += ': ' + response.details.join(', ');
         }
         
         throw new Error(errorMessage);
       }
 
-      if (!data) {
-        console.error('[useBalanceUpdate] No data returned from edge function');
-        throw new Error('No data returned from edge function');
-      }
-
-      // Check if response indicates failure
-      if (data.ok === false) {
-        console.error('[useBalanceUpdate] Edge function returned error:', data);
-        throw new Error(data.error || data.details || 'Balance update failed');
-      }
-
+      // Success - show toast and return data
       toast({
         title: 'Success',
         description: 'User balance updated successfully',
       });
 
-      // Return the actual data (unwrap from { ok: true, data: ... })
-      return data.data || data;
+      console.log('[useBalanceUpdate] Balance update successful:', response.data);
+      return response.data;
+
     } catch (err: any) {
-      console.error('[useBalanceUpdate] Error updating balance:', {
-        message: err.message,
-        context: err.context,
-        details: err,
-        stack: err.stack
-      });
+      console.error('[useBalanceUpdate] Error during balance update:', err);
       
-      // Provide user-friendly error messages
-      let errorMessage = 'Failed to update balance';
-      if (err.message?.includes('JSON')) {
-        errorMessage = 'Invalid request format. Please try again.';
-      } else if (err.message?.includes('authorization') || err.message?.includes('denied')) {
-        errorMessage = 'Authorization failed. Please sign in again.';
-      } else if (err.message?.includes('Reason is required')) {
-        errorMessage = 'Please provide a reason for the balance update.';
-      } else if (err.message) {
-        errorMessage = err.message;
-      }
-      
+      // Show error toast
       toast({
         title: 'Error',
-        description: errorMessage,
+        description: err.message || 'Failed to update balance',
         variant: 'destructive',
       });
+      
+      // Re-throw for component handling
       throw err;
     } finally {
       setLoading(false);
