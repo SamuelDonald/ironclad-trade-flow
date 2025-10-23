@@ -80,10 +80,30 @@ export const useBalanceUpdate = () => {
         }
       });
 
-      // Call the new dedicated balance-update function
-      const { data, error } = await supabase.functions.invoke('balance-update', {
-        body: requestBody
+      // DEBUG: Log the exact request details
+      console.log('[useBalanceUpdate] DEBUG - Request details:', {
+        functionName: 'balance-update',
+        requestBody: requestBody,
+        stringifiedBody: JSON.stringify(requestBody),
+        supabaseUrl: supabase.supabaseUrl,
+        expectedUrl: `${supabase.supabaseUrl}/functions/v1/balance-update`
       });
+
+      // TEMPORARY FIX: Use admin-operations function until balance-update is deployed
+      // TODO: Switch back to 'balance-update' once it's deployed to Supabase
+      console.log('[useBalanceUpdate] About to call supabase.functions.invoke...');
+      const { data, error } = await supabase.functions.invoke('admin-operations', {
+        body: {
+          action: 'update-balances',
+          userId: requestBody.userId,
+          mode: requestBody.mode,
+          reason: requestBody.reason,
+          cashBalance: requestBody.cashBalance,
+          investedAmount: requestBody.investedAmount,
+          freeMargin: requestBody.freeMargin
+        }
+      });
+      console.log('[useBalanceUpdate] supabase.functions.invoke completed');
 
       console.log('[useBalanceUpdate] Response received:', {
         hasData: !!data,
@@ -94,7 +114,14 @@ export const useBalanceUpdate = () => {
 
       // Handle Supabase function invocation errors
       if (error) {
-        console.error('[useBalanceUpdate] Function invocation error:', error);
+        console.error('[useBalanceUpdate] Function invocation error:', {
+          error,
+          errorMessage: error.message,
+          errorStatus: error.status,
+          errorContext: error.context,
+          errorName: error.name,
+          fullError: JSON.stringify(error, null, 2)
+        });
         throw new Error(error.message || 'Failed to invoke balance update function');
       }
 
@@ -104,11 +131,11 @@ export const useBalanceUpdate = () => {
         throw new Error('No response received from balance update function');
       }
 
-      // Parse the response
-      const response: BalanceUpdateResponse = data;
+      // Parse the response (admin-operations returns { ok: true, data: ... })
+      const response = data;
 
       // Handle function-level errors
-      if (!response.success) {
+      if (response.ok === false) {
         console.error('[useBalanceUpdate] Function returned error:', response);
         
         let errorMessage = response.error || 'Balance update failed';

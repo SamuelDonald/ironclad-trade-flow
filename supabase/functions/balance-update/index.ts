@@ -23,28 +23,43 @@ async function parseRequestBody(req: Request): Promise<any> {
 
 // Admin verification
 async function verifyAdmin(req: Request, supabase: any) {
+  console.log('Starting admin verification...');
+  
   const authHeader = req.headers.get('authorization');
   if (!authHeader) {
+    console.error('Missing authorization header');
     throw new Error('Missing authorization header');
   }
 
   const token = authHeader.replace('Bearer ', '');
+  console.log('Token extracted, length:', token.length);
+  
   const { data: { user }, error } = await supabase.auth.getUser(token);
   
   if (error || !user) {
+    console.error('Token validation failed:', error);
     throw new Error('Invalid token');
   }
 
-  const { data: adminUser } = await supabase
+  console.log('User authenticated:', { userId: user.id, email: user.email });
+
+  const { data: adminUser, error: adminError } = await supabase
     .from('admin_users')
     .select('*')
     .or(`user_id.eq.${user.id},email.eq.${user.email}`)
     .single();
 
+  if (adminError) {
+    console.error('Admin verification error:', adminError);
+    throw new Error('Failed to verify admin privileges');
+  }
+
   if (!adminUser) {
+    console.error('No admin user found for:', { userId: user.id, email: user.email });
     throw new Error('Access denied - admin privileges required');
   }
 
+  console.log('Admin verified:', { adminId: adminUser.id, role: adminUser.role });
   return { user, adminUser };
 }
 
@@ -135,6 +150,12 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
+
+    console.log('Balance-update function initialized:', {
+      hasSupabaseUrl: !!Deno.env.get('SUPABASE_URL'),
+      hasServiceRoleKey: !!Deno.env.get('SUPABASE_SERVICE_ROLE_KEY'),
+      supabaseUrl: Deno.env.get('SUPABASE_URL')
+    });
 
     // Verify admin access
     const { adminUser } = await verifyAdmin(req, supabase);
