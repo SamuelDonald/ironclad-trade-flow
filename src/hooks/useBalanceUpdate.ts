@@ -48,6 +48,9 @@ export const useBalanceUpdate = () => {
         }
       });
 
+      // Debug: Log the exact payload being sent
+      console.log('[useBalanceUpdate] Request payload:', requestBody);
+
       const { data, error } = await supabase.functions.invoke(
         'admin-operations',
         {

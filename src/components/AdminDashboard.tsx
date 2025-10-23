@@ -236,21 +236,52 @@ export const AdminDashboard: React.FC = () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return;
 
+      // Ensure we have a reason for the balance update
+      if (!balances.reason || balances.reason.trim() === '') {
+        toast({
+          title: "Error",
+          description: "Reason is required for balance updates",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      console.log('[AdminDashboard] Balance update payload:', {
+        userId,
+        balances,
+        stringifiedBody: JSON.stringify(balances)
+      });
+
       const response = await fetch(`https://jgedidtpqfashojqagbd.functions.supabase.co/admin-operations/users/${userId}/balances`, {
         method: 'PUT',
         headers: { 
           'Content-Type': 'application/json',
+          'Accept': 'application/json',
           Authorization: `Bearer ${session.access_token}`
         },
         body: JSON.stringify(balances)
       });
 
       if (response.ok) {
+        const responseData = await response.json();
+        console.log('[AdminDashboard] Balance update response:', responseData);
         toast({
           title: "Success",
           description: "User balance updated successfully",
         });
         loadUsersData();
+      } else {
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+        console.error('[AdminDashboard] Balance update failed:', {
+          status: response.status,
+          statusText: response.statusText,
+          errorData
+        });
+        toast({
+          title: "Error",
+          description: errorData.error || "Failed to update user balance",
+          variant: "destructive",
+        });
       }
     } catch (error) {
       console.error('Error updating user balance:', error);

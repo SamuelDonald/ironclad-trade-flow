@@ -6,6 +6,31 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// safeParseReqJson helper — robust JSON parsing for request bodies
+async function safeParseReqJson(req: Request) {
+  try {
+    const text = await req.text();
+    if (!text || !text.trim()) return {}; // empty body
+    try {
+      return JSON.parse(text);
+    } catch (parseErr: any) {
+      console.error('safeParseReqJson: invalid JSON', { 
+        message: parseErr.message, 
+        rawPreview: text.slice(0, 200),
+        headers: {
+          contentType: req.headers.get('content-type'),
+          contentLength: req.headers.get('content-length')
+        }
+      });
+      // throw to be handled by caller or return special error object — we prefer throwing so caller returns a response
+      throw new Error('Invalid JSON in request body');
+    }
+  } catch (err) {
+    console.error('safeParseReqJson: read error', err);
+    throw new Error('Failed to read request body');
+  }
+}
+
 // Admin middleware
 async function requireAdmin(req: Request, supabase: any) {
   const authHeader = req.headers.get('authorization');
@@ -61,9 +86,9 @@ serve(async (req) => {
           authorization: req.headers.get('authorization') ? 'Present' : 'Missing'
         });
         
-        // Parse JSON body directly (standard Deno/Supabase Edge Function pattern)
+        // Use safe JSON parsing to prevent "Unexpected end of JSON input" errors
         try {
-          body = await req.json();
+          body = await safeParseReqJson(req);
           console.log('[Admin Operations] Request body parsed successfully:', {
             hasBody: !!body,
             action: body?.action,
