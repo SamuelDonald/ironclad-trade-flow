@@ -57,51 +57,30 @@ Both functions exist, but `admin-operations` was returning 410 for balance updat
 
 ## Current Status
 
-### ✅ Working
-- Balance updates now work through `admin-operations` function
+### ✅ Complete Migration
+- Balance updates now work through dedicated `balance-update` function
 - Proper error handling and validation
 - Comprehensive logging for debugging
 - Real-time updates via existing subscriptions
+- Clean separation of concerns with dedicated function
 
-### ⚠️ Temporary
-- Using `admin-operations` instead of dedicated `balance-update` function
-- Need to deploy `balance-update` function to complete the migration
+## Migration Complete ✅
 
-## Next Steps
+### ✅ Deployed balance-update Function
+The `balance-update` function has been successfully deployed to Supabase.
 
-### 1. Deploy balance-update Function (Required)
-```bash
-# Option A: Using Supabase CLI
-npm install -g supabase
-supabase login
-supabase link --project-ref jgedidtpqfashojqagbd
-supabase functions deploy balance-update
-
-# Option B: Using Supabase Dashboard
-# 1. Go to https://supabase.com/dashboard/project/jgedidtpqfashojqagbd
-# 2. Navigate to Edge Functions
-# 3. Create new function named "balance-update"
-# 4. Copy code from supabase/functions/balance-update/index.ts
-```
-
-### 2. Switch Frontend Back to balance-update
-Once deployed, update `src/hooks/useBalanceUpdate.ts`:
+### ✅ Switched Frontend Back to balance-update
+Updated `src/hooks/useBalanceUpdate.ts` to use the dedicated function:
 ```typescript
-// Change from:
-const { data, error } = await supabase.functions.invoke('admin-operations', {
-  body: { action: 'update-balances', ... }
-});
-
-// Back to:
 const { data, error } = await supabase.functions.invoke('balance-update', {
   body: { userId, mode, reason, ... }
 });
 ```
 
-### 3. Remove Temporary Code
-- Remove balance update logic from `admin-operations`
-- Restore 410 response for balance update requests
-- Clean up temporary logging
+### ✅ Removed Temporary Code
+- Removed balance update logic from `admin-operations`
+- Restored 410 response for balance update requests
+- Cleaned up temporary debug files
 
 ## Files Modified
 

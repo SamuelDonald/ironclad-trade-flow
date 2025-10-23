@@ -89,19 +89,10 @@ export const useBalanceUpdate = () => {
         expectedUrl: `${supabase.supabaseUrl}/functions/v1/balance-update`
       });
 
-      // TEMPORARY FIX: Use admin-operations function until balance-update is deployed
-      // TODO: Switch back to 'balance-update' once it's deployed to Supabase
+      // Call the dedicated balance-update function (now deployed)
       console.log('[useBalanceUpdate] About to call supabase.functions.invoke...');
-      const { data, error } = await supabase.functions.invoke('admin-operations', {
-        body: {
-          action: 'update-balances',
-          userId: requestBody.userId,
-          mode: requestBody.mode,
-          reason: requestBody.reason,
-          cashBalance: requestBody.cashBalance,
-          investedAmount: requestBody.investedAmount,
-          freeMargin: requestBody.freeMargin
-        }
+      const { data, error } = await supabase.functions.invoke('balance-update', {
+        body: requestBody
       });
       console.log('[useBalanceUpdate] supabase.functions.invoke completed');
 
@@ -131,11 +122,11 @@ export const useBalanceUpdate = () => {
         throw new Error('No response received from balance update function');
       }
 
-      // Parse the response (admin-operations returns { ok: true, data: ... })
-      const response = data;
+      // Parse the response (balance-update returns { success: true, data: ... })
+      const response: BalanceUpdateResponse = data;
 
       // Handle function-level errors
-      if (response.ok === false) {
+      if (!response.success) {
         console.error('[useBalanceUpdate] Function returned error:', response);
         
         let errorMessage = response.error || 'Balance update failed';
