@@ -72,7 +72,7 @@ serve(async (req) => {
         const { data: profiles } = await supabase
           .from('profiles')
           .select('id')
-          .or(`email.ilike.%${sanitizedSearch}%,full_name.ilike.%${sanitizedSearch}%`);
+          .or('email.ilike.%' + sanitizedSearch + '%,full_name.ilike.%' + sanitizedSearch + '%');
         
         const userIds = profiles?.map(p => p.id) || [];
         if (userIds.length > 0) {

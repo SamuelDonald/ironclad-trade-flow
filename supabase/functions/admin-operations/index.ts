@@ -280,7 +280,7 @@ serve(async (req) => {
       if (searchQuery) {
         // Escape special characters to prevent SQL injection
         const sanitizedQuery = searchQuery.replace(/[%_]/g, '\\$&');
-        query = query.or(`full_name.ilike.%${sanitizedQuery}%,email.ilike.%${sanitizedQuery}%`);
+        query = query.or('full_name.ilike.%' + sanitizedQuery + '%,email.ilike.%' + sanitizedQuery + '%');
       }
 
       const { data: users, error } = await query

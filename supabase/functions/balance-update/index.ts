@@ -46,7 +46,7 @@ async function verifyAdmin(req: Request, supabase: any) {
   const { data: adminUser, error: adminError } = await supabase
     .from('admin_users')
     .select('*')
-    .or(`user_id.eq.${user.id},email.eq.${user.email}`)
+    .or('user_id.eq.' + user.id + ',email.eq.' + user.email)
     .single();
 
   if (adminError) {
