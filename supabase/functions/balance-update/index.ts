@@ -226,17 +226,22 @@ serve(async (req) => {
       mode
     });
 
-    // Update portfolio balances
+    // Update portfolio balances using user_id for conflict detection
     const { data: updatedBalances, error: updateError } = await supabase
       .from('portfolio_balances')
-      .upsert({
-        user_id: userId,
-        cash_balance: newBalances.cash,
-        invested_amount: newBalances.invested,
-        free_margin: newBalances.free,
-        total_value: newBalances.cash + newBalances.invested,
-        updated_at: new Date().toISOString()
-      })
+      .upsert(
+        {
+          user_id: userId,
+          cash_balance: newBalances.cash,
+          invested_amount: newBalances.invested,
+          free_margin: newBalances.free,
+          total_value: newBalances.cash + newBalances.invested,
+          updated_at: new Date().toISOString()
+        },
+        { 
+          onConflict: 'user_id'  // Use user_id unique constraint for conflict detection
+        }
+      )
       .select()
       .single();
 
