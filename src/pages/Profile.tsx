@@ -150,7 +150,7 @@ const Profile = () => {
                 profile.kyc_status === 'rejected' ? 'destructive' : 
                 'secondary'
               }
-              className="block sm:hidden text-xs whitespace-nowrap self-start"
+              className="hidden sm:block text-xs whitespace-nowrap self-start"
             >
               KYC: {profile.kyc_status.charAt(0).toUpperCase() + profile.kyc_status.slice(1)}
             </Badge>
@@ -234,7 +234,7 @@ const Profile = () => {
                     profile.kyc_status === 'rejected' ? 'destructive' : 
                     'secondary'
                   }
-                  className="absolute top-6 right-6 text-sm"
+                  className="absolute top-6 right-6 text-sm sm:hidden"
                 >
                   KYC: {profile.kyc_status.charAt(0).toUpperCase() + profile.kyc_status.slice(1)}
                 </Badge>
