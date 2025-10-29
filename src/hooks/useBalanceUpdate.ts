@@ -85,8 +85,8 @@ export const useBalanceUpdate = () => {
         functionName: 'balance-update',
         requestBody: requestBody,
         stringifiedBody: JSON.stringify(requestBody),
-        supabaseUrl: supabase.supabaseUrl,
-        expectedUrl: `${supabase.supabaseUrl}/functions/v1/balance-update`
+        supabaseUrl: 'https://jgedidtpqfashojqagbd.supabase.co',
+        expectedUrl: 'https://jgedidtpqfashojqagbd.supabase.co/functions/v1/balance-update'
       });
 
       // Call the dedicated balance-update function (now deployed)

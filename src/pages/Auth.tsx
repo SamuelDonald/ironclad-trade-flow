@@ -43,11 +43,14 @@ const Auth = () => {
           } else if (data?.session) {
             toast({
               title: "Email Confirmed",
-              description: "Your email has been successfully confirmed. Please sign in to continue.",
+              description: "Your email has been successfully confirmed. Redirecting...",
             });
-            // Clean the URL hash and redirect to /auth
+            // Clean the URL hash
             window.history.replaceState(null, '', '/auth');
-            navigate("/auth", { replace: true });
+            // Redirect to portfolio after 2 seconds
+            setTimeout(() => {
+              navigate("/", { replace: true });
+            }, 2000);
           }
         } catch (err) {
           console.error("Unexpected confirmation error:", err);

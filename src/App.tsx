@@ -69,6 +69,7 @@ const App = () => {
                 ) : (
                   <>
                     <Route path="/" element={<Portfolio />} />
+                    <Route path="/auth" element={<Auth />} />
                     <Route path="/market" element={<Market />} />
                     <Route path="/wallet" element={<WalletPage />} />
                     <Route path="/history" element={<History />} />
