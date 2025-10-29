@@ -180,11 +180,11 @@ const Profile = () => {
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
-        <TabsList className={`w-full flex justify-between bg-transparent border-b border-gray-200 ${isMobile ? 'hidden' : ''}`}>
-          <TabsTrigger value="personal" className="text-indigo-600">Personal Info</TabsTrigger>
-          <TabsTrigger value="payment" className="text-indigo-600">Payment Methods</TabsTrigger>
-          <TabsTrigger value="notifications" className="text-indigo-600">Notifications</TabsTrigger>
-          <TabsTrigger value="security" className="text-indigo-600">Security</TabsTrigger>
+        <TabsList className={`w-full flex justify-between bg-transparent border-b border-border ${isMobile ? 'hidden' : ''}`}>
+          <TabsTrigger value="personal" className="data-[state=active]:text-primary">Personal Info</TabsTrigger>
+          <TabsTrigger value="payment" className="data-[state=active]:text-primary">Payment Methods</TabsTrigger>
+          <TabsTrigger value="notifications" className="data-[state=active]:text-primary">Notifications</TabsTrigger>
+          <TabsTrigger value="security" className="data-[state=active]:text-primary">Security</TabsTrigger>
         </TabsList>
 
         {/* Personal Info */}
@@ -222,27 +222,23 @@ const Profile = () => {
             </CardContent>
           </Card>
 
-          <Card className="shadow-lg rounded-2xl border">
-            <CardHeader className="relative">
-              <div className="flex flex-wrap items-start justify-between gap-2">
-                <div className="flex-1 min-w-0">
-                  <CardTitle className="text-indigo-700">Personal Information</CardTitle>
-                  <CardDescription>Update your details and contact info</CardDescription>
-                </div>
-                {/* KYC Badge - Desktop/Tablet Only */}
-                {profile?.kyc_status && (
-                  <Badge 
-                    variant={
-                      profile.kyc_status === 'approved' ? 'default' : 
-                      profile.kyc_status === 'rejected' ? 'destructive' : 
-                      'secondary'
-                    }
-                    className="hidden sm:block absolute top-6 right-6 text-sm"
-                  >
-                    KYC: {profile.kyc_status.charAt(0).toUpperCase() + profile.kyc_status.slice(1)}
-                  </Badge>
-                )}
-              </div>
+          <Card className="card-binance">
+            <CardHeader>
+              <CardTitle className="text-foreground">Personal Information</CardTitle>
+              <CardDescription>Update your details and contact info</CardDescription>
+              {/* KYC Badge */}
+              {profile?.kyc_status && (
+                <Badge 
+                  variant={
+                    profile.kyc_status === 'approved' ? 'default' : 
+                    profile.kyc_status === 'rejected' ? 'destructive' : 
+                    'secondary'
+                  }
+                  className="absolute top-6 right-6 text-sm"
+                >
+                  KYC: {profile.kyc_status.charAt(0).toUpperCase() + profile.kyc_status.slice(1)}
+                </Badge>
+              )}
             </CardHeader>
             <CardContent className="space-y-6">
               <div>
@@ -308,7 +304,7 @@ const Profile = () => {
 
               <Button
                 onClick={handleProfileUpdate}
-                className="w-full md:w-auto bg-indigo-600 hover:bg-indigo-700 text-white"
+                className="w-full md:w-auto bg-primary hover:bg-primary/90 text-background"
                 disabled={profileLoading}
               >
                 {profileLoading ? "Saving..." : "Save Changes"}
@@ -319,9 +315,9 @@ const Profile = () => {
 
         {/* Payment Methods */}
         <TabsContent value="payment" className="space-y-6">
-          <Card className="shadow-lg rounded-2xl border">
+          <Card className="card-binance">
             <CardHeader>
-              <CardTitle className="text-indigo-700">Payment Methods</CardTitle>
+              <CardTitle className="text-foreground">Payment Methods</CardTitle>
               <CardDescription>Manage your payment options</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -386,7 +382,7 @@ const Profile = () => {
               )}
               <Button
                 variant="outline"
-                className="w-full border-indigo-500 text-indigo-600"
+                className="w-full border-primary/30 text-primary gold-border-glow"
                 onClick={() => setShowAddPaymentModal(true)}
               >
                 <CreditCard className="w-4 h-4 mr-2" />
@@ -398,9 +394,9 @@ const Profile = () => {
 
         {/* Notifications */}
         <TabsContent value="notifications" className="space-y-6">
-          <Card className="shadow-lg rounded-2xl border">
+          <Card className="card-binance">
             <CardHeader>
-              <CardTitle className="text-indigo-700">Notification Preferences</CardTitle>
+              <CardTitle className="text-foreground">Notification Preferences</CardTitle>
               <CardDescription>Manage what updates you receive</CardDescription>
             </CardHeader>
             <CardContent className="divide-y divide-gray-200">
@@ -422,9 +418,9 @@ const Profile = () => {
 
         {/* Security */}
         <TabsContent value="security" className="space-y-6">
-          <Card className="shadow-lg rounded-2xl border">
+          <Card className="card-binance">
             <CardHeader>
-              <CardTitle className="text-indigo-700">Security Settings</CardTitle>
+              <CardTitle className="text-foreground">Security Settings</CardTitle>
               <CardDescription>Manage account protection</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">

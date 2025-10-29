@@ -205,11 +205,6 @@ const MarketPage = () => {
                   </Card>
                 ))}
               </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
 
               {/* Mobile: Compact List */}
               <div className="md:hidden divide-y">
@@ -315,17 +310,6 @@ const MarketPage = () => {
                   </Card>
                 ))}
               </div>
-                          {asset.volume && (
-                            <p className="text-xs text-muted-foreground">
-                              Vol: {formatMarketCap(asset.volume)}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
 
               {/* Mobile: Compact List */}
               <div className="md:hidden divide-y">
@@ -420,17 +404,6 @@ const MarketPage = () => {
                           <Badge className="gradient-wallet-violet text-white">
                             {asset.category}
                           </Badge>
-                          {asset.volume && (
-                            <p className="text-xs text-muted-foreground">
-                              Vol: {formatMarketCap(asset.volume)}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
                           {asset.volume && (
                             <p className="text-xs text-muted-foreground">
                               Vol: {formatMarketCap(asset.volume)}

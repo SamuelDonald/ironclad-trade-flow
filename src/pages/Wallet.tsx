@@ -174,12 +174,6 @@ const WalletPage = () => {
             </CardContent>
           </Card>
         </TabsContent>
-                  </div>
-                ))
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
 
         {/* ✅ Deposits */}
         <TabsContent value="deposits" className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -214,51 +208,6 @@ const WalletPage = () => {
                   className="rounded-xl border border-border p-4 shadow-sm bg-card cursor-pointer hover:border-primary/30 transition-colors"
                   onClick={() => openQRCode(crypto, data.qrCode)}
                 >
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-3">
-                      <img 
-                        src={data.logo} 
-                        alt={`${crypto} logo`} 
-                        className="w-8 h-8 rounded-full object-cover"
-                        loading="lazy"
-                        onError={(e) => {
-                          e.currentTarget.src = '/placeholder.svg';
-                        }}
-                      />
-                      <h4 className="font-semibold">{crypto}</h4>
-                    </div>
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setShowAddresses(p => ({...p, [crypto]: !p[crypto]}));
-                      }}
-                    >
-                      {showAddresses[crypto] ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                    </Button>
-                  </div>
-                  {showAddresses[crypto] && (
-                    <div className="space-y-2" onClick={(e) => e.stopPropagation()}>
-                      <Input value={data.address} readOnly className="font-mono text-xs" />
-                      <div className="flex gap-2">
-                        <Button size="sm" variant="outline" onClick={() => copyToClipboard(data.address, crypto)}>
-                          <Copy className="w-4 h-4" /> Copy
-                        </Button>
-                        <Button size="sm" variant="outline" onClick={() => openQRCode(crypto, data.qrCode)}>
-                          <QrCode className="w-4 h-4" /> QR Code
-                        </Button>
-                      </div>
-                    </div>
-                  )}
-                  {!showAddresses[crypto] && (
-                    <p className="text-sm text-muted-foreground">Tap to view QR code or show address</p>
-                  )}
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-        </TabsContent>
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-3">
                       <img 

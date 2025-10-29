@@ -132,7 +132,7 @@ export default function SettingsPage() {
       <MobileFAB options={tabOptions} activeValue={activeTab} />
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className={`grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2 bg-white p-2 rounded-xl shadow-sm overflow-x-auto ${isMobile ? 'hidden' : ''}`}>
+        <TabsList className={`grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2 bg-card p-2 rounded-xl shadow-sm overflow-x-auto ${isMobile ? 'hidden' : ''}`}>
           <TabsTrigger value="general">General</TabsTrigger>
           <TabsTrigger value="security">Security</TabsTrigger>
           <TabsTrigger value="notifications">Notifications</TabsTrigger>
@@ -159,8 +159,8 @@ export default function SettingsPage() {
 
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
-                  <div className="p-2 rounded-full bg-gradient-to-r from-purple-500 to-indigo-500 text-white">
-                    <Globe className="w-4 h-4" />
+                  <div className="p-2 rounded-full bg-primary/20">
+                    <Globe className="w-4 h-4 text-primary" />
                   </div>
                   <span className="text-sm">Language: English</span>
                 </div>
@@ -177,15 +177,15 @@ export default function SettingsPage() {
 
         {/* Security Settings */}
         <TabsContent value="security">
-          <Card className="shadow-md rounded-xl">
+          <Card className="card-binance">
             <CardHeader>
-              <CardTitle className="text-lg font-semibold text-indigo-700">Security Settings</CardTitle>
+              <CardTitle className="text-lg font-semibold text-foreground">Security Settings</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
-                  <div className="p-2 rounded-full bg-gradient-to-r from-purple-500 to-indigo-500 text-white">
-                    <Shield className="w-4 h-4" />
+                  <div className="p-2 rounded-full bg-primary/20">
+                    <Shield className="w-4 h-4 text-primary" />
                   </div>
                   <span className="text-sm">Two-Factor Authentication</span>
                 </div>
@@ -194,15 +194,15 @@ export default function SettingsPage() {
 
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
-                  <div className="p-2 rounded-full bg-gradient-to-r from-purple-500 to-indigo-500 text-white">
-                    <UserCog className="w-4 h-4" />
+                  <div className="p-2 rounded-full bg-primary/20">
+                    <UserCog className="w-4 h-4 text-primary" />
                   </div>
                   <span className="text-sm">Change Password</span>
                 </div>
                 <Button
                   size="sm"
                   onClick={handleChangePassword}
-                  className="bg-gradient-to-r from-purple-500 to-indigo-500 text-white hover:opacity-90"
+                  className="bg-primary hover:bg-primary/90 text-background"
                 >
                   Update
                 </Button>
@@ -213,15 +213,15 @@ export default function SettingsPage() {
 
         {/* Notifications */}
         <TabsContent value="notifications">
-          <Card className="shadow-md rounded-xl">
+          <Card className="card-binance">
             <CardHeader>
-              <CardTitle className="text-lg font-semibold text-indigo-700">Notifications</CardTitle>
+              <CardTitle className="text-lg font-semibold text-foreground">Notifications</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
-                  <div className="p-2 rounded-full bg-gradient-to-r from-purple-500 to-indigo-500 text-white">
-                    <Bell className="w-4 h-4" />
+                  <div className="p-2 rounded-full bg-primary/20">
+                    <Bell className="w-4 h-4 text-primary" />
                   </div>
                   <span className="text-sm">Enable Notifications</span>
                 </div>
@@ -233,13 +233,13 @@ export default function SettingsPage() {
 
         {/* Preferences */}
         <TabsContent value="preferences">
-          <Card className="shadow-md rounded-xl">
+          <Card className="card-binance">
             <CardHeader>
-              <CardTitle className="text-lg font-semibold text-indigo-700">Preferences</CardTitle>
+              <CardTitle className="text-lg font-semibold text-foreground">Preferences</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <Button
-                className="bg-gradient-to-r from-purple-500 to-indigo-500 text-white w-full hover:opacity-90"
+                className="bg-primary hover:bg-primary/90 text-background w-full"
                 onClick={handleSaveSettings}
               >
                 Save Settings
@@ -251,21 +251,21 @@ export default function SettingsPage() {
 
         {/* About */}
         <TabsContent value="about">
-          <Card className="shadow-md rounded-xl">
+          <Card className="card-binance">
             <CardHeader>
-              <CardTitle className="text-lg font-semibold text-indigo-700">About Ironclad Trade Hub</CardTitle>
+              <CardTitle className="text-lg font-semibold text-foreground">About Ironclad Trade Hub</CardTitle>
             </CardHeader>
             <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="p-3 rounded-lg border border-indigo-200 shadow-sm">
-                <p className="font-semibold text-indigo-600">Version</p>
+              <div className="p-3 rounded-lg border border-border shadow-sm">
+                <p className="font-semibold text-primary">Version</p>
                 <p className="text-sm text-muted-foreground">2.1.0</p>
               </div>
-              <div className="p-3 rounded-lg border border-indigo-200 shadow-sm">
-                <p className="font-semibold text-indigo-600">Developed By</p>
+              <div className="p-3 rounded-lg border border-border shadow-sm">
+                <p className="font-semibold text-primary">Developed By</p>
                 <p className="text-sm text-muted-foreground">Ironclad Dev Team</p>
               </div>
-              <div className="p-3 rounded-lg border border-indigo-200 shadow-sm">
-                <p className="font-semibold text-indigo-600">License</p>
+              <div className="p-3 rounded-lg border border-border shadow-sm">
+                <p className="font-semibold text-primary">License</p>
                 <p className="text-sm text-muted-foreground">MIT</p>
               </div>
               <div className="p-3 rounded-lg border border-indigo-200 shadow-sm">
