@@ -128,6 +128,7 @@ export const AdminDashboard: React.FC = () => {
       if (!session) return;
 
       const response = await supabase.functions.invoke('admin-operations', {
+        body: { action: 'overview' },
         headers: { Authorization: `Bearer ${session.access_token}` }
       });
 

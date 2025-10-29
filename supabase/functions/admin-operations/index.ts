@@ -138,12 +138,27 @@ serve(async (req) => {
     timestamp: new Date().toISOString()
   });
 
-  // Safeguard: Check if action is present
-  if (!action || action === '') {
+  // Safeguard: Check if action is present for POST requests
+  if (req.method === 'POST' && (!action || action === '')) {
     console.error('[Admin Operations] No action found in request body:', {
       bodyKeys: Object.keys(body),
-      bodyContent: JSON.stringify(body).substring(0, 200)
+      bodyContent: JSON.stringify(body).substring(0, 200),
+      method: req.method,
+      path
     });
+    return new Response(
+      JSON.stringify({ 
+        ok: false,
+        error: 'Missing required field: action',
+        details: 'POST requests must include an "action" field in the request body',
+        validActions: ['overview', 'users', 'transactions', 'approve-kyc', 'reject-kyc', 'user-details', 'update-balances'],
+        receivedBody: body
+      }),
+      { 
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      }
+    );
   }
         
         console.log('[Admin Operations] Request body:', {
@@ -741,7 +756,33 @@ serve(async (req) => {
       });
     }
 
-    return new Response(JSON.stringify({ error: 'Not found' }), {
+    // Health check endpoint
+    if (req.method === 'GET' && path === '/admin-operations') {
+      return new Response(JSON.stringify({ 
+        status: 'healthy',
+        service: 'admin-operations',
+        timestamp: new Date().toISOString()
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
+    // If we reach here, no valid action or route was matched
+    console.error('[Admin Operations] No matching route found:', {
+      method: req.method,
+      path,
+      action,
+      bodyKeys: Object.keys(body || {})
+    });
+
+    return new Response(JSON.stringify({ 
+      error: 'Route not found',
+      details: `No handler found for ${req.method} ${path} with action: ${action || 'none'}`,
+      validRoutes: {
+        POST: ['overview', 'users', 'transactions', 'approve-kyc', 'reject-kyc', 'user-details'],
+        GET: ['/admin-operations', '/admin-operations/users', '/admin-operations/transactions', '/admin-operations/trades', '/admin-operations/users/{userId}']
+      }
+    }), {
       status: 404,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });
