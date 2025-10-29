@@ -42,9 +42,9 @@
     --gradient-card: linear-gradient(135deg, hsl(220 15% 11%), hsl(217 14% 19%));
     
     /* Wallet gradient variations */
-    --gradient-wallet-gold: linear-gradient(135deg, hsl(48 96% 49%) 0%, hsl(48 88% 58%) 100%);
-    --gradient-wallet-emerald: linear-gradient(135deg, hsl(159 89% 43%) 0%, hsl(166 76% 57%) 100%);
-    --gradient-wallet-teal: linear-gradient(135deg, hsl(187 71% 48%) 0%, hsl(187 85% 65%) 100%);
+    --gradient-wallet-gold: linear-gradient(135deg, #1C1F24 0%, #2B3139 40%, #3B3F45 100%);
+    --gradient-wallet-emerald: linear-gradient(135deg, #063F2D 0%, rgba(14, 203, 129, 0.25) 50%, rgba(26, 111, 82, 0.4) 100%);
+    --gradient-wallet-teal: linear-gradient(135deg, #3C2E00 0%, rgba(240, 185, 11, 0.25) 50%, rgba(122, 92, 0, 0.4) 100%);
     --gradient-wallet-violet: linear-gradient(135deg, hsl(250 72% 65%) 0%, hsl(268 85% 72%) 100%);
     
     /* Chart gradients */
@@ -108,9 +108,9 @@
     --gradient-card: linear-gradient(135deg, hsl(220 15% 11%), hsl(217 14% 19%));
     
     /* Wallet gradient variations */
-    --gradient-wallet-gold: linear-gradient(135deg, hsl(48 96% 49%) 0%, hsl(48 88% 58%) 100%);
-    --gradient-wallet-emerald: linear-gradient(135deg, hsl(159 89% 43%) 0%, hsl(166 76% 57%) 100%);
-    --gradient-wallet-teal: linear-gradient(135deg, hsl(187 71% 48%) 0%, hsl(187 85% 65%) 100%);
+    --gradient-wallet-gold: linear-gradient(135deg, #1C1F24 0%, #2B3139 40%, #3B3F45 100%);
+    --gradient-wallet-emerald: linear-gradient(135deg, #063F2D 0%, rgba(14, 203, 129, 0.25) 50%, rgba(26, 111, 82, 0.4) 100%);
+    --gradient-wallet-teal: linear-gradient(135deg, #3C2E00 0%, rgba(240, 185, 11, 0.25) 50%, rgba(122, 92, 0, 0.4) 100%);
     --gradient-wallet-violet: linear-gradient(135deg, hsl(250 72% 65%) 0%, hsl(268 85% 72%) 100%);
     
     /* Chart gradients */

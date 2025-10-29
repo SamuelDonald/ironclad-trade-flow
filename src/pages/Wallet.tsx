@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Wallet, CreditCard, ArrowDownLeft, ArrowUpRight, Copy, QrCode, Eye, EyeOff } from "lucide-react";
+import { Wallet, CreditCard, ArrowDownLeft, ArrowUpRight, Copy, QrCode, Eye, EyeOff, DollarSign, TrendingUp } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -90,21 +90,30 @@ const WalletPage = () => {
         <>
           {/* Mobile: Horizontal Carousel */}
           <div className="md:hidden flex gap-4 overflow-x-auto pb-4 px-4 -mx-4 snap-x snap-mandatory scrollbar-hide">
-            <Card className="flex-shrink-0 w-44 h-44 sm:w-52 sm:h-52 rounded-2xl p-4 snap-center shadow-lg bg-card border border-primary/20">
+            <Card className="flex-shrink-0 w-44 h-44 sm:w-52 sm:h-52 rounded-2xl p-4 snap-center shadow-lg gradient-wallet-gold border-[rgba(255,255,255,0.05)] backdrop-blur-sm hover:shadow-[0_0_10px_rgba(252,213,53,0.25)] transition-all duration-300">
               <CardContent className="p-0 h-full flex flex-col justify-between">
-                <div className="text-xs text-muted-foreground">Cash Balance</div>
-                <div className="text-2xl sm:text-3xl font-bold text-foreground">${portfolio.cashBalance.toLocaleString()}</div>
+                <div className="flex items-center justify-between">
+                  <div className="text-xs text-[#A1A1A1]">Cash Balance</div>
+                  <DollarSign size={16} className="text-[#FFD84D]" />
+                </div>
+                <div className="text-2xl sm:text-3xl font-bold text-white">${portfolio.cashBalance.toLocaleString()}</div>
               </CardContent>
             </Card>
-            <Card className="flex-shrink-0 w-44 h-44 sm:w-52 sm:h-52 rounded-2xl p-4 snap-center shadow-lg gradient-wallet-emerald gold-glow-hover">
+            <Card className="flex-shrink-0 w-44 h-44 sm:w-52 sm:h-52 rounded-2xl p-4 snap-center shadow-lg gradient-wallet-emerald border-[rgba(255,255,255,0.05)] backdrop-blur-sm hover:shadow-[0_0_10px_rgba(14,203,129,0.25)] transition-all duration-300">
               <CardContent className="p-0 h-full flex flex-col justify-between">
-                <div className="text-xs text-white/80">Invested Balance</div>
+                <div className="flex items-center justify-between">
+                  <div className="text-xs text-[#D2F8E4]">Invested Balance</div>
+                  <TrendingUp size={16} className="text-[#0ECB81]" />
+                </div>
                 <div className="text-2xl sm:text-3xl font-bold text-white">${portfolio.investedAmount.toLocaleString()}</div>
               </CardContent>
             </Card>
-            <Card className="flex-shrink-0 w-44 h-44 sm:w-52 sm:h-52 rounded-2xl p-4 snap-center shadow-lg gradient-wallet-teal gold-glow-hover">
+            <Card className="flex-shrink-0 w-44 h-44 sm:w-52 sm:h-52 rounded-2xl p-4 snap-center shadow-lg gradient-wallet-teal border-[rgba(255,255,255,0.05)] backdrop-blur-sm hover:shadow-[0_0_10px_rgba(240,185,11,0.25)] transition-all duration-300">
               <CardContent className="p-0 h-full flex flex-col justify-between">
-                <div className="text-xs text-white/80">Free Margin</div>
+                <div className="flex items-center justify-between">
+                  <div className="text-xs text-[#FFF8E1]">Free Margin</div>
+                  <Wallet size={16} className="text-[#F0B90B]" />
+                </div>
                 <div className="text-2xl sm:text-3xl font-bold text-white">${portfolio.freeMargin.toLocaleString()}</div>
               </CardContent>
             </Card>
@@ -112,17 +121,41 @@ const WalletPage = () => {
 
           {/* Desktop & Tablet: Original Grid */}
           <div className="hidden md:grid grid-cols-1 md:grid-cols-3 gap-6">
-            <Card className="gradient-wallet-gold text-background shadow-lg rounded-2xl gold-glow-hover">
-              <CardHeader><CardTitle>Cash Balance</CardTitle></CardHeader>
-              <CardContent><p className="text-2xl font-bold">${portfolio.cashBalance.toLocaleString()}</p></CardContent>
+            <Card className="gradient-wallet-gold text-white border-[rgba(255,255,255,0.05)] shadow-lg rounded-2xl backdrop-blur-sm hover:shadow-[0_0_10px_rgba(252,213,53,0.25)] transition-all duration-300">
+              <CardHeader>
+                <div className="flex items-center justify-between mb-2">
+                  <CardTitle>Cash Balance</CardTitle>
+                  <DollarSign size={20} className="text-[#FFD84D]" />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <p className="text-2xl font-bold">${portfolio.cashBalance.toLocaleString()}</p>
+                <p className="text-[#A1A1A1] text-xs mt-1">Available for trading</p>
+              </CardContent>
             </Card>
-            <Card className="gradient-wallet-emerald text-white shadow-lg rounded-2xl gold-glow-hover">
-              <CardHeader><CardTitle>Invested Balance</CardTitle></CardHeader>
-              <CardContent><p className="text-2xl font-bold">${portfolio.investedAmount.toLocaleString()}</p></CardContent>
+            <Card className="gradient-wallet-emerald text-white border-[rgba(255,255,255,0.05)] shadow-lg rounded-2xl backdrop-blur-sm hover:shadow-[0_0_10px_rgba(14,203,129,0.25)] transition-all duration-300">
+              <CardHeader>
+                <div className="flex items-center justify-between mb-2">
+                  <CardTitle>Invested Balance</CardTitle>
+                  <TrendingUp size={20} className="text-[#0ECB81]" />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <p className="text-2xl font-bold">${portfolio.investedAmount.toLocaleString()}</p>
+                <p className="text-[#D2F8E4] text-xs mt-1">Currently in positions</p>
+              </CardContent>
             </Card>
-            <Card className="gradient-wallet-teal text-white shadow-lg rounded-2xl gold-glow-hover">
-              <CardHeader><CardTitle>Free Margin</CardTitle></CardHeader>
-              <CardContent><p className="text-2xl font-bold">${portfolio.freeMargin.toLocaleString()}</p></CardContent>
+            <Card className="gradient-wallet-teal text-white border-[rgba(255,255,255,0.05)] shadow-lg rounded-2xl backdrop-blur-sm hover:shadow-[0_0_10px_rgba(240,185,11,0.25)] transition-all duration-300">
+              <CardHeader>
+                <div className="flex items-center justify-between mb-2">
+                  <CardTitle>Free Margin</CardTitle>
+                  <Wallet size={20} className="text-[#F0B90B]" />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <p className="text-2xl font-bold">${portfolio.freeMargin.toLocaleString()}</p>
+                <p className="text-[#FFF8E1] text-xs mt-1">Available to invest</p>
+              </CardContent>
             </Card>
           </div>
         </>
