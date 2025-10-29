@@ -141,11 +141,24 @@ const Profile = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <h1 className="text-3xl font-bold text-foreground">Profile</h1>
-        <div className="flex items-center gap-3 w-full sm:w-auto">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 w-full sm:w-auto">
+          {/* KYC Badge - Mobile Only */}
+          {profile?.kyc_status && (
+            <Badge 
+              variant={
+                profile.kyc_status === 'approved' ? 'default' : 
+                profile.kyc_status === 'rejected' ? 'destructive' : 
+                'secondary'
+              }
+              className="block sm:hidden text-xs whitespace-nowrap self-start"
+            >
+              KYC: {profile.kyc_status.charAt(0).toUpperCase() + profile.kyc_status.slice(1)}
+            </Badge>
+          )}
           <Button 
             variant="outline" 
             size="sm" 
-            className="border-primary/30 text-primary gold-border-glow relative flex-1 sm:flex-initial"
+            className="border-primary/30 text-primary gold-border-glow relative w-full sm:w-auto"
             onClick={() => {
               markAsRead();
               navigate('/customer-care');
@@ -159,19 +172,6 @@ const Profile = () => {
               </span>
             )}
           </Button>
-          {/* KYC Badge - Mobile Only */}
-          {profile?.kyc_status && (
-            <Badge 
-              variant={
-                profile.kyc_status === 'approved' ? 'default' : 
-                profile.kyc_status === 'rejected' ? 'destructive' : 
-                'secondary'
-              }
-              className="block sm:hidden text-xs whitespace-nowrap"
-            >
-              KYC: {profile.kyc_status.charAt(0).toUpperCase() + profile.kyc_status.slice(1)}
-            </Badge>
-          )}
         </div>
       </div>
 
