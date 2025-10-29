@@ -4,46 +4,53 @@
 
 @layer base {
   :root {
-    --background: 220 15% 11%;
-    --foreground: 0 0% 100%;
-    --card: 220 17% 14%;
-    --card-foreground: 0 0% 100%;
-    --popover: 220 17% 14%;
-    --popover-foreground: 0 0% 100%;
-    --primary: 48 97% 60%;
-    --primary-foreground: 220 15% 11%;
-    --primary-light: 48 97% 70%;
-    --primary-dark: 48 97% 50%;
-    --secondary: 217 14% 19%;
-    --secondary-foreground: 0 0% 100%;
-    --muted: 217 14% 19%;
-    --muted-foreground: 0 0% 63%;
-    --accent: 220 17% 14%;
-    --accent-foreground: 0 0% 100%;
-    --destructive: 352 91% 63%;
-    --destructive-foreground: 0 0% 100%;
-    --border: 0 0% 100% / 0.1;
-    --input: 217 14% 19%;
-    --ring: 48 97% 60%;
+    --background: 210 25% 6%;           /* #0B0E11 - Binance darkest background */
+    --foreground: 220 14% 93%;          /* #EAECEF - Binance off-white text */
+    --card: 220 15% 11%;                /* #181A20 - Binance card surface */
+    --card-foreground: 220 14% 93%;     /* #EAECEF */
+    --popover: 220 15% 11%;             /* #181A20 */
+    --popover-foreground: 220 14% 93%;  /* #EAECEF */
+    --primary: 48 96% 49%;              /* #F0B90B - Core Binance yellow */
+    --primary-foreground: 210 25% 6%;   /* #0B0E11 - Dark text on yellow */
+    --primary-light: 48 88% 58%;        /* #F8D12F - Gradient light */
+    --primary-dark: 45 100% 41%;        /* #D19C00 - Gradient dark */
+    --secondary: 217 14% 19%;           /* #2B3139 - Neutral secondary */
+    --secondary-foreground: 220 14% 93%; /* #EAECEF */
+    --muted: 217 14% 19%;               /* #2B3139 */
+    --muted-foreground: 225 7% 65%;     /* #A1A5B0 - Binance subtle text */
+    --accent: 220 15% 11%;              /* #181A20 */
+    --accent-foreground: 220 14% 93%;   /* #EAECEF */
+    --destructive: 352 91% 63%;         /* #F6465D - Binance red */
+    --destructive-foreground: 220 14% 93%; /* #EAECEF */
+    --border: 217 14% 19%;              /* #2B3139 - Neutral borders */
+    --input: 217 14% 19%;               /* #2B3139 */
+    --ring: 48 96% 49%;                 /* #F0B90B */
     --radius: 0.5rem;
     
     /* Trading specific colors */
-    --profit: 159 89% 43%;
-    --profit-foreground: 0 0% 100%;
-    --loss: 352 91% 63%;
-    --loss-foreground: 0 0% 100%;
-    --warning: 48 97% 60%;
-    --warning-foreground: 220 15% 11%;
+    --profit: 159 89% 43%;              /* #0ECB81 - Binance green */
+    --profit-foreground: 220 14% 93%;
+    --loss: 352 91% 63%;                /* #F6465D - Binance red */
+    --loss-foreground: 220 14% 93%;
+    --warning: 48 96% 49%;              /* #F0B90B */
+    --warning-foreground: 210 25% 6%;
     
     /* Binance gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(48 97% 60%), hsl(48 97% 70%));
-    --gradient-secondary: linear-gradient(135deg, hsl(220 17% 14%), hsl(217 14% 19%));
-    --gradient-card: linear-gradient(135deg, hsl(220 17% 14%), hsl(220 17% 16%));
+    --gradient-primary: linear-gradient(135deg, hsl(45 100% 41%) 0%, hsl(48 96% 49%) 50%, hsl(48 88% 58%) 100%);
+    --gradient-gold: linear-gradient(135deg, hsl(48 96% 49%), hsl(48 88% 58%));
+    --gradient-secondary: linear-gradient(135deg, hsl(220 15% 11%), hsl(217 14% 19%));
+    --gradient-card: linear-gradient(135deg, hsl(220 15% 11%), hsl(217 14% 19%));
+    
+    /* Wallet gradient variations */
+    --gradient-wallet-gold: linear-gradient(135deg, hsl(48 96% 49%) 0%, hsl(48 88% 58%) 100%);
+    --gradient-wallet-emerald: linear-gradient(135deg, hsl(159 89% 43%) 0%, hsl(166 76% 57%) 100%);
+    --gradient-wallet-teal: linear-gradient(135deg, hsl(187 71% 48%) 0%, hsl(187 85% 65%) 100%);
+    --gradient-wallet-violet: linear-gradient(135deg, hsl(250 72% 65%) 0%, hsl(268 85% 72%) 100%);
     
     /* Chart gradients */
     --chart-gradient-positive: linear-gradient(180deg, hsl(159 89% 43%) 0%, hsl(159 89% 43% / 0.1) 100%);
     --chart-gradient-negative: linear-gradient(180deg, hsl(352 91% 63%) 0%, hsl(352 91% 63% / 0.1) 100%);
-    --chart-gradient-highlight: linear-gradient(180deg, hsl(48 97% 60%) 0%, hsl(48 97% 60% / 0.1) 100%);
+    --chart-gradient-highlight: linear-gradient(180deg, hsl(48 96% 49%) 0%, hsl(48 96% 49% / 0.1) 100%);
     
     /* Shadows */
     --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.25);
@@ -53,65 +60,72 @@
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     --transition-spring: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
     
-    --sidebar-background: 220 17% 14%;
-    --sidebar-foreground: 0 0% 100%;
-    --sidebar-primary: 48 97% 60%;
-    --sidebar-primary-foreground: 220 15% 11%;
+    --sidebar-background: 220 15% 11%;
+    --sidebar-foreground: 220 14% 93%;
+    --sidebar-primary: 48 96% 49%;
+    --sidebar-primary-foreground: 210 25% 6%;
     --sidebar-accent: 217 14% 19%;
-    --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 0 0% 100% / 0.1;
-    --sidebar-ring: 48 97% 60%;
+    --sidebar-accent-foreground: 220 14% 93%;
+    --sidebar-border: 217 14% 19%;
+    --sidebar-ring: 48 96% 49%;
   }
 
   .dark {
-    --background: 220 15% 11%;
-    --foreground: 0 0% 100%;
-    --card: 220 17% 14%;
-    --card-foreground: 0 0% 100%;
-    --popover: 220 17% 14%;
-    --popover-foreground: 0 0% 100%;
-    --primary: 48 97% 60%;
-    --primary-foreground: 220 15% 11%;
-    --primary-light: 48 97% 70%;
-    --primary-dark: 48 97% 50%;
+    --background: 210 25% 6%;
+    --foreground: 220 14% 93%;
+    --card: 220 15% 11%;
+    --card-foreground: 220 14% 93%;
+    --popover: 220 15% 11%;
+    --popover-foreground: 220 14% 93%;
+    --primary: 48 96% 49%;
+    --primary-foreground: 210 25% 6%;
+    --primary-light: 48 88% 58%;
+    --primary-dark: 45 100% 41%;
     --secondary: 217 14% 19%;
-    --secondary-foreground: 0 0% 100%;
+    --secondary-foreground: 220 14% 93%;
     --muted: 217 14% 19%;
-    --muted-foreground: 0 0% 63%;
-    --accent: 220 17% 14%;
-    --accent-foreground: 0 0% 100%;
+    --muted-foreground: 225 7% 65%;
+    --accent: 220 15% 11%;
+    --accent-foreground: 220 14% 93%;
     --destructive: 352 91% 63%;
-    --destructive-foreground: 0 0% 100%;
-    --border: 0 0% 100% / 0.1;
+    --destructive-foreground: 220 14% 93%;
+    --border: 217 14% 19%;
     --input: 217 14% 19%;
-    --ring: 48 97% 60%;
+    --ring: 48 96% 49%;
     
-    /* Trading specific colors - dark mode */
+    /* Trading specific colors */
     --profit: 159 89% 43%;
-    --profit-foreground: 0 0% 100%;
+    --profit-foreground: 220 14% 93%;
     --loss: 352 91% 63%;
-    --loss-foreground: 0 0% 100%;
-    --warning: 48 97% 60%;
-    --warning-foreground: 220 15% 11%;
+    --loss-foreground: 220 14% 93%;
+    --warning: 48 96% 49%;
+    --warning-foreground: 210 25% 6%;
     
     /* Binance gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(48 97% 60%), hsl(48 97% 70%));
-    --gradient-secondary: linear-gradient(135deg, hsl(220 17% 14%), hsl(217 14% 19%));
-    --gradient-card: linear-gradient(135deg, hsl(220 17% 14%), hsl(220 17% 16%));
+    --gradient-primary: linear-gradient(135deg, hsl(45 100% 41%) 0%, hsl(48 96% 49%) 50%, hsl(48 88% 58%) 100%);
+    --gradient-gold: linear-gradient(135deg, hsl(48 96% 49%), hsl(48 88% 58%));
+    --gradient-secondary: linear-gradient(135deg, hsl(220 15% 11%), hsl(217 14% 19%));
+    --gradient-card: linear-gradient(135deg, hsl(220 15% 11%), hsl(217 14% 19%));
+    
+    /* Wallet gradient variations */
+    --gradient-wallet-gold: linear-gradient(135deg, hsl(48 96% 49%) 0%, hsl(48 88% 58%) 100%);
+    --gradient-wallet-emerald: linear-gradient(135deg, hsl(159 89% 43%) 0%, hsl(166 76% 57%) 100%);
+    --gradient-wallet-teal: linear-gradient(135deg, hsl(187 71% 48%) 0%, hsl(187 85% 65%) 100%);
+    --gradient-wallet-violet: linear-gradient(135deg, hsl(250 72% 65%) 0%, hsl(268 85% 72%) 100%);
     
     /* Chart gradients */
     --chart-gradient-positive: linear-gradient(180deg, hsl(159 89% 43%) 0%, hsl(159 89% 43% / 0.1) 100%);
     --chart-gradient-negative: linear-gradient(180deg, hsl(352 91% 63%) 0%, hsl(352 91% 63% / 0.1) 100%);
-    --chart-gradient-highlight: linear-gradient(180deg, hsl(48 97% 60%) 0%, hsl(48 97% 60% / 0.1) 100%);
+    --chart-gradient-highlight: linear-gradient(180deg, hsl(48 96% 49%) 0%, hsl(48 96% 49% / 0.1) 100%);
     
-    --sidebar-background: 220 17% 14%;
-    --sidebar-foreground: 0 0% 100%;
-    --sidebar-primary: 48 97% 60%;
-    --sidebar-primary-foreground: 220 15% 11%;
+    --sidebar-background: 220 15% 11%;
+    --sidebar-foreground: 220 14% 93%;
+    --sidebar-primary: 48 96% 49%;
+    --sidebar-primary-foreground: 210 25% 6%;
     --sidebar-accent: 217 14% 19%;
-    --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 0 0% 100% / 0.1;
-    --sidebar-ring: 48 97% 60%;
+    --sidebar-accent-foreground: 220 14% 93%;
+    --sidebar-border: 217 14% 19%;
+    --sidebar-ring: 48 96% 49%;
   }
 }
 
@@ -163,7 +177,7 @@
   }
 
   input:focus, textarea:focus, select:focus {
-    outline: 2px solid hsl(48 97% 60% / 0.4);
+    outline: 2px solid hsl(48 96% 49% / 0.4);
     outline-offset: 2px;
     transition: outline 0.2s ease-in-out;
   }
@@ -182,13 +196,13 @@
   }
 
   .icon-hover-glow:hover {
-    filter: drop-shadow(0 0 8px hsl(48 97% 60% / 0.6));
+    filter: drop-shadow(0 0 8px hsl(48 96% 49% / 0.6));
     transform: scale(1.05);
   }
 
   .tab-active {
     position: relative;
-    color: hsl(48 97% 60%);
+    color: hsl(48 96% 49%);
   }
 
   .tab-active::after {
@@ -198,8 +212,31 @@
     left: 0;
     right: 0;
     height: 2px;
-    background: hsl(48 97% 60%);
-    box-shadow: 0 0 8px hsl(48 97% 60% / 0.6);
+    background: hsl(48 96% 49%);
+    box-shadow: 0 0 8px hsl(48 96% 49% / 0.6);
+  }
+
+  /* Gold glow effect matching bottom navbar */
+  .gold-glow-hover:hover {
+    box-shadow: 0 0 20px hsl(48 96% 49% / 0.4), 0 0 40px hsl(48 96% 49% / 0.2);
+    transition: box-shadow 0.3s ease-in-out;
+  }
+
+  .gold-border-glow {
+    border: 1px solid hsl(48 96% 49% / 0.3);
+    box-shadow: 0 0 10px hsl(48 96% 49% / 0.15);
+  }
+
+  .card-binance {
+    background: hsl(220 15% 11%);
+    border: 1px solid hsl(217 14% 19%);
+    transition: all 0.3s ease-in-out;
+  }
+
+  .card-binance:hover {
+    border-color: hsl(48 96% 49% / 0.3);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4), 0 0 15px hsl(48 96% 49% / 0.1);
+    transform: translateY(-2px);
   }
 
   .scrollbar-hide {
@@ -238,7 +275,7 @@
     content: '';
     position: absolute;
     inset: -8px;
-    background: linear-gradient(135deg, hsl(48 97% 60%), hsl(48 97% 70%));
+    background: linear-gradient(135deg, hsl(48 96% 49%), hsl(48 88% 58%));
     border-radius: 50%;
     z-index: -1;
     filter: blur(8px);
@@ -250,7 +287,7 @@
     position: absolute;
     bottom: 0;
     height: 120px;
-    background: linear-gradient(to top, hsl(48 97% 60% / 0.08), transparent);
+    background: linear-gradient(to top, hsl(48 96% 49% / 0.08), transparent);
     filter: blur(20px);
     transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
@@ -300,5 +337,21 @@
 
   .chart-gradient-highlight {
     background: var(--chart-gradient-highlight);
+  }
+
+  .gradient-wallet-gold {
+    background: var(--gradient-wallet-gold);
+  }
+
+  .gradient-wallet-emerald {
+    background: var(--gradient-wallet-emerald);
+  }
+
+  .gradient-wallet-teal {
+    background: var(--gradient-wallet-teal);
+  }
+
+  .gradient-wallet-violet {
+    background: var(--gradient-wallet-violet);
   }
 }

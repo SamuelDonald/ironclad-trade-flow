@@ -127,7 +127,7 @@ export default function SettingsPage() {
 
   return (
     <div className="container mx-auto px-4 py-8 pb-20">
-      <h1 className="text-3xl font-bold text-indigo-700 mb-6">Settings</h1>
+      <h1 className="text-3xl font-bold text-foreground mb-6">Settings</h1>
       
       <MobileFAB options={tabOptions} activeValue={activeTab} />
 
@@ -142,15 +142,15 @@ export default function SettingsPage() {
 
         {/* General Settings */}
         <TabsContent value="general">
-          <Card className="shadow-md rounded-xl">
+          <Card className="card-binance">
             <CardHeader>
-              <CardTitle className="text-lg font-semibold text-indigo-700">General Settings</CardTitle>
+              <CardTitle className="text-lg font-semibold text-foreground">General Settings</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
-                  <div className="p-2 rounded-full bg-gradient-to-r from-purple-500 to-indigo-500 text-white">
-                    <Moon className="w-4 h-4" />
+                  <div className="p-2 rounded-full bg-primary/20">
+                    <Moon className="w-4 h-4 text-primary" />
                   </div>
                   <span className="text-sm">Dark Mode</span>
                 </div>
@@ -166,7 +166,7 @@ export default function SettingsPage() {
                 </div>
                 <Button
                   size="sm"
-                  className="bg-gradient-to-r from-purple-500 to-indigo-500 text-white hover:opacity-90"
+                  className="bg-primary hover:bg-primary/90 text-background"
                 >
                   Change
                 </Button>

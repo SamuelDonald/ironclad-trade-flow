@@ -140,12 +140,12 @@ const Profile = () => {
     <div className="container max-w-4xl mx-auto p-6 pb-20 space-y-8">
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <h1 className="text-3xl font-bold text-indigo-700">Profile</h1>
+        <h1 className="text-3xl font-bold text-foreground">Profile</h1>
         <div className="flex items-center gap-3 w-full sm:w-auto">
           <Button 
             variant="outline" 
             size="sm" 
-            className="border-indigo-500 text-indigo-600 relative flex-1 sm:flex-initial"
+            className="border-primary/30 text-primary gold-border-glow relative flex-1 sm:flex-initial"
             onClick={() => {
               markAsRead();
               navigate('/customer-care');
@@ -189,15 +189,15 @@ const Profile = () => {
 
         {/* Personal Info */}
         <TabsContent value="personal" className="space-y-8">
-          <Card className="shadow-lg rounded-2xl border">
+          <Card className="card-binance">
             <CardHeader>
-              <CardTitle className="text-indigo-700">Profile Picture</CardTitle>
+              <CardTitle className="text-foreground">Profile Picture</CardTitle>
               <CardDescription>Upload and manage your profile picture</CardDescription>
             </CardHeader>
             <CardContent className="flex flex-col items-center gap-6">
-              <Avatar className="h-28 w-28 ring-4 ring-indigo-200">
+              <Avatar className="h-28 w-28 ring-4 ring-primary/20">
                 <AvatarImage src={profile?.avatar_url || ""} />
-                <AvatarFallback className="text-lg bg-indigo-100 text-indigo-700">
+                <AvatarFallback className="text-lg bg-primary/10 text-primary">
                   <User className="w-10 h-10" />
                 </AvatarFallback>
               </Avatar>
@@ -211,7 +211,7 @@ const Profile = () => {
                 />
                 <Button 
                   onClick={() => document.getElementById('avatar-upload')?.click()}
-                  className="bg-indigo-600 hover:bg-indigo-700 text-white"
+                  className="bg-primary hover:bg-primary/90 text-background"
                   disabled={profileLoading}
                 >
                   <Camera className="w-4 h-4 mr-2" />

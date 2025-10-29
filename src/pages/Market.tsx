@@ -109,12 +109,12 @@ const MarketPage = () => {
   return (
     <div className="container mx-auto px-4 py-8 pb-20">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-bold text-indigo-700">Market</h1>
+        <h1 className="text-3xl font-bold text-foreground">Market</h1>
         <div className="flex gap-2">
           <Button 
             onClick={() => setWatchlistModalOpen(true)}
             variant="outline"
-            className="border-purple-200 text-purple-600 hover:bg-purple-50"
+            className="border-primary/30 text-primary hover:bg-primary/10 gold-border-glow"
           >
             <Plus className="h-4 w-4 mr-2" />
             Manage Watchlist
@@ -152,13 +152,13 @@ const MarketPage = () => {
               {/* Desktop: Card Grid */}
               <div className="hidden md:grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {filteredAssets.map((asset) => (
-                  <Card key={asset.symbol} className="hover:shadow-md transition-shadow">
+                  <Card key={asset.symbol} className="card-binance">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                       <div 
                         className="cursor-pointer flex-1"
                         onClick={() => setSelectedAsset(asset)}
                       >
-                        <CardTitle className="text-lg font-bold text-indigo-700">
+                        <CardTitle className="text-lg font-bold text-foreground">
                           {asset.symbol}
                         </CardTitle>
                         <p className="text-sm text-muted-foreground">{asset.name}</p>
@@ -186,20 +186,25 @@ const MarketPage = () => {
                           </p>
                           <div className="flex items-center space-x-1">
                             {asset.change >= 0 ? (
-                              <TrendingUp className="h-4 w-4 text-green-500" />
+                              <TrendingUp className="h-4 w-4 text-profit" />
                             ) : (
-                              <TrendingDown className="h-4 w-4 text-red-500" />
+                              <TrendingDown className="h-4 w-4 text-loss" />
                             )}
                             <span className={`text-sm font-medium ${
-                              asset.change >= 0 ? 'text-green-500' : 'text-red-500'
+                              asset.change >= 0 ? 'text-profit' : 'text-loss'
                             }`}>
                               {asset.change >= 0 ? '+' : ''}{asset.change}
                             </span>
                           </div>
                         </div>
-                        <Badge variant="secondary" className="bg-green-100 text-green-700">
+                        <Badge className="gradient-wallet-gold text-background">
                           {asset.category}
                         </Badge>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
                       </div>
                     </CardContent>
                   </Card>
@@ -211,15 +216,15 @@ const MarketPage = () => {
                 {filteredAssets.map((asset) => (
                   <div
                     key={asset.symbol}
-                    className="flex items-center justify-between py-3 px-4 hover:bg-accent/5 cursor-pointer"
+                    className="flex items-center justify-between py-3 px-4 hover:bg-accent/10 cursor-pointer transition-colors"
                     onClick={() => setSelectedAsset(asset)}
                   >
                     <div className="flex items-center gap-3 flex-1 min-w-0">
-                      <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
-                        <span className="text-xs font-bold text-green-700">{asset.symbol.substring(0, 2)}</span>
+                      <div className="w-8 h-8 rounded-full gradient-wallet-gold flex items-center justify-center flex-shrink-0">
+                        <span className="text-xs font-bold text-background">{asset.symbol.substring(0, 2)}</span>
                       </div>
                       {isInWatchlist(asset.symbol) && (
-                        <Star className="w-3 h-3 fill-yellow-500 text-yellow-500 flex-shrink-0" />
+                        <Star className="w-3 h-3 fill-primary text-primary flex-shrink-0" />
                       )}
                       <div className="leading-tight min-w-0 flex-1">
                         <p className="font-bold text-sm truncate">{asset.symbol}</p>
@@ -228,7 +233,7 @@ const MarketPage = () => {
                     </div>
                     <div className="text-right flex-shrink-0 ml-2">
                       <p className="font-bold text-sm">{asset.price}</p>
-                      <p className={`text-xs ${asset.change >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      <p className={`text-xs ${asset.change >= 0 ? 'text-profit' : 'text-loss'}`}>
                         {asset.change >= 0 ? '+' : ''}{asset.change}
                       </p>
                     </div>
@@ -250,13 +255,13 @@ const MarketPage = () => {
               {/* Desktop: Card Grid */}
               <div className="hidden md:grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {filteredAssets.map((asset) => (
-                  <Card key={asset.symbol} className="hover:shadow-md transition-shadow">
+                  <Card key={asset.symbol} className="card-binance">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                       <div 
                         className="cursor-pointer flex-1"
                         onClick={() => setSelectedAsset(asset)}
                       >
-                        <CardTitle className="text-lg font-bold text-indigo-700">
+                        <CardTitle className="text-lg font-bold text-foreground">
                           {asset.symbol}
                         </CardTitle>
                         <p className="text-sm text-muted-foreground">{asset.name}</p>
@@ -284,21 +289,32 @@ const MarketPage = () => {
                           </p>
                           <div className="flex items-center space-x-1">
                             {asset.change >= 0 ? (
-                              <TrendingUp className="h-4 w-4 text-green-500" />
+                              <TrendingUp className="h-4 w-4 text-profit" />
                             ) : (
-                              <TrendingDown className="h-4 w-4 text-red-500" />
+                              <TrendingDown className="h-4 w-4 text-loss" />
                             )}
                             <span className={`text-sm font-medium ${
-                              asset.change >= 0 ? 'text-green-500' : 'text-red-500'
+                              asset.change >= 0 ? 'text-profit' : 'text-loss'
                             }`}>
                               {asset.change >= 0 ? '+' : ''}${asset.change}
                             </span>
                           </div>
                         </div>
                         <div className="flex flex-col items-end space-y-2">
-                          <Badge variant="secondary" className="bg-blue-100 text-blue-700">
+                          <Badge className="gradient-wallet-teal text-white">
                             {asset.category}
                           </Badge>
+                          {asset.volume && (
+                            <p className="text-xs text-muted-foreground">
+                              Vol: {formatMarketCap(asset.volume)}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
                           {asset.volume && (
                             <p className="text-xs text-muted-foreground">
                               Vol: {formatMarketCap(asset.volume)}
@@ -316,15 +332,15 @@ const MarketPage = () => {
                 {filteredAssets.map((asset) => (
                   <div
                     key={asset.symbol}
-                    className="flex items-center justify-between py-3 px-4 hover:bg-accent/5 cursor-pointer"
+                    className="flex items-center justify-between py-3 px-4 hover:bg-accent/10 cursor-pointer transition-colors"
                     onClick={() => setSelectedAsset(asset)}
                   >
                     <div className="flex items-center gap-3 flex-1 min-w-0">
-                      <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
-                        <span className="text-xs font-bold text-blue-700">{asset.symbol.substring(0, 2)}</span>
+                      <div className="w-8 h-8 rounded-full gradient-wallet-teal flex items-center justify-center flex-shrink-0">
+                        <span className="text-xs font-bold text-white">{asset.symbol.substring(0, 2)}</span>
                       </div>
                       {isInWatchlist(asset.symbol) && (
-                        <Star className="w-3 h-3 fill-yellow-500 text-yellow-500 flex-shrink-0" />
+                        <Star className="w-3 h-3 fill-primary text-primary flex-shrink-0" />
                       )}
                       <div className="leading-tight min-w-0 flex-1">
                         <p className="font-bold text-sm truncate">{asset.symbol}</p>
@@ -333,7 +349,7 @@ const MarketPage = () => {
                     </div>
                     <div className="text-right flex-shrink-0 ml-2">
                       <p className="font-bold text-sm">${asset.price}</p>
-                      <p className={`text-xs ${asset.change >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      <p className={`text-xs ${asset.change >= 0 ? 'text-profit' : 'text-loss'}`}>
                         {asset.change >= 0 ? '+' : ''}${asset.change}
                       </p>
                     </div>
@@ -355,13 +371,13 @@ const MarketPage = () => {
               {/* Desktop: Card Grid */}
               <div className="hidden md:grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {filteredAssets.map((asset) => (
-                  <Card key={asset.symbol} className="hover:shadow-md transition-shadow">
+                  <Card key={asset.symbol} className="card-binance">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                       <div 
                         className="cursor-pointer flex-1"
                         onClick={() => setSelectedAsset(asset)}
                       >
-                        <CardTitle className="text-lg font-bold text-indigo-700">
+                        <CardTitle className="text-lg font-bold text-foreground">
                           {asset.symbol}
                         </CardTitle>
                         <p className="text-sm text-muted-foreground">{asset.name}</p>
@@ -389,21 +405,32 @@ const MarketPage = () => {
                           </p>
                           <div className="flex items-center space-x-1">
                             {asset.change >= 0 ? (
-                              <TrendingUp className="h-4 w-4 text-green-500" />
+                              <TrendingUp className="h-4 w-4 text-profit" />
                             ) : (
-                              <TrendingDown className="h-4 w-4 text-red-500" />
+                              <TrendingDown className="h-4 w-4 text-loss" />
                             )}
                             <span className={`text-sm font-medium ${
-                              asset.change >= 0 ? 'text-green-500' : 'text-red-500'
+                              asset.change >= 0 ? 'text-profit' : 'text-loss'
                             }`}>
                               {asset.change >= 0 ? '+' : ''}${asset.change}
                             </span>
                           </div>
                         </div>
                         <div className="flex flex-col items-end space-y-2">
-                          <Badge variant="secondary" className="bg-purple-100 text-purple-700">
+                          <Badge className="gradient-wallet-violet text-white">
                             {asset.category}
                           </Badge>
+                          {asset.volume && (
+                            <p className="text-xs text-muted-foreground">
+                              Vol: {formatMarketCap(asset.volume)}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
                           {asset.volume && (
                             <p className="text-xs text-muted-foreground">
                               Vol: {formatMarketCap(asset.volume)}
@@ -421,15 +448,15 @@ const MarketPage = () => {
                 {filteredAssets.map((asset) => (
                   <div
                     key={asset.symbol}
-                    className="flex items-center justify-between py-3 px-4 hover:bg-accent/5 cursor-pointer"
+                    className="flex items-center justify-between py-3 px-4 hover:bg-accent/10 cursor-pointer transition-colors"
                     onClick={() => setSelectedAsset(asset)}
                   >
                     <div className="flex items-center gap-3 flex-1 min-w-0">
-                      <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0">
-                        <span className="text-xs font-bold text-purple-700">{asset.symbol.substring(0, 2)}</span>
+                      <div className="w-8 h-8 rounded-full gradient-wallet-violet flex items-center justify-center flex-shrink-0">
+                        <span className="text-xs font-bold text-white">{asset.symbol.substring(0, 2)}</span>
                       </div>
                       {isInWatchlist(asset.symbol) && (
-                        <Star className="w-3 h-3 fill-yellow-500 text-yellow-500 flex-shrink-0" />
+                        <Star className="w-3 h-3 fill-primary text-primary flex-shrink-0" />
                       )}
                       <div className="leading-tight min-w-0 flex-1">
                         <p className="font-bold text-sm truncate">{asset.symbol}</p>
@@ -438,7 +465,7 @@ const MarketPage = () => {
                     </div>
                     <div className="text-right flex-shrink-0 ml-2">
                       <p className="font-bold text-sm">${asset.price.toLocaleString()}</p>
-                      <p className={`text-xs ${asset.change >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      <p className={`text-xs ${asset.change >= 0 ? 'text-profit' : 'text-loss'}`}>
                         {asset.change >= 0 ? '+' : ''}${asset.change}
                       </p>
                     </div>
@@ -546,7 +573,7 @@ const MarketPage = () => {
                   <div className="grid grid-cols-2 gap-2 pt-2">
                     <Button 
                       onClick={() => selectedAsset && handleBuyTrade(selectedAsset)}
-                      className="bg-green-600 hover:bg-green-700 text-white"
+                      className="bg-profit hover:bg-profit/90 text-white"
                       size="sm"
                     >
                       Buy

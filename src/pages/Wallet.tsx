@@ -71,8 +71,8 @@ const WalletPage = () => {
     <div className="container max-w-6xl mx-auto p-6 pb-20 space-y-8">
       {/* ✅ Header */}
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-indigo-700">Wallet</h1>
-        <Button variant="outline" size="sm" className="rounded-full px-4" onClick={() => navigate('/history')}>
+        <h1 className="text-3xl font-bold text-foreground">Wallet</h1>
+        <Button variant="outline" size="sm" className="rounded-full px-4 border-primary/30 text-primary hover:bg-primary/10 gold-border-glow" onClick={() => navigate('/history')}>
           <Wallet className="w-4 h-4 mr-2" />
           History
         </Button>
@@ -90,19 +90,19 @@ const WalletPage = () => {
         <>
           {/* Mobile: Horizontal Carousel */}
           <div className="md:hidden flex gap-4 overflow-x-auto pb-4 px-4 -mx-4 snap-x snap-mandatory scrollbar-hide">
-            <Card className="flex-shrink-0 w-44 h-44 sm:w-52 sm:h-52 rounded-2xl p-4 snap-center shadow-lg bg-white border border-gray-100">
+            <Card className="flex-shrink-0 w-44 h-44 sm:w-52 sm:h-52 rounded-2xl p-4 snap-center shadow-lg bg-card border border-primary/20">
               <CardContent className="p-0 h-full flex flex-col justify-between">
-                <div className="text-xs text-gray-500">Cash Balance</div>
-                <div className="text-2xl sm:text-3xl font-bold text-black">${portfolio.cashBalance.toLocaleString()}</div>
+                <div className="text-xs text-muted-foreground">Cash Balance</div>
+                <div className="text-2xl sm:text-3xl font-bold text-foreground">${portfolio.cashBalance.toLocaleString()}</div>
               </CardContent>
             </Card>
-            <Card className="flex-shrink-0 w-44 h-44 sm:w-52 sm:h-52 rounded-2xl p-4 snap-center shadow-lg" style={{ backgroundColor: '#00b7ff' }}>
+            <Card className="flex-shrink-0 w-44 h-44 sm:w-52 sm:h-52 rounded-2xl p-4 snap-center shadow-lg gradient-wallet-emerald gold-glow-hover">
               <CardContent className="p-0 h-full flex flex-col justify-between">
                 <div className="text-xs text-white/80">Invested Balance</div>
                 <div className="text-2xl sm:text-3xl font-bold text-white">${portfolio.investedAmount.toLocaleString()}</div>
               </CardContent>
             </Card>
-            <Card className="flex-shrink-0 w-44 h-44 sm:w-52 sm:h-52 rounded-2xl p-4 snap-center shadow-lg" style={{ backgroundColor: '#00e676' }}>
+            <Card className="flex-shrink-0 w-44 h-44 sm:w-52 sm:h-52 rounded-2xl p-4 snap-center shadow-lg gradient-wallet-teal gold-glow-hover">
               <CardContent className="p-0 h-full flex flex-col justify-between">
                 <div className="text-xs text-white/80">Free Margin</div>
                 <div className="text-2xl sm:text-3xl font-bold text-white">${portfolio.freeMargin.toLocaleString()}</div>
@@ -112,15 +112,15 @@ const WalletPage = () => {
 
           {/* Desktop & Tablet: Original Grid */}
           <div className="hidden md:grid grid-cols-1 md:grid-cols-3 gap-6">
-            <Card className="bg-gradient-to-tr from-purple-500 to-indigo-600 text-white shadow-lg rounded-2xl">
+            <Card className="gradient-wallet-gold text-background shadow-lg rounded-2xl gold-glow-hover">
               <CardHeader><CardTitle>Cash Balance</CardTitle></CardHeader>
               <CardContent><p className="text-2xl font-bold">${portfolio.cashBalance.toLocaleString()}</p></CardContent>
             </Card>
-            <Card className="bg-gradient-to-tr from-indigo-500 to-purple-600 text-white shadow-lg rounded-2xl">
+            <Card className="gradient-wallet-emerald text-white shadow-lg rounded-2xl gold-glow-hover">
               <CardHeader><CardTitle>Invested Balance</CardTitle></CardHeader>
               <CardContent><p className="text-2xl font-bold">${portfolio.investedAmount.toLocaleString()}</p></CardContent>
             </Card>
-            <Card className="bg-gradient-to-tr from-purple-400 to-indigo-500 text-white shadow-lg rounded-2xl">
+            <Card className="gradient-wallet-teal text-white shadow-lg rounded-2xl gold-glow-hover">
               <CardHeader><CardTitle>Free Margin</CardTitle></CardHeader>
               <CardContent><p className="text-2xl font-bold">${portfolio.freeMargin.toLocaleString()}</p></CardContent>
             </Card>
@@ -138,7 +138,7 @@ const WalletPage = () => {
 
         {/* ✅ Transactions */}
         <TabsContent value="overview" className="space-y-6">
-          <Card>
+          <Card className="card-binance">
             <CardHeader>
               <CardTitle>Recent Transactions</CardTitle>
               <CardDescription>Your latest activity</CardDescription>
@@ -163,7 +163,7 @@ const WalletPage = () => {
                       <p className="text-sm text-muted-foreground">{t.method}</p>
                     </div>
                     <div className="text-right">
-                      <p className={`font-bold ${t.type === "deposit" ? "text-green-600" : "text-red-600"}`}>
+                      <p className={`font-bold ${t.type === "deposit" ? "text-profit" : "text-loss"}`}>
                         {t.type === "deposit" ? "+" : "-"}${t.amount.toLocaleString()}
                       </p>
                       <Badge>{t.status}</Badge>
@@ -174,11 +174,17 @@ const WalletPage = () => {
             </CardContent>
           </Card>
         </TabsContent>
+                  </div>
+                ))
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
 
         {/* ✅ Deposits */}
         <TabsContent value="deposits" className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Bank/PayPal */}
-          <Card>
+          <Card className="card-binance">
             <CardHeader>
               <CardTitle>Card / PayPal</CardTitle>
               <CardDescription>Secure payment via card or PayPal</CardDescription>
@@ -187,7 +193,7 @@ const WalletPage = () => {
               <Label>Amount</Label>
               <Input type="number" placeholder="0.00" className="mb-4" />
               <Button 
-                className="w-full"
+                className="w-full bg-primary hover:bg-primary/90 text-background"
                 onClick={() => window.open("https://www.paypal.com/ncp/payment/8SSPEXZ764KSS", "_blank")}
               >
                 Pay with PayPal
@@ -196,7 +202,7 @@ const WalletPage = () => {
           </Card>
 
           {/* Crypto */}
-          <Card>
+          <Card className="card-binance">
             <CardHeader>
               <CardTitle>Crypto Deposits</CardTitle>
               <CardDescription>BTC, SOL, USDT</CardDescription>
@@ -205,9 +211,54 @@ const WalletPage = () => {
               {Object.entries(cryptoAddresses).map(([crypto, data]) => (
                 <div 
                   key={crypto} 
-                  className="rounded-xl border p-4 shadow-sm bg-white cursor-pointer hover:border-indigo-300 transition-colors"
+                  className="rounded-xl border border-border p-4 shadow-sm bg-card cursor-pointer hover:border-primary/30 transition-colors"
                   onClick={() => openQRCode(crypto, data.qrCode)}
                 >
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-3">
+                      <img 
+                        src={data.logo} 
+                        alt={`${crypto} logo`} 
+                        className="w-8 h-8 rounded-full object-cover"
+                        loading="lazy"
+                        onError={(e) => {
+                          e.currentTarget.src = '/placeholder.svg';
+                        }}
+                      />
+                      <h4 className="font-semibold">{crypto}</h4>
+                    </div>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setShowAddresses(p => ({...p, [crypto]: !p[crypto]}));
+                      }}
+                    >
+                      {showAddresses[crypto] ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </Button>
+                  </div>
+                  {showAddresses[crypto] && (
+                    <div className="space-y-2" onClick={(e) => e.stopPropagation()}>
+                      <Input value={data.address} readOnly className="font-mono text-xs" />
+                      <div className="flex gap-2">
+                        <Button size="sm" variant="outline" onClick={() => copyToClipboard(data.address, crypto)}>
+                          <Copy className="w-4 h-4" /> Copy
+                        </Button>
+                        <Button size="sm" variant="outline" onClick={() => openQRCode(crypto, data.qrCode)}>
+                          <QrCode className="w-4 h-4" /> QR Code
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                  {!showAddresses[crypto] && (
+                    <p className="text-sm text-muted-foreground">Tap to view QR code or show address</p>
+                  )}
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        </TabsContent>
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-3">
                       <img 
@@ -256,7 +307,7 @@ const WalletPage = () => {
 
         {/* ✅ Withdrawals */}
         <TabsContent value="withdrawals">
-          <Card>
+          <Card className="card-binance">
             <CardHeader>
               <CardTitle>Withdraw Funds</CardTitle>
               <CardDescription>Bank, PayPal, Wire</CardDescription>
@@ -266,7 +317,7 @@ const WalletPage = () => {
               <Input type="number" placeholder="0.00" />
               <Label className="mt-4">Account Details</Label>
               <Input placeholder="Enter account or email" />
-              <Button className="w-full mt-4">Request Withdrawal</Button>
+              <Button className="w-full mt-4 bg-primary hover:bg-primary/90 text-background">Request Withdrawal</Button>
             </CardContent>
           </Card>
         </TabsContent>
