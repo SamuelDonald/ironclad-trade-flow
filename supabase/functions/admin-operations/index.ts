@@ -48,7 +48,7 @@ async function requireAdmin(req: Request, supabase: any) {
   const { data: adminUser } = await supabase
     .from('admin_users')
     .select('*')
-    .or(`user_id.eq.${user.id},email.eq.${user.email}`)
+    .eq('user_id', user.id)
     .single();
 
   if (!adminUser) {
@@ -278,7 +278,9 @@ serve(async (req) => {
         .select('*');
 
       if (searchQuery) {
-        query = query.or(`full_name.ilike.%${searchQuery}%,email.ilike.%${searchQuery}%`);
+        // Escape special characters to prevent SQL injection
+        const sanitizedQuery = searchQuery.replace(/[%_]/g, '\\$&');
+        query = query.or(`full_name.ilike.%${sanitizedQuery}%,email.ilike.%${sanitizedQuery}%`);
       }
 
       const { data: users, error } = await query

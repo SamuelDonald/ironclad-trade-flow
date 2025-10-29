@@ -39,11 +39,11 @@ serve(async (req) => {
       );
     }
 
-    // Check if user is admin in admin_users table
+    // Check if user is admin in admin_users table - using safe query methods
     const { data: adminUser, error: adminError } = await supabase
       .from('admin_users')
       .select('id, email, role, meta')
-      .or(`email.eq.${user.email},user_id.eq.${user.id}`)
+      .eq('user_id', user.id)
       .single();
 
     if (adminError || !adminUser) {
