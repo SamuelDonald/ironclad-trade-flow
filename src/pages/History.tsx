@@ -37,7 +37,7 @@ const History = () => {
             >
               <ArrowLeft className="w-4 h-4" />
             </Button>
-            <h1 className="text-3xl font-bold text-indigo-700">History</h1>
+            <h1 className="text-3xl font-bold text-foreground">History</h1>
           </div>
         </div>
         <div className="text-center py-12">
@@ -61,7 +61,7 @@ const History = () => {
           >
             <ArrowLeft className="w-4 h-4" />
           </Button>
-          <h1 className="text-3xl font-bold text-indigo-700">History</h1>
+          <h1 className="text-3xl font-bold text-foreground">History</h1>
         </div>
         <div className="flex items-center gap-2">
           <Button 

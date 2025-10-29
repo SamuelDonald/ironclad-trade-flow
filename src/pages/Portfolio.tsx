@@ -43,13 +43,13 @@ const Portfolio = () => {
     <div className="container max-w-7xl mx-auto p-6 pb-20 space-y-8">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-indigo-700">Portfolio</h1>
+        <h1 className="text-3xl font-bold text-foreground">Portfolio</h1>
         <div className="flex items-center gap-2">
           <AdminButton />
           <Button 
             variant="ghost" 
             size="sm" 
-            className="text-indigo-600 hover:bg-indigo-50"
+            className="text-primary hover:bg-primary/10"
             onClick={() => setShowDetails(!showDetails)}
             aria-label={showDetails ? "Hide portfolio details" : "Show portfolio details"}
           >
@@ -61,7 +61,7 @@ const Portfolio = () => {
       {/* Account Balance */}
       <Card className="shadow-md border rounded-xl">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-xl font-semibold text-indigo-700">
+          <CardTitle className="flex items-center gap-2 text-xl font-semibold text-foreground">
             <Wallet className="w-5 h-5" />
             Account Overview
           </CardTitle>
@@ -80,7 +80,7 @@ const Portfolio = () => {
 
           <div className="flex gap-4 mt-8">
             <Button 
-              className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white transition-all"
+              className="flex-1 bg-primary hover:bg-primary/90 text-background transition-all"
               onClick={() => navigate("/wallet?tab=deposits")}
             >
               <Plus className="w-4 h-4 mr-2" />
@@ -88,7 +88,7 @@ const Portfolio = () => {
             </Button>
             <Button 
               variant="outline" 
-              className="flex-1 border-indigo-600 text-indigo-600 hover:bg-indigo-50 transition-all"
+              className="flex-1 border-primary/30 text-primary hover:bg-primary/10 gold-border-glow transition-all"
               onClick={() => navigate("/wallet?tab=withdrawals")}
             >
               <Minus className="w-4 h-4 mr-2" />
@@ -103,7 +103,7 @@ const Portfolio = () => {
         {/* Watchlist */}
         <Card className="rounded-xl shadow-sm border">
           <CardHeader>
-            <CardTitle className="text-indigo-700">Watchlist</CardTitle>
+            <CardTitle className="text-foreground">Watchlist</CardTitle>
             <CardDescription>Track your assets</CardDescription>
           </CardHeader>
           <CardContent>
@@ -118,7 +118,7 @@ const Portfolio = () => {
                 <p className="text-muted-foreground mb-2">No assets in watchlist</p>
                 <Button
                   variant="ghost"
-                  className="text-indigo-600 hover:bg-indigo-50"
+                  className="text-primary hover:bg-primary/10"
                   onClick={() => navigate("/market")}
                 >
                   Add Assets to Watchlist
@@ -129,7 +129,7 @@ const Portfolio = () => {
                 {watchlist.map((asset) => (
                   <div
                     key={asset.id}
-                    className="flex items-center justify-between p-4 rounded-lg border hover:bg-indigo-50 transition cursor-pointer"
+                    className="flex items-center justify-between p-4 rounded-lg border hover:bg-accent/10 transition cursor-pointer"
                     onClick={() => navigate(`/market?symbol=${asset.symbol}`)}
                   >
                     <div>
@@ -158,7 +158,7 @@ const Portfolio = () => {
                 ))}
                 <Button
                   variant="ghost"
-                  className="w-full text-indigo-600 hover:bg-indigo-50"
+                  className="w-full text-primary hover:bg-primary/10"
                   onClick={() => navigate("/market")}
                 >
                   Add More Assets
@@ -171,7 +171,7 @@ const Portfolio = () => {
         {/* Recent Activity */}
         <Card className="rounded-xl shadow-sm border">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-indigo-700">
+            <CardTitle className="flex items-center gap-2 text-foreground">
               <Activity className="w-5 h-5" />
               Recent Activity
             </CardTitle>
@@ -234,7 +234,7 @@ const Portfolio = () => {
       {/* Holdings */}
       <Card className="rounded-xl shadow-sm border">
         <CardHeader>
-          <CardTitle className="text-indigo-700">Holdings</CardTitle>
+          <CardTitle className="text-foreground">Holdings</CardTitle>
           <CardDescription>Your positions</CardDescription>
         </CardHeader>
         <CardContent>
@@ -295,7 +295,7 @@ const Portfolio = () => {
                     const pnl = holding.profit_loss;
                     const pnlPercent = holding.profit_loss_percent;
                     return (
-                      <tr key={holding.id} className="border-b hover:bg-indigo-50 transition">
+                      <tr key={holding.id} className="border-b hover:bg-accent/10 transition">
                         <td className="py-4">
                           <p className="font-semibold">{holding.symbol}</p>
                           <p className="text-xs text-muted-foreground">{holding.name}</p>

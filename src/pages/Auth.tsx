@@ -188,7 +188,7 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-700 via-purple-900 to-black px-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-card to-background px-4">
       <div className="w-full max-w-lg space-y-8">
         {/* Branding */}
         <div className="text-center animate-fade-in">
@@ -203,16 +203,16 @@ const Auth = () => {
         {/* Auth Card with Sliding Tabs */}
         <Card className="w-full border-0 bg-white/95 shadow-2xl backdrop-blur-md rounded-2xl overflow-hidden animate-slide-up">
           <Tabs defaultValue="signin" className="w-full">
-            <TabsList className="grid grid-cols-2 w-full bg-purple-100 p-1 rounded-xl">
+            <TabsList className="grid grid-cols-2 w-full bg-card p-1 rounded-xl">
               <TabsTrigger
                 value="signin"
-                className="rounded-lg data-[state=active]:bg-purple-600 data-[state=active]:text-white transition-all"
+                className="rounded-lg data-[state=active]:bg-primary data-[state=active]:text-background transition-all"
               >
                 Sign In
               </TabsTrigger>
               <TabsTrigger
                 value="signup"
-                className="rounded-lg data-[state=active]:bg-purple-600 data-[state=active]:text-white transition-all"
+                className="rounded-lg data-[state=active]:bg-primary data-[state=active]:text-background transition-all"
               >
                 Create Account
               </TabsTrigger>
@@ -264,7 +264,7 @@ const Auth = () => {
 
                   <Button
                     type="submit"
-                    className="w-full bg-purple-600 hover:bg-purple-700 transition-all text-white font-medium"
+                    className="w-full bg-primary hover:bg-primary/90 text-background transition-all font-medium"
                     disabled={isLoading}
                   >
                     {isLoading ? "Signing In..." : "Sign In"}
@@ -354,7 +354,7 @@ const Auth = () => {
 
                   <Button
                     type="submit"
-                    className="w-full bg-purple-600 hover:bg-purple-700 transition-all text-white font-medium"
+                    className="w-full bg-primary hover:bg-primary/90 text-background transition-all font-medium"
                     disabled={isLoading}
                   >
                     {isLoading ? "Creating Account..." : "Create Account"}

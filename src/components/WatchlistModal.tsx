@@ -143,7 +143,7 @@ export const WatchlistModal: React.FC<WatchlistModalProps> = ({
                 variant={showCustomForm ? "secondary" : "outline"}
                 size="sm"
                 onClick={() => setShowCustomForm(!showCustomForm)}
-                className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-200"
+                className="bg-primary hover:bg-primary/90 text-background border-0 shadow-lg hover:shadow-xl transition-all duration-200"
               >
                 <Plus className="w-4 h-4 mr-1" />
                 {showCustomForm ? "Hide" : "Add Asset"}

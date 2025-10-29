@@ -268,8 +268,8 @@ export default function SettingsPage() {
                 <p className="font-semibold text-primary">License</p>
                 <p className="text-sm text-muted-foreground">MIT</p>
               </div>
-              <div className="p-3 rounded-lg border border-indigo-200 shadow-sm">
-                <p className="font-semibold text-indigo-600">Support</p>
+              <div className="p-3 rounded-lg border border-border shadow-sm">
+                <p className="font-semibold text-primary">Support</p>
                 <p className="text-sm text-muted-foreground">support@ironclad.com</p>
               </div>
             </CardContent>

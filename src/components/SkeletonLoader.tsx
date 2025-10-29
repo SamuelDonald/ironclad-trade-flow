@@ -22,10 +22,11 @@ export function SkeletonLoader({ className, variant = "text" }: SkeletonLoaderPr
 }
 
 export function WalletSkeleton() {
+  const gradients = ['gradient-wallet-gold', 'gradient-wallet-emerald', 'gradient-wallet-teal'];
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
       {[1, 2, 3].map((i) => (
-        <div key={i} className="bg-gradient-to-tr from-purple-500 to-indigo-600 text-white shadow-lg rounded-2xl p-6">
+        <div key={i} className={`${gradients[i - 1]} text-background shadow-lg rounded-2xl p-6`}>
           <div className="mb-4">
             <SkeletonLoader className="h-6 w-24 bg-white/20" />
           </div>
