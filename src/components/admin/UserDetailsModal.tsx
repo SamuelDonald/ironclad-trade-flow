@@ -2,11 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { BalanceAdjustmentForm } from './BalanceAdjustmentForm';
 import { formatDistanceToNow } from 'date-fns';
+import { Menu } from 'lucide-react';
 
 interface UserDetailsModalProps {
   userId: string;
@@ -17,6 +20,8 @@ interface UserDetailsModalProps {
 export const UserDetailsModal: React.FC<UserDetailsModalProps> = ({ userId, open, onClose }) => {
   const [userDetails, setUserDetails] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('overview');
+  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     if (open && userId) {
@@ -92,6 +97,67 @@ export const UserDetailsModal: React.FC<UserDetailsModalProps> = ({ userId, open
           <DialogTitle>User Details</DialogTitle>
         </DialogHeader>
 
+        {/* Floating hamburger menu - mobile only */}
+        <div className="sm:hidden fixed top-20 right-4 z-50">
+          <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
+            <SheetTrigger asChild>
+              <Button
+                size="icon"
+                className="rounded-full shadow-lg bg-primary hover:bg-primary/90"
+              >
+                <Menu className="h-5 w-5" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-64">
+              <SheetHeader>
+                <SheetTitle>Navigation</SheetTitle>
+              </SheetHeader>
+              <div className="flex flex-col gap-2 mt-4">
+                <Button
+                  variant={activeTab === 'overview' ? 'default' : 'ghost'}
+                  className="justify-start"
+                  onClick={() => {
+                    setActiveTab('overview');
+                    setMenuOpen(false);
+                  }}
+                >
+                  Overview
+                </Button>
+                <Button
+                  variant={activeTab === 'balances' ? 'default' : 'ghost'}
+                  className="justify-start"
+                  onClick={() => {
+                    setActiveTab('balances');
+                    setMenuOpen(false);
+                  }}
+                >
+                  Balances
+                </Button>
+                <Button
+                  variant={activeTab === 'transactions' ? 'default' : 'ghost'}
+                  className="justify-start"
+                  onClick={() => {
+                    setActiveTab('transactions');
+                    setMenuOpen(false);
+                  }}
+                >
+                  Transactions
+                </Button>
+                <Button
+                  variant={activeTab === 'trades' ? 'default' : 'ghost'}
+                  className="justify-start"
+                  onClick={() => {
+                    setActiveTab('trades');
+                    setMenuOpen(false);
+                  }}
+                >
+                  Trades
+                </Button>
+              </div>
+            </SheetContent>
+          </Sheet>
+        </div>
+
         {loading ? (
           <div className="space-y-4">
             {[...Array(4)].map((_, i) => (
@@ -99,8 +165,8 @@ export const UserDetailsModal: React.FC<UserDetailsModalProps> = ({ userId, open
             ))}
           </div>
         ) : userDetails ? (
-          <Tabs defaultValue="overview" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="hidden sm:grid w-full sm:grid-cols-4">
               <TabsTrigger value="overview">Overview</TabsTrigger>
               <TabsTrigger value="balances">Balances</TabsTrigger>
               <TabsTrigger value="transactions">Transactions</TabsTrigger>

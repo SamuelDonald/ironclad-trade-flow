@@ -101,7 +101,7 @@ export const KYCReviewModal: React.FC<KYCReviewModalProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-3xl w-[95vw] sm:w-full max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-3xl w-[95vw] sm:w-full max-h-[90vh] overflow-y-auto p-4 sm:p-6">
         <DialogHeader>
           <DialogTitle>KYC Review - {submission.full_name}</DialogTitle>
         </DialogHeader>
@@ -110,15 +110,15 @@ export const KYCReviewModal: React.FC<KYCReviewModalProps> = ({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <p className="text-sm text-muted-foreground">Email</p>
-              <p className="font-medium">{submission.email}</p>
+              <p className="font-medium break-words">{submission.email}</p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Phone</p>
-              <p className="font-medium">{submission.phone || 'N/A'}</p>
+              <p className="font-medium break-words">{submission.phone || 'N/A'}</p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Address</p>
-              <p className="font-medium">{submission.address || 'N/A'}</p>
+              <p className="font-medium break-words">{submission.address || 'N/A'}</p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Status</p>
@@ -134,16 +134,16 @@ export const KYCReviewModal: React.FC<KYCReviewModalProps> = ({
             {submission.kyc_documents && submission.kyc_documents.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {submission.kyc_documents.map((doc: any, index: number) => (
-                  <div key={index} className="border rounded-lg p-3 space-y-2">
+                  <div key={index} className="border rounded-lg p-2 sm:p-3 space-y-2 overflow-hidden">
                     <p className="text-sm font-medium">{doc.type || 'Document'}</p>
                     {doc.url && doc.url.match(/\.(jpg|jpeg|png|gif)$/i) ? (
                       <img
                         src={doc.url}
                         alt={doc.type}
-                        className="w-full h-48 object-cover rounded"
+                        className="w-full h-32 sm:h-48 object-cover rounded"
                       />
                     ) : (
-                      <div className="w-full h-48 bg-muted rounded flex items-center justify-center">
+                      <div className="w-full h-32 sm:h-48 bg-muted rounded flex items-center justify-center">
                         <FileText className="h-12 w-12 text-muted-foreground" />
                       </div>
                     )}
@@ -172,6 +172,7 @@ export const KYCReviewModal: React.FC<KYCReviewModalProps> = ({
                 onChange={(e) => setRejectionReason(e.target.value)}
                 placeholder="Provide a clear reason for rejection..."
                 rows={3}
+                className="w-full resize-none"
               />
             </div>
           )}
