@@ -87,7 +87,7 @@ export const UserDetailsModal: React.FC<UserDetailsModalProps> = ({ userId, open
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-4xl w-[95vw] sm:w-full max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>User Details</DialogTitle>
         </DialogHeader>
@@ -100,7 +100,7 @@ export const UserDetailsModal: React.FC<UserDetailsModalProps> = ({ userId, open
           </div>
         ) : userDetails ? (
           <Tabs defaultValue="overview" className="w-full">
-            <TabsList className="grid w-full grid-cols-4">
+            <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4">
               <TabsTrigger value="overview">Overview</TabsTrigger>
               <TabsTrigger value="balances">Balances</TabsTrigger>
               <TabsTrigger value="transactions">Transactions</TabsTrigger>
@@ -113,7 +113,7 @@ export const UserDetailsModal: React.FC<UserDetailsModalProps> = ({ userId, open
                   <CardTitle>Profile Information</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2">
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <p className="text-sm text-muted-foreground">Full Name</p>
                       <p className="font-medium">{userDetails.profile.full_name || 'N/A'}</p>
@@ -173,7 +173,7 @@ export const UserDetailsModal: React.FC<UserDetailsModalProps> = ({ userId, open
                 <p className="text-muted-foreground text-center py-8">No transactions</p>
               ) : (
                 userDetails.recentTransactions?.map((tx: any) => (
-                  <div key={tx.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                  <div key={tx.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 bg-muted/50 rounded-lg">
                     <div>
                       <p className="font-medium capitalize">{tx.type}</p>
                       <p className="text-sm text-muted-foreground">{tx.method}</p>
@@ -197,7 +197,7 @@ export const UserDetailsModal: React.FC<UserDetailsModalProps> = ({ userId, open
                 <p className="text-muted-foreground text-center py-8">No trades</p>
               ) : (
                 userDetails.recentTrades?.map((trade: any) => (
-                  <div key={trade.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                  <div key={trade.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 bg-muted/50 rounded-lg">
                     <div>
                       <p className="font-medium">{trade.symbol}</p>
                       <p className="text-sm text-muted-foreground">

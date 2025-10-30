@@ -101,13 +101,13 @@ export const KYCReviewModal: React.FC<KYCReviewModalProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-3xl w-[95vw] sm:w-full max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>KYC Review - {submission.full_name}</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-6">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <p className="text-sm text-muted-foreground">Email</p>
               <p className="font-medium">{submission.email}</p>
@@ -132,7 +132,7 @@ export const KYCReviewModal: React.FC<KYCReviewModalProps> = ({
               Submitted Documents ({submission.kyc_documents?.length || 0})
             </Label>
             {submission.kyc_documents && submission.kyc_documents.length > 0 ? (
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {submission.kyc_documents.map((doc: any, index: number) => (
                   <div key={index} className="border rounded-lg p-3 space-y-2">
                     <p className="text-sm font-medium">{doc.type || 'Document'}</p>
@@ -178,7 +178,7 @@ export const KYCReviewModal: React.FC<KYCReviewModalProps> = ({
         </div>
 
         {submission.kyc_status === 'pending' && (
-          <DialogFooter className="gap-2">
+          <DialogFooter className="flex-col sm:flex-row gap-2">
             <Button variant="outline" onClick={onClose} disabled={loading}>
               Cancel
             </Button>

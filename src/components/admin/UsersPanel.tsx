@@ -63,7 +63,7 @@ export const UsersPanel: React.FC = () => {
                 <div
                   key={user.id}
                   onClick={() => setSelectedUserId(user.id)}
-                  className="flex items-center justify-between p-4 bg-muted/50 rounded-lg hover:bg-muted cursor-pointer transition-colors"
+                  className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-muted/50 rounded-lg hover:bg-muted cursor-pointer transition-colors"
                 >
                   <div className="flex-1">
                     <p className="font-medium">{user.full_name || 'No name'}</p>
@@ -74,7 +74,7 @@ export const UsersPanel: React.FC = () => {
                       </p>
                     )}
                   </div>
-                  <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-4 self-end sm:self-auto">
                     <div className="text-right">
                       <p className="text-sm text-muted-foreground">Portfolio</p>
                       <p className="font-semibold">${Number(user.total_value).toFixed(2)}</p>
@@ -89,8 +89,8 @@ export const UsersPanel: React.FC = () => {
           )}
 
           {totalPages > 1 && (
-            <div className="flex items-center justify-between mt-6">
-              <p className="text-sm text-muted-foreground">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mt-6">
+              <p className="text-sm text-muted-foreground hidden sm:block">
                 Showing {((page - 1) * limit) + 1} to {Math.min(page * limit, totalCount)} of {totalCount} users
               </p>
               <div className="flex gap-2">
