@@ -40,14 +40,14 @@ export const KYCPanel: React.FC = () => {
                 </p>
               ) : (
                 submissions.map((submission) => (
-                  <div
-                    key={submission.id}
-                    className="flex items-center justify-between p-4 bg-muted/50 rounded-lg hover:bg-muted cursor-pointer transition-colors"
-                    onClick={() => setSelectedSubmission(submission)}
-                  >
-                    <div className="flex-1">
-                      <p className="font-medium">{submission.full_name || 'No name'}</p>
-                      <p className="text-sm text-muted-foreground">{submission.email}</p>
+                <div
+                  key={submission.id}
+                  className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-muted/50 rounded-lg hover:bg-muted cursor-pointer transition-colors"
+                  onClick={() => setSelectedSubmission(submission)}
+                >
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium truncate sm:whitespace-normal">{submission.full_name || 'No name'}</p>
+                    <p className="text-sm text-muted-foreground break-words">{submission.email}</p>
                       {submission.kyc_submitted_at && (
                         <p className="text-xs text-muted-foreground mt-1">
                           Submitted {formatDistanceToNow(new Date(submission.kyc_submitted_at), { addSuffix: true })}
@@ -59,12 +59,12 @@ export const KYCPanel: React.FC = () => {
                         </p>
                       )}
                     </div>
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3 self-end sm:self-auto">
                       <div className="text-right">
                         <p className="text-sm text-muted-foreground">Documents</p>
                         <p className="font-semibold">{submission.kyc_documents?.length || 0}</p>
                       </div>
-                      <Button size="sm">Review</Button>
+                      <Button size="sm" className="shrink-0">Review</Button>
                     </div>
                   </div>
                 ))
