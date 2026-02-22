@@ -185,7 +185,7 @@ const Portfolio = () => {
             ) : tradesLoading ? (
               <div className="space-y-3">
                 {[1, 2, 3].map((i) => (
-                  <div key={i} className="flex items-center justify-between p-4 rounded-lg bg-gray-50">
+                  <div key={i} className="flex items-center justify-between p-4 rounded-lg bg-secondary/50 border border-border">
                     <div className="flex items-center gap-3">
                       <div className="h-6 w-12 bg-muted animate-pulse rounded"></div>
                       <div className="space-y-2">
@@ -207,7 +207,7 @@ const Portfolio = () => {
                 {trades.slice(0, 5).map((activity) => (
                   <div
                     key={activity.id}
-                    className="flex items-center justify-between p-4 rounded-lg bg-gray-50"
+className="flex items-center justify-between p-4 rounded-lg bg-secondary/50 border border-border"
                   >
                     <div className="flex items-center gap-3">
                       <Badge variant={activity.type === "buy" ? "default" : "secondary"}>
