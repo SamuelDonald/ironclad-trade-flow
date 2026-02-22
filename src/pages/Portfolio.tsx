@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
 import { usePortfolio } from "@/hooks/usePortfolio";
-import { useHoldings } from "@/hooks/useHoldings";
+
 import { useTrades } from "@/hooks/useTrades";
 import { useWatchlist } from "@/hooks/useWatchlist";
 import { useMarketPrices } from "@/hooks/useMarketPrices";
@@ -22,7 +22,7 @@ const Portfolio = () => {
 
   // Real data hooks
   const { portfolio, loading: portfolioLoading } = usePortfolio();
-  const { holdings, loading: holdingsLoading } = useHoldings();
+  
   const { trades, loading: tradesLoading } = useTrades();
   const { watchlist, loading: watchlistLoading } = useWatchlist();
   
@@ -231,97 +231,6 @@ className="flex items-center justify-between p-4 rounded-lg bg-secondary/50 bord
         </Card>
       </div>
 
-      {/* Holdings */}
-      <Card className="rounded-xl shadow-sm border">
-        <CardHeader>
-          <CardTitle className="text-foreground">Holdings</CardTitle>
-          <CardDescription>Your positions</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {!user ? (
-            <div className="text-center py-6">
-              <p className="text-muted-foreground">Sign in to view your holdings</p>
-            </div>
-          ) : holdingsLoading ? (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b text-left text-gray-500">
-                    <th className="py-3">Asset</th>
-                    <th className="text-right py-3">Shares</th>
-                    <th className="text-right py-3">Avg Price</th>
-                    <th className="text-right py-3">Current Price</th>
-                    <th className="text-right py-3">Value</th>
-                    <th className="text-right py-3">P&L</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {[1, 2, 3].map((i) => (
-                    <tr key={i} className="border-b">
-                      <td className="py-4">
-                        <div className="h-4 w-16 bg-muted animate-pulse rounded mb-1"></div>
-                        <div className="h-3 w-24 bg-muted animate-pulse rounded"></div>
-                      </td>
-                      <td className="text-right py-4"><div className="h-4 w-12 bg-muted animate-pulse rounded ml-auto"></div></td>
-                      <td className="text-right py-4"><div className="h-4 w-16 bg-muted animate-pulse rounded ml-auto"></div></td>
-                      <td className="text-right py-4"><div className="h-4 w-16 bg-muted animate-pulse rounded ml-auto"></div></td>
-                      <td className="text-right py-4"><div className="h-4 w-20 bg-muted animate-pulse rounded ml-auto"></div></td>
-                      <td className="text-right py-4"><div className="h-8 w-16 bg-muted animate-pulse rounded ml-auto"></div></td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : holdings.length === 0 ? (
-            <div className="text-center py-6">
-              <p className="text-muted-foreground">No holdings yet</p>
-              <p className="text-sm text-muted-foreground mt-1">Your positions will appear here after trading</p>
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b text-left text-gray-500">
-                    <th className="py-3">Asset</th>
-                    <th className="text-right py-3">Shares</th>
-                    <th className="text-right py-3">Avg Price</th>
-                    <th className="text-right py-3">Current Price</th>
-                    <th className="text-right py-3">Value</th>
-                    <th className="text-right py-3">P&L</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {holdings.map((holding) => {
-                    const pnl = holding.profit_loss;
-                    const pnlPercent = holding.profit_loss_percent;
-                    return (
-                      <tr key={holding.id} className="border-b hover:bg-accent/10 transition">
-                        <td className="py-4">
-                          <p className="font-semibold">{holding.symbol}</p>
-                          <p className="text-xs text-muted-foreground">{holding.name}</p>
-                        </td>
-                        <td className="text-right py-4">{holding.shares}</td>
-                        <td className="text-right py-4">${holding.average_price.toFixed(2)}</td>
-                        <td className="text-right py-4">${holding.current_price.toFixed(2)}</td>
-                        <td className="text-right py-4">${holding.total_value.toLocaleString()}</td>
-                        <td className={`text-right py-4 ${pnl >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                          <div className="flex items-center justify-end">
-                            {pnl >= 0 ? <TrendingUp className="w-4 h-4 mr-1" /> : <TrendingDown className="w-4 h-4 mr-1" />}
-                            <div>
-                              <p>${Math.abs(pnl).toFixed(2)}</p>
-                              <p className="text-xs">({pnlPercent.toFixed(2)}%)</p>
-                            </div>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </CardContent>
-      </Card>
     </div>
   );
 };
