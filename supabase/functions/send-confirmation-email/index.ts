@@ -44,7 +44,7 @@ const handler = async (req: Request): Promise<Response> => {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Confirm your IronClad email</title>
+    <title>Confirm your PrimeLink email</title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
@@ -119,12 +119,12 @@ const handler = async (req: Request): Promise<Response> => {
 <body>
     <div class="container">
         <div class="header">
-            <div class="logo">IronClad Trade Hub</div>
+            <div class="logo">PrimeLink Unity Services</div>
             <div class="subtitle">Your secure gateway to smarter trading</div>
         </div>
         
         <div class="content">
-            <h2 style="color: #333; margin-bottom: 20px;">Welcome to IronClad Trade Hub!</h2>
+            <h2 style="color: #333; margin-bottom: 20px;">Welcome to PrimeLink Unity Services!</h2>
             
             <p>Please confirm your email address by clicking the button below to activate your account:</p>
             
@@ -139,8 +139,8 @@ const handler = async (req: Request): Promise<Response> => {
         </div>
         
         <div class="footer">
-            <p>If you did not create an account with IronClad, please ignore this email.</p>
-            <p>&copy; 2024 IronClad Trade Hub. All rights reserved.</p>
+            <p>If you did not create an account with PrimeLink, please ignore this email.</p>
+            <p>&copy; 2024 PrimeLink Unity Services. All rights reserved.</p>
         </div>
     </div>
 </body>
@@ -148,23 +148,23 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Plain text version
     const textContent = `
-Welcome to IronClad Trade Hub!
+Welcome to PrimeLink Unity Services!
 
 Please confirm your email address by clicking the link below to activate your account:
 
 ${confirmationUrl}
 
-If you did not create an account with IronClad, please ignore this email.
+If you did not create an account with PrimeLink, please ignore this email.
 
-© 2024 IronClad Trade Hub. All rights reserved.
+© 2024 PrimeLink Unity Services. All rights reserved.
 `;
 
     console.log('Sending confirmation email to:', user.email);
 
     const emailResponse = await resend.emails.send({
-      from: 'IronClad Trade Hub <onboarding@resend.dev>',
+      from: 'PrimeLink Unity Services <onboarding@resend.dev>',
       to: [user.email],
-      subject: 'Confirm your IronClad email',
+      subject: 'Confirm your PrimeLink email',
       html: htmlContent,
       text: textContent,
     });

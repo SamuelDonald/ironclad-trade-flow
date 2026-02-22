@@ -202,7 +202,7 @@ const Auth = () => {
           {/* Brand Title */}
           <div>
             <h1 className="text-4xl font-extrabold tracking-tight text-white drop-shadow-md">
-              IronClad Trade Hub
+              PrimeLink Unity Services
             </h1>
             <p className="mt-2 text-[#A1A1A1] text-sm max-w-sm mx-auto">
               Your secure gateway to smarter, faster trading in stocks, forex, and crypto.
