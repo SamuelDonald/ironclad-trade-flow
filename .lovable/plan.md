@@ -1,23 +1,21 @@
 
-
-## Fix: Trade Cards Theme Mismatch
-
-### Problem
-The Recent Activity trade cards in `src/pages/Portfolio.tsx` use `bg-gray-50` (line 210), which is a light white/gray background that clashes with the dark Binance-style theme used throughout the app.
+## Remove Holdings Section from Portfolio
 
 ### Change
 
-**File: `src/pages/Portfolio.tsx` (line 210)**
+**File: `src/pages/Portfolio.tsx`**
 
-Replace:
-```
-className="flex items-center justify-between p-4 rounded-lg bg-gray-50"
-```
+Remove the entire Holdings card block (lines 234-327) -- from `{/* Holdings */}` through the closing `</Card>`.
 
-With:
-```
-className="flex items-center justify-between p-4 rounded-lg bg-secondary/50 border border-border"
-```
+Also remove the now-unused import and hook:
+- Remove `useHoldings` import (line 8)
+- Remove `const { holdings, loading: holdingsLoading } = useHoldings();` (line 26)
+- Remove `TrendingUp, TrendingDown` from lucide imports if they are only used in Holdings (they are also used in Watchlist, so they stay)
 
-This uses `bg-secondary/50` (dark neutral from the theme) with a subtle border, matching the existing card and UI styling throughout the app.
+### Technical Details
 
+| What | Action |
+|------|--------|
+| Line 8: `import { useHoldings }` | Remove |
+| Line 26: `const { holdings, loading: holdingsLoading } = useHoldings();` | Remove |
+| Lines 234-327: Entire Holdings `<Card>` block | Remove |
