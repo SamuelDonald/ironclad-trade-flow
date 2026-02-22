@@ -1,17 +1,18 @@
 
 
-## Plan: Add Entry Point Field + Record SL/TP + Show in Recent Activity
+## Plan: Add Entry Point + Record SL/TP + Display in Recent Activity
 
-### Root Cause
-The database migration to add `entry_point`, `stop_loss`, and `take_profit` columns was never applied. The trades table only has: id, user_id, symbol, name, type, shares, price, total_amount, status, category, created_at.
+### Current State
+- The `trades` table has 11 columns and is **missing** `entry_point`, `stop_loss`, and `take_profit`
+- Market.tsx has Stop Loss and Take Profit inputs but **no Entry Point input**
+- The trade insert calls do **not** include any of these 3 fields
+- There is **no `entryPoint` state** in Market.tsx
 
-### Step-by-Step Fix
+### Step-by-Step Implementation
 
 ---
 
-### 1. Database Migration (required first)
-
-Add 3 new nullable numeric columns to the `trades` table:
+### 1. Database: Add 3 columns to `trades` table
 
 ```sql
 ALTER TABLE public.trades
@@ -22,18 +23,18 @@ ALTER TABLE public.trades
 NOTIFY pgrst, 'reload schema';
 ```
 
-The `NOTIFY pgrst` ensures Supabase's API layer recognizes the new columns immediately.
+This must be applied first before the code changes will work.
 
 ---
 
-### 2. Update `src/pages/Market.tsx`
+### 2. `src/pages/Market.tsx`
 
-**Add `entryPoint` state** (around line 25, alongside existing `stopLoss` and `takeProfit`):
+**A. Add `entryPoint` state** (line 25, after `takeProfit`):
 ```ts
 const [entryPoint, setEntryPoint] = useState("");
 ```
 
-**Add Entry Point input field** before the Stop Loss input (insert before line 561):
+**B. Add Entry Point input** before the Stop Loss input (insert before line 561):
 ```tsx
 <div>
   <Label htmlFor="entry-point" className="text-sm font-medium">Entry Point</Label>
@@ -47,27 +48,27 @@ const [entryPoint, setEntryPoint] = useState("");
 </div>
 ```
 
-**Update `handleBuyTrade`** (lines 102-112) to include the 3 new fields in the insert object:
+**C. Update `handleBuyTrade`** (line 102-112) -- add 3 fields to the insert object:
 ```ts
 entry_point: entryPoint ? parseFloat(entryPoint) : null,
 stop_loss: stopLoss ? parseFloat(stopLoss) : null,
 take_profit: takeProfit ? parseFloat(takeProfit) : null,
 ```
 
-**Update `handleSellTrade`** (lines 129-139) with the same 3 fields.
+**D. Update `handleSellTrade`** (lines 129-139) -- same 3 fields added to the insert.
 
 ---
 
-### 3. Update `src/hooks/useTrades.ts`
+### 3. `src/hooks/useTrades.ts`
 
-Add to the `Trade` interface (after `created_at`):
+**A. Extend Trade interface** (add after `created_at`):
 ```ts
 entry_point: number | null;
 stop_loss: number | null;
 take_profit: number | null;
 ```
 
-Add processing in `processedTrades` map:
+**B. Add processing** in the `processedTrades` map:
 ```ts
 entry_point: trade.entry_point ? Number(trade.entry_point) : null,
 stop_loss: trade.stop_loss ? Number(trade.stop_loss) : null,
@@ -76,9 +77,10 @@ take_profit: trade.take_profit ? Number(trade.take_profit) : null,
 
 ---
 
-### 4. Update `src/pages/Portfolio.tsx` - Recent Activity cards
+### 4. `src/pages/Portfolio.tsx` -- Recent Activity cards
 
-Update each trade card (around lines 206-227) to show the new fields when they exist. Below the existing `shares @ price` line, add:
+Update each trade card (around lines 206-220) to show entry point, SL, and TP when present. Add below the existing `shares @ price` line:
+
 ```tsx
 {activity.entry_point && (
   <p className="text-xs text-muted-foreground">Entry: ${activity.entry_point}</p>
@@ -93,12 +95,12 @@ Update each trade card (around lines 206-227) to show the new fields when they e
 
 ---
 
-### Summary
+### Execution Order
 
-| Step | File/Action | What |
-|------|------------|------|
-| 1 | Database migration | Add 3 columns + reload schema cache |
-| 2 | `src/pages/Market.tsx` | Add Entry Point input + save all 3 fields on trade |
-| 3 | `src/hooks/useTrades.ts` | Add 3 fields to interface + processing |
-| 4 | `src/pages/Portfolio.tsx` | Display EP, SL, TP in Recent Activity |
+| Order | Action | Why |
+|-------|--------|-----|
+| 1 | Database migration | Columns must exist before code can write to them |
+| 2 | Market.tsx changes | Add Entry Point input + save all 3 fields |
+| 3 | useTrades.ts changes | Interface + data processing for new fields |
+| 4 | Portfolio.tsx changes | Display the new fields in Recent Activity |
 
