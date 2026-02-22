@@ -1,35 +1,60 @@
 
 
-## Plan: Record Trades to Database + Rename App
+## Plan: Add Entry Point Field + Show Trade Details in Recent Activity
 
 ### Problem
-When a user places a Buy or Sell trade on the Market page, only a toast notification is shown. No record is saved to the database, so the "Recent Activity" section on the Portfolio dashboard is always empty.
+The trading panel only has Stop Loss and Take Profit inputs but is missing an Entry Point field. Additionally, none of these values (entry point, stop loss, take profit) are saved to the database or displayed in the Recent Activity on the Portfolio dashboard.
 
-### Fix: Update Market.tsx Trade Handlers
+### Changes Required
 
-**File: `src/pages/Market.tsx`**
+---
 
-1. Add `import { supabase } from '@/integrations/supabase/client';`
+### 1. Database Migration: Add 3 columns to `trades` table
 
-2. Replace `handleBuyTrade` (lines 93-98) to:
-   - Get the authenticated user via `supabase.auth.getUser()`
-   - Calculate `total_amount = price * lotSize`
-   - Insert a row into the `trades` table with type `'buy'`, symbol, name, shares (lotSize), price, total_amount, category, status `'completed'`, and user_id
-   - Show success toast on success, error toast on failure
+Add `entry_point`, `stop_loss`, and `take_profit` (all nullable numeric) to the existing `trades` table.
 
-3. Replace `handleSellTrade` (lines 100-105) with the same logic but type `'sell'`
+```sql
+ALTER TABLE public.trades
+  ADD COLUMN entry_point numeric DEFAULT NULL,
+  ADD COLUMN stop_loss numeric DEFAULT NULL,
+  ADD COLUMN take_profit numeric DEFAULT NULL;
+```
 
-No database changes are needed -- the `trades` table already has the right columns and RLS policy allows users to insert their own trades.
+---
 
-### Rename App: "IronClad Trade Hub" to "PrimeLink Unity Services"
+### 2. Update `src/pages/Market.tsx`
 
-Update all occurrences in:
+**Add state** for entry point:
+- New state: `const [entryPoint, setEntryPoint] = useState("");`
 
-- **`index.html`** -- title tag, meta descriptions, og/twitter tags
-- **`src/pages/Auth.tsx`** -- login page heading
-- **`src/pages/Settings.tsx`** -- about section, dev team, support email
-- **`supabase/functions/send-confirmation-email/index.ts`** -- email branding
+**Add Entry Point input** in the trading panel (before the Stop Loss field, around line 561):
+- A labeled input field matching the style of Stop Loss and Take Profit
 
-### Result
-After these changes, every Buy/Sell trade placed from the Market page will be saved to the database and immediately appear in the Portfolio's "Recent Activity" section (the `useTrades` hook already has a real-time subscription on the `trades` table).
+**Update `handleBuyTrade` and `handleSellTrade`** to include the three new fields in the insert:
+- `entry_point: entryPoint ? parseFloat(entryPoint) : null`
+- `stop_loss: stopLoss ? parseFloat(stopLoss) : null`
+- `take_profit: takeProfit ? parseFloat(takeProfit) : null`
+
+---
+
+### 3. Update `src/hooks/useTrades.ts`
+
+Add `entry_point`, `stop_loss`, and `take_profit` to the `Trade` interface (all `number | null`).
+
+---
+
+### 4. Update `src/pages/Portfolio.tsx` - Recent Activity section
+
+Update the trade display (lines 206-227) to show entry point, stop loss, and take profit when they exist. Each trade card will show these values as small detail lines beneath the existing price/shares info.
+
+---
+
+### Summary
+
+| File | Change |
+|------|--------|
+| Database migration | Add 3 nullable columns to `trades` |
+| `src/pages/Market.tsx` | Add Entry Point input + save all 3 fields on trade |
+| `src/hooks/useTrades.ts` | Add 3 fields to Trade interface |
+| `src/pages/Portfolio.tsx` | Display entry point, SL, TP in Recent Activity cards |
 
