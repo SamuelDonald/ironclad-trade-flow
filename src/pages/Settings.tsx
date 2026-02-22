@@ -253,7 +253,7 @@ export default function SettingsPage() {
         <TabsContent value="about">
           <Card className="card-binance">
             <CardHeader>
-              <CardTitle className="text-lg font-semibold text-foreground">About Ironclad Trade Hub</CardTitle>
+              <CardTitle className="text-lg font-semibold text-foreground">About PrimeLink Unity Services</CardTitle>
             </CardHeader>
             <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="p-3 rounded-lg border border-border shadow-sm">
@@ -262,7 +262,7 @@ export default function SettingsPage() {
               </div>
               <div className="p-3 rounded-lg border border-border shadow-sm">
                 <p className="font-semibold text-primary">Developed By</p>
-                <p className="text-sm text-muted-foreground">Ironclad Dev Team</p>
+                <p className="text-sm text-muted-foreground">PrimeLink Dev Team</p>
               </div>
               <div className="p-3 rounded-lg border border-border shadow-sm">
                 <p className="font-semibold text-primary">License</p>
@@ -270,7 +270,7 @@ export default function SettingsPage() {
               </div>
               <div className="p-3 rounded-lg border border-border shadow-sm">
                 <p className="font-semibold text-primary">Support</p>
-                <p className="text-sm text-muted-foreground">support@ironclad.com</p>
+                <p className="text-sm text-muted-foreground">support@primelink.com</p>
               </div>
             </CardContent>
           </Card>

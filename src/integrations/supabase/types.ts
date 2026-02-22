@@ -193,7 +193,6 @@ export type Database = {
       payment_methods: {
         Row: {
           brand: string | null
-          card_number: string | null
           cardholder_name: string | null
           created_at: string | null
           exp_month: number | null
@@ -207,7 +206,6 @@ export type Database = {
         }
         Insert: {
           brand?: string | null
-          card_number?: string | null
           cardholder_name?: string | null
           created_at?: string | null
           exp_month?: number | null
@@ -221,7 +219,6 @@ export type Database = {
         }
         Update: {
           brand?: string | null
-          card_number?: string | null
           cardholder_name?: string | null
           created_at?: string | null
           exp_month?: number | null
@@ -521,10 +518,9 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      is_admin_user: {
-        Args: { _email: string } | { _user_id: string }
-        Returns: boolean
-      }
+      is_admin_user:
+        | { Args: { _email: string }; Returns: boolean }
+        | { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
       app_role: "superadmin" | "admin" | "moderator"

@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Star, TrendingUp, TrendingDown, Search, Plus } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 import { TradingViewWidget } from "@/components/TradingViewWidget";
 import { WatchlistModal } from "@/components/WatchlistModal";
 import { useWatchlist } from "@/hooks/useWatchlist";
@@ -90,18 +91,58 @@ const MarketPage = () => {
     return `$${marketCap.toLocaleString()}`;
   };
 
-  const handleBuyTrade = (asset: MarketAsset) => {
-    toast({
-      title: "Buy Order Placed",
-      description: `Buying ${asset.symbol} - Lot: ${lotSize}, SL: ${stopLoss || 'None'}, TP: ${takeProfit || 'None'}`,
-    });
+  const handleBuyTrade = async (asset: MarketAsset) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast({ title: "Error", description: "You must be logged in to trade.", variant: "destructive" });
+        return;
+      }
+      const total_amount = asset.price * parseFloat(lotSize);
+      const { error } = await supabase.from('trades').insert({
+        user_id: user.id,
+        type: 'buy',
+        symbol: asset.symbol,
+        name: asset.name,
+        shares: parseFloat(lotSize),
+        price: asset.price,
+        total_amount,
+        category: asset.category,
+        status: 'completed',
+      });
+      if (error) throw error;
+      toast({ title: "Buy Order Placed", description: `Bought ${lotSize} ${asset.symbol} at ${asset.price}` });
+    } catch (error) {
+      console.error('Buy trade error:', error);
+      toast({ title: "Trade Failed", description: "Could not place buy order.", variant: "destructive" });
+    }
   };
 
-  const handleSellTrade = (asset: MarketAsset) => {
-    toast({
-      title: "Sell Order Placed", 
-      description: `Selling ${asset.symbol} - Lot: ${lotSize}, SL: ${stopLoss || 'None'}, TP: ${takeProfit || 'None'}`,
-    });
+  const handleSellTrade = async (asset: MarketAsset) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast({ title: "Error", description: "You must be logged in to trade.", variant: "destructive" });
+        return;
+      }
+      const total_amount = asset.price * parseFloat(lotSize);
+      const { error } = await supabase.from('trades').insert({
+        user_id: user.id,
+        type: 'sell',
+        symbol: asset.symbol,
+        name: asset.name,
+        shares: parseFloat(lotSize),
+        price: asset.price,
+        total_amount,
+        category: asset.category,
+        status: 'completed',
+      });
+      if (error) throw error;
+      toast({ title: "Sell Order Placed", description: `Sold ${lotSize} ${asset.symbol} at ${asset.price}` });
+    } catch (error) {
+      console.error('Sell trade error:', error);
+      toast({ title: "Trade Failed", description: "Could not place sell order.", variant: "destructive" });
+    }
   };
 
   const lotSizeOptions = ["0.01", "0.1", "0.5", "1.0", "2.0", "5.0"];
