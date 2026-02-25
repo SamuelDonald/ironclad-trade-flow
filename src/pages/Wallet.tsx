@@ -38,17 +38,17 @@ const WalletPage = () => {
   // ✅ Only 3 cryptos shown in Figma with QR codes
   const cryptoAddresses = {
     BTC: {
-      address: "bc1qzqmxyf6uxmtgce6jn6weefre4h8h6udm9dzu6a",
+      address: "1NXrEXRnX4Czr2xUEJuvRU6NJHQ66AS3y1",
       qrCode: "https://jgedidtpqfashojqagbd.supabase.co/storage/v1/object/sign/QR%20codes/BTC.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hNjhjYTQwYS1hNGVmLTQ5YmQtOWM4Ny00ODBkZDk0MDhiNjUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJRUiBjb2Rlcy9CVEMuanBnIiwiaWF0IjoxNzU4ODg5OTU2LCJleHAiOjE3OTA0MjU5NTZ9.jo7XY_5VlWlanNf4hQv09KI1jEE3tMC0py6BBKxZWK0",
       logo: "https://jgedidtpqfashojqagbd.supabase.co/storage/v1/object/sign/WalletLogo's/BTC%20logo.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hNjhjYTQwYS1hNGVmLTQ5YmQtOWM4Ny00ODBkZDk0MDhiNjUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJXYWxsZXRMb2dvJ3MvQlRDIGxvZ28uanBnIiwiaWF0IjoxNzU5NDkxMDE5LCJleHAiOjE3OTEwMjcwMTl9.blU3tn3g06BaYvbUydYcSgscvAR9KKvrFiGbCz141H0"
     },
     SOL: {
-      address: "AXz6WH3MTERUNfmrTSFBCKganuPf1Jg4FJGMUk5Y5PKr",
+      address: "GpG1uaU6Tzugm6vXS4JJ6bpBQN64LnM1cFX4pjSiuEsC",
       qrCode: "https://jgedidtpqfashojqagbd.supabase.co/storage/v1/object/sign/QR%20codes/SOL.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hNjhjYTQwYS1hNGVmLTQ5YmQtOWM4Ny00ODBkZDk0MDhiNjUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJRUiBjb2Rlcy9TT0wuanBnIiwiaWF0IjoxNzU4ODg5OTczLCJleHAiOjE3OTA0MjU5NzN9.c8qXJriUQy1fi8dZeAOLb1EuZYByct7xLadWu9oTQvo",
       logo: "https://jgedidtpqfashojqagbd.supabase.co/storage/v1/object/sign/WalletLogo's/SOL%20logo.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hNjhjYTQwYS1hNGVmLTQ5YmQtOWM4Ny00ODBkZDk0MDhiNjUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJXYWxsZXRMb2dvJ3MvU09MIGxvZ28uanBnIiwiaWF0IjoxNzU5NDkxMDAzLCJleHAiOjE3OTEwMjcwMDN9._DcHVxnlQVn7rxSIgpRNj1ef3I2zQpb5nWd329rP_Yo"
     },
-    "USDT-ERC20": {
-      address: "0xb8a0BaC9FdF3ef67BDA63638310255508Db3a12A",
+    ETH: {
+      address: "0xc42E1d12cE50f258D309f75CFf3840e724c9e359",
       qrCode: "https://jgedidtpqfashojqagbd.supabase.co/storage/v1/object/sign/QR%20codes/USDT.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hNjhjYTQwYS1hNGVmLTQ5YmQtOWM4Ny00ODBkZDk0MDhiNjUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJRUiBjb2Rlcy9VU0RULmpwZyIsImlhdCI6MTc1ODg4OTk4NywiZXhwIjoxNzkwNDI1OTg3fQ.dAalhHJF1Cd8Y31TNX3yLXLgWLjOlJe4d_W2_S3oyM8",
       logo: "https://jgedidtpqfashojqagbd.supabase.co/storage/v1/object/sign/WalletLogo's/USDT%20logo.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hNjhjYTQwYS1hNGVmLTQ5YmQtOWM4Ny00ODBkZDk0MDhiNjUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJXYWxsZXRMb2dvJ3MvVVNEVCBsb2dvLmpwZyIsImlhdCI6MTc1OTQ5MDk4MywiZXhwIjoxNzkxMDI2OTgzfQ.CbJz4faAyIqEeaoCPu2O4sL3WheMrs49u8gN6lxyagQ"
     },
@@ -232,7 +232,7 @@ const WalletPage = () => {
           <Card className="card-binance">
             <CardHeader>
               <CardTitle>Crypto Deposits</CardTitle>
-              <CardDescription>BTC, SOL, USDT</CardDescription>
+              <CardDescription>BTC, SOL, ETH</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               {Object.entries(cryptoAddresses).map(([crypto, data]) => (
