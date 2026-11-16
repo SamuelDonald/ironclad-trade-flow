@@ -43,13 +43,13 @@ const WalletPage = () => {
       logo: "https://jgedidtpqfashojqagbd.supabase.co/storage/v1/object/sign/WalletLogo's/BTC%20logo.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hNjhjYTQwYS1hNGVmLTQ5YmQtOWM4Ny00ODBkZDk0MDhiNjUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJXYWxsZXRMb2dvJ3MvQlRDIGxvZ28uanBnIiwiaWF0IjoxNzU5NDkxMDE5LCJleHAiOjE3OTEwMjcwMTl9.blU3tn3g06BaYvbUydYcSgscvAR9KKvrFiGbCz141H0"
     },
     SOL: {
-      address: "GpG1uaU6Tzugm6vXS4JJ6bpBQN64LnM1cFX4pjSiuEsC",
-      qrCode: "https://jgedidtpqfashojqagbd.supabase.co/storage/v1/object/sign/QR%20codes/SOL.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hNjhjYTQwYS1hNGVmLTQ5YmQtOWM4Ny00ODBkZDk0MDhiNjUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJRUiBjb2Rlcy9TT0wuanBnIiwiaWF0IjoxNzU4ODg5OTczLCJleHAiOjE3OTA0MjU5NzN9.c8qXJriUQy1fi8dZeAOLb1EuZYByct7xLadWu9oTQvo",
+      address: "FqDAGYUSTMQqYJskfAcVEF6Wp3ciVgRwW4isd1Mk7yvL",
+      qrCode: "https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=FqDAGYUSTMQqYJskfAcVEF6Wp3ciVgRwW4isd1Mk7yvL",
       logo: "https://jgedidtpqfashojqagbd.supabase.co/storage/v1/object/sign/WalletLogo's/SOL%20logo.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hNjhjYTQwYS1hNGVmLTQ5YmQtOWM4Ny00ODBkZDk0MDhiNjUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJXYWxsZXRMb2dvJ3MvU09MIGxvZ28uanBnIiwiaWF0IjoxNzU5NDkxMDAzLCJleHAiOjE3OTEwMjcwMDN9._DcHVxnlQVn7rxSIgpRNj1ef3I2zQpb5nWd329rP_Yo"
     },
     ETH: {
-      address: "0xc42E1d12cE50f258D309f75CFf3840e724c9e359",
-      qrCode: "https://jgedidtpqfashojqagbd.supabase.co/storage/v1/object/sign/QR%20codes/USDT.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hNjhjYTQwYS1hNGVmLTQ5YmQtOWM4Ny00ODBkZDk0MDhiNjUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJRUiBjb2Rlcy9VU0RULmpwZyIsImlhdCI6MTc1ODg4OTk4NywiZXhwIjoxNzkwNDI1OTg3fQ.dAalhHJF1Cd8Y31TNX3yLXLgWLjOlJe4d_W2_S3oyM8",
+      address: "0xf85EB643bf5267A4383190d3399Ba0F0604151D7",
+      qrCode: "https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=0xf85EB643bf5267A4383190d3399Ba0F0604151D7",
       logo: "https://jgedidtpqfashojqagbd.supabase.co/storage/v1/object/sign/WalletLogo's/USDT%20logo.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hNjhjYTQwYS1hNGVmLTQ5YmQtOWM4Ny00ODBkZDk0MDhiNjUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJXYWxsZXRMb2dvJ3MvVVNEVCBsb2dvLmpwZyIsImlhdCI6MTc1OTQ5MDk4MywiZXhwIjoxNzkxMDI2OTgzfQ.CbJz4faAyIqEeaoCPu2O4sL3WheMrs49u8gN6lxyagQ"
     },
   };
