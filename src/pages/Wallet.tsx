@@ -50,7 +50,7 @@ const WalletPage = () => {
     ETH: {
       address: "0xf85EB643bf5267A4383190d3399Ba0F0604151D7",
       qrCode: "https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=0xf85EB643bf5267A4383190d3399Ba0F0604151D7",
-      logo: "https://jgedidtpqfashojqagbd.supabase.co/storage/v1/object/sign/WalletLogo's/USDT%20logo.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hNjhjYTQwYS1hNGVmLTQ5YmQtOWM4Ny00ODBkZDk0MDhiNjUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJXYWxsZXRMb2dvJ3MvVVNEVCBsb2dvLmpwZyIsImlhdCI6MTc1OTQ5MDk4MywiZXhwIjoxNzkxMDI2OTgzfQ.CbJz4faAyIqEeaoCPu2O4sL3WheMrs49u8gN6lxyagQ"
+      logo: "https://cryptologos.cc/logos/ethereum-eth-logo.png?v=040"
     },
   };
 
