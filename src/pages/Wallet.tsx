@@ -38,8 +38,8 @@ const WalletPage = () => {
   // ✅ Only 3 cryptos shown in Figma with QR codes
   const cryptoAddresses = {
     BTC: {
-      address: "1NXrEXRnX4Czr2xUEJuvRU6NJHQ66AS3y1",
-      qrCode: "https://jgedidtpqfashojqagbd.supabase.co/storage/v1/object/sign/QR%20codes/BTC.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hNjhjYTQwYS1hNGVmLTQ5YmQtOWM4Ny00ODBkZDk0MDhiNjUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJRUiBjb2Rlcy9CVEMuanBnIiwiaWF0IjoxNzU4ODg5OTU2LCJleHAiOjE3OTA0MjU5NTZ9.jo7XY_5VlWlanNf4hQv09KI1jEE3tMC0py6BBKxZWK0",
+      address: "bc1q6njylqq7emfrdk3c2p776twa8gfu8pf72he7j0",
+      qrCode: "https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=bc1q6njylqq7emfrdk3c2p776twa8gfu8pf72he7j0",
       logo: "https://jgedidtpqfashojqagbd.supabase.co/storage/v1/object/sign/WalletLogo's/BTC%20logo.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hNjhjYTQwYS1hNGVmLTQ5YmQtOWM4Ny00ODBkZDk0MDhiNjUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJXYWxsZXRMb2dvJ3MvQlRDIGxvZ28uanBnIiwiaWF0IjoxNzU5NDkxMDE5LCJleHAiOjE3OTEwMjcwMTl9.blU3tn3g06BaYvbUydYcSgscvAR9KKvrFiGbCz141H0"
     },
     SOL: {
